@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Category, Column, TeamMember } from '../hooks/useTasks';
+import { TaskCard } from './TaskCard';
 
 interface TaskColumnProps {
   column: Column;
@@ -46,10 +47,21 @@ export function TaskColumn({
 
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
-    drop: (item: any) => {
+    drop: async (item: any) => {
       console.log('Dropped task:', item.id, 'into column:', column.id);
+      
+      // Handle task completion if moving to completed column
       if (column.id === 'completed' && onTaskComplete) {
         onTaskComplete();
+      }
+      
+      // Move task to this column if onMoveTask is provided
+      if (onMoveTask && item.id) {
+        try {
+          await onMoveTask(item.id, column.id);
+        } catch (error) {
+          console.error('Failed to move task:', error);
+        }
       }
     },
     collect: (monitor) => ({
@@ -213,19 +225,7 @@ export function TaskColumn({
             <>
               {/* For non-day columns, show tasks directly */}
               {column.tasks.map((task) => (
-                <div key={task.id} className="mb-3 p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:border-white/30 transition-all duration-200">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-medium text-slate-800">{task.title}</h4>
-                    <div className={`w-3 h-3 rounded-full ${
-                      task.priority === 'high' ? 'bg-red-500' :
-                      task.priority === 'medium' ? 'bg-yellow-500' :
-                      'bg-green-500'
-                    }`}></div>
-                  </div>
-                  {task.project && (
-                    <p className="text-sm text-slate-600 mb-2">Project: {task.project}</p>
-                  )}
-                </div>
+                <TaskCard key={task.id} task={task} onComplete={onTaskComplete} />
               ))}
               
               {/* Add task button for non-day columns */}
