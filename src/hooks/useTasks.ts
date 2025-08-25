@@ -95,6 +95,9 @@ export function useTasks() {
     category_id?: string;
   }) => {
     try {
+      console.log('Creating task with data:', taskData);
+      console.log('API_BASE:', API_BASE);
+      
       const response = await fetch(`${API_BASE}/tasks`, {
         method: 'POST',
         headers: {
@@ -103,11 +106,17 @@ export function useTasks() {
         body: JSON.stringify(taskData),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Failed to create task');
+        const errorText = await response.text();
+        console.error('Server error response:', errorText);
+        throw new Error(`Failed to create task: ${response.status} ${errorText}`);
       }
 
       const newTask = await response.json();
+      console.log('Created task:', newTask);
       
       // Update local state
       setColumns(prevColumns => 
@@ -145,6 +154,7 @@ export function useTasks() {
 
       return newTask;
     } catch (err) {
+      console.error('Error in createTask:', err);
       setError(err instanceof Error ? err.message : 'Failed to create task');
       throw err;
     }
