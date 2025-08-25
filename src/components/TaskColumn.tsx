@@ -58,7 +58,9 @@ export function TaskColumn({
       // Move task to this column if onMoveTask is provided
       if (onMoveTask && item.id) {
         try {
-          await onMoveTask(item.id, column.id);
+          // For non-category columns, don't specify category_id
+          const categoryId = shouldShowCategories(column.id) ? undefined : undefined;
+          await onMoveTask(item.id, column.id, categoryId);
         } catch (error) {
           console.error('Failed to move task:', error);
         }
@@ -97,7 +99,7 @@ export function TaskColumn({
   const isFollowUpColumn = column.id === 'follow-up';
 
   const isDayColumn = (columnId: string) => {
-    return columnId === 'today' || columnId === 'later';
+    return columnId === 'today';
   };
 
   const shouldShowCategories = (columnId: string) => {
