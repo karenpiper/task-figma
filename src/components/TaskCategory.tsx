@@ -51,6 +51,7 @@ export function TaskCategory({
       // Move task to this category if onMoveTask is provided
       if (onMoveTask && item.id) {
         try {
+          // Pass the actual column ID, not the category ID
           await onMoveTask(item.id, columnId, category.id);
         } catch (error) {
           console.error('Failed to move task:', error);

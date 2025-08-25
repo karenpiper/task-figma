@@ -81,10 +81,13 @@ db.serialize(() => {
     { id: 'completed', title: 'Completed', color: 'from-emerald-400 to-green-500', order_index: 4 }
   ];
 
-  // Clean up any old 'blocked' column data
+  // Clean up any old 'blocked' column data and ensure only correct columns exist
   db.run('DELETE FROM columns WHERE id = ?', ['blocked']);
   db.run('DELETE FROM categories WHERE column_id = ?', ['blocked']);
   db.run('UPDATE tasks SET column_id = ? WHERE column_id = ?', ['follow-up', 'blocked']);
+  
+  // Remove categories from columns that shouldn't have them
+  db.run('DELETE FROM categories WHERE column_id IN (?, ?, ?)', ['uncategorized', 'later', 'completed']);
 
   defaultColumns.forEach(column => {
     db.run(`
@@ -93,7 +96,7 @@ db.serialize(() => {
     `, [column.id, column.title, column.color, column.order_index]);
   });
 
-  // Insert default categories for each column
+  // Insert default categories for each column - ONLY for columns that should have them
   const defaultCategories = [
     // Today - Day column with categories
     { id: 'today_standing', name: 'STANDING', column_id: 'today', order_index: 0, is_default: 1 },
@@ -478,37 +481,48 @@ app.get('/api/board', (req, res) => {
     // Get categories and tasks for each column
     const boardData = columns.map(column => {
       return new Promise((resolve) => {
-        db.all('SELECT * FROM categories WHERE column_id = ? ORDER BY order_index', [column.id], (err, categories) => {
-          if (err) {
-            resolve({ ...column, categories: [], tasks: [], count: 0 });
-            return;
-          }
-          
-          // Get tasks for each category
-          const categoriesWithTasks = categories.map(category => {
-            return new Promise((resolveCategory) => {
-              db.all('SELECT * FROM tasks WHERE category_id = ? ORDER BY created_at DESC', [category.id], (err, tasks) => {
+        // Only get categories for columns that should have them
+        if (column.id === 'today' || column.id === 'follow-up') {
+          db.all('SELECT * FROM categories WHERE column_id = ? ORDER BY order_index', [column.id], (err, categories) => {
+            if (err) {
+              resolve({ ...column, categories: [], tasks: [], count: 0 });
+              return;
+            }
+            
+            // Get tasks for each category
+            const categoriesWithTasks = categories.map(category => {
+              return new Promise((resolveCategory) => {
+                db.all('SELECT * FROM tasks WHERE category_id = ? ORDER BY created_at DESC', [category.id], (err, tasks) => {
+                  if (err) {
+                    resolveCategory({ ...category, tasks: [], count: 0 });
+                    return;
+                  }
+                  resolveCategory({ ...category, tasks, count: tasks.length });
+                });
+              });
+            });
+            
+            Promise.all(categoriesWithTasks).then(categoriesData => {
+              // Also get tasks that don't have a category_id (direct column tasks)
+              db.all('SELECT * FROM tasks WHERE column_id = ? AND category_id IS NULL ORDER BY created_at DESC', [column.id], (err, directTasks) => {
                 if (err) {
-                  resolveCategory({ ...category, tasks: [], count: 0 });
-                  return;
+                  directTasks = [];
                 }
-                resolveCategory({ ...category, tasks, count: tasks.length });
+                
+                const allTasks = [...categoriesData.flatMap(cat => cat.tasks), ...directTasks];
+                resolve({ ...column, categories: categoriesData, tasks: directTasks, count: allTasks.length });
               });
             });
           });
-          
-          Promise.all(categoriesWithTasks).then(categoriesData => {
-            // Also get tasks that don't have a category_id (direct column tasks)
-            db.all('SELECT * FROM tasks WHERE column_id = ? AND category_id IS NULL ORDER BY created_at DESC', [column.id], (err, directTasks) => {
-              if (err) {
-                directTasks = [];
-              }
-              
-              const allTasks = [...categoriesData.flatMap(cat => cat.tasks), ...directTasks];
-              resolve({ ...column, categories: categoriesData, tasks: directTasks, count: allTasks.length });
-            });
+        } else {
+          // For columns without categories, just get direct tasks
+          db.all('SELECT * FROM tasks WHERE column_id = ? AND category_id IS NULL ORDER BY created_at DESC', [column.id], (err, directTasks) => {
+            if (err) {
+              directTasks = [];
+            }
+            resolve({ ...column, categories: [], tasks: directTasks, count: directTasks.length });
           });
-        });
+        }
       });
     });
     
