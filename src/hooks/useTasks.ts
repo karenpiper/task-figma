@@ -53,18 +53,24 @@ export function useTasks() {
   const fetchBoard = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await fetch(`${API_BASE}/board`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch board data');
       }
       
-      const data = await response.json();
-      setColumns(data);
+      const boardData = await response.json();
+      console.log('Fetched board data:', boardData);
+      
+      // Check if there's a blocked column
+      const blockedColumn = boardData.find((col: any) => col.id === 'blocked');
+      if (blockedColumn) {
+        console.warn('Found blocked column in API response:', blockedColumn);
+      }
+      
+      setColumns(boardData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching board:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch board data');
     } finally {
       setLoading(false);
     }
