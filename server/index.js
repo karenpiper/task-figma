@@ -498,8 +498,15 @@ app.get('/api/board', (req, res) => {
           });
           
           Promise.all(categoriesWithTasks).then(categoriesData => {
-            const allTasks = categoriesData.flatMap(cat => cat.tasks);
-            resolve({ ...column, categories: categoriesData, tasks: allTasks, count: allTasks.length });
+            // Also get tasks that don't have a category_id (direct column tasks)
+            db.all('SELECT * FROM tasks WHERE column_id = ? AND category_id IS NULL ORDER BY created_at DESC', [column.id], (err, directTasks) => {
+              if (err) {
+                directTasks = [];
+              }
+              
+              const allTasks = [...categoriesData.flatMap(cat => cat.tasks), ...directTasks];
+              resolve({ ...column, categories: categoriesData, tasks: directTasks, count: allTasks.length });
+            });
           });
         });
       });
