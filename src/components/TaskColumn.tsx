@@ -58,9 +58,9 @@ export function TaskColumn({
       // Move task to this column if onMoveTask is provided
       if (onMoveTask && item.id) {
         try {
-          // For non-category columns, don't specify category_id
-          const categoryId = shouldShowCategories(column.id) ? undefined : undefined;
-          await onMoveTask(item.id, column.id, categoryId);
+          // For columns with categories, we'll need to determine the target category
+          // For now, drop directly into the column (category_id will be null)
+          await onMoveTask(item.id, column.id, undefined);
         } catch (error) {
           console.error('Failed to move task:', error);
         }

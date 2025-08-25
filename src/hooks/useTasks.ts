@@ -355,6 +355,8 @@ export function useTasks() {
 
   // Move task between columns/categories
   const moveTask = useCallback(async (taskId: number, newColumnId: string, newCategoryId?: string) => {
+    console.log('moveTask called with:', { taskId, newColumnId, newCategoryId });
+    
     try {
       const response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
         method: 'PATCH',
@@ -364,12 +366,20 @@ export function useTasks() {
         body: JSON.stringify({ column_id: newColumnId, category_id: newCategoryId }),
       });
 
+      console.log('Move task response:', response.status, response.statusText);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Move task error response:', errorText);
         throw new Error('Failed to move task');
       }
 
+      console.log('Task moved successfully, updating local state...');
+
       // Update local state
       setColumns(prevColumns => {
+        console.log('Previous columns state:', prevColumns);
+        
         let taskToMove: Task | null = null;
         let sourceColumnId: string | null = null;
 
@@ -383,6 +393,7 @@ export function useTasks() {
               taskToMove = category.tasks[taskIndex];
               sourceColumnId = column.id;
               taskFoundInCategory = true;
+              console.log('Found task in category:', category.name, 'task:', taskToMove);
               return {
                 ...category,
                 tasks: category.tasks.filter(task => task.id !== taskId),
@@ -398,6 +409,7 @@ export function useTasks() {
             if (taskIndex !== -1) {
               taskToMove = column.tasks[taskIndex];
               sourceColumnId = column.id;
+              console.log('Found task directly in column:', column.id, 'task:', taskToMove);
             }
           }
 
@@ -408,6 +420,8 @@ export function useTasks() {
             count: column.tasks.filter(task => task.id !== taskId).length
           };
         });
+
+        console.log('Task to move:', taskToMove, 'from column:', sourceColumnId);
 
         // Add task to destination
         if (taskToMove && sourceColumnId !== newColumnId) {
@@ -448,7 +462,10 @@ export function useTasks() {
         return updatedColumns;
       });
 
+      console.log('Local state updated successfully');
+
     } catch (err) {
+      console.error('Error in moveTask:', err);
       setError(err instanceof Error ? err.message : 'Failed to move task');
       throw err;
     }
