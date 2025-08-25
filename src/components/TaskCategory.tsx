@@ -190,25 +190,25 @@ export function TaskCategory({
               </Button>
             </div>
           </DialogTrigger>
-          <DialogContent className="bg-white/95 backdrop-blur-xl border border-white/40">
+          <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
             <DialogHeader>
-              <DialogTitle>Create New Task in {category.name}</DialogTitle>
+              <DialogTitle className="text-lg font-semibold text-gray-900">Create New Task in {category.name}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="title">Task Title</Label>
+                <Label htmlFor="title" className="text-sm font-medium text-gray-700">Task Title</Label>
                 <Input
                   id="title"
                   value={newTaskData.title}
                   onChange={(e) => setNewTaskData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter task title..."
-                  className="bg-white/50 border-white/30"
+                  className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority" className="text-sm font-medium text-gray-700">Priority</Label>
                 <Select value={newTaskData.priority} onValueChange={(value) => setNewTaskData(prev => ({ ...prev, priority: value }))}>
-                  <SelectTrigger className="bg-white/50 border-white/30">
+                  <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -219,13 +219,13 @@ export function TaskCategory({
                 </Select>
               </div>
               <div>
-                <Label htmlFor="project">Project (Optional)</Label>
+                <Label htmlFor="project" className="text-sm font-medium text-gray-700">Project (Optional)</Label>
                 <Input
                   id="project"
                   value={newTaskData.project}
                   onChange={(e) => setNewTaskData(prev => ({ ...prev, project: e.target.value }))}
                   placeholder="Enter project name..."
-                  className="bg-white/50 border-white/30"
+                  className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               <div className="flex gap-2 pt-2">
@@ -239,7 +239,7 @@ export function TaskCategory({
                 <Button 
                   variant="outline" 
                   onClick={() => setIsCreatingTask(false)}
-                  className="flex-1"
+                  className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </Button>
