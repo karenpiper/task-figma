@@ -392,12 +392,12 @@ export const useTasks = () => {
   }, []);
 
   // Get all tasks (computed getter)
-  const get tasks() {
+  const getTasks = () => {
     return columns.flatMap(column => [
       ...column.tasks,
       ...column.categories.flatMap(category => category.tasks)
     ]);
-  }
+  };
 
   useEffect(() => {
     fetchBoard();
@@ -416,7 +416,7 @@ export const useTasks = () => {
     createTeamMember,
     updateTeamMember,
     deleteTeamMember,
-    tasks,
+    tasks: getTasks(),
     refetch: fetchBoard,
   };
 }; 
