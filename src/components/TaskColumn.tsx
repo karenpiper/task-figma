@@ -165,6 +165,7 @@ export function TaskColumn({
                 <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
                   <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900">Add New Category</DialogTitle>
+                    <p className="text-sm text-gray-600">Create a new category to organize tasks in this column.</p>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
@@ -241,6 +242,7 @@ export function TaskColumn({
                 <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
                   <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900">Add New Task</DialogTitle>
+                    <p className="text-sm text-gray-600">Create a new task in this column.</p>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>

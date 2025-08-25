@@ -193,6 +193,7 @@ export function TaskCategory({
           <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
             <DialogHeader>
               <DialogTitle className="text-lg font-semibold text-gray-900">Create New Task in {category.name}</DialogTitle>
+              <p className="text-sm text-gray-600">Add a new task to this category.</p>
             </DialogHeader>
             <div className="space-y-4">
               <div>
