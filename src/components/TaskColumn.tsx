@@ -30,10 +30,18 @@ export function TaskColumn({
   teamMembers = []
 }: TaskColumnProps) {
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [newCategoryData, setNewCategoryData] = useState({
     name: '',
     column_id: column.id,
     order_index: column.categories.length
+  });
+  const [newTaskData, setNewTaskData] = useState({
+    title: '',
+    priority: 'medium',
+    project: '',
+    column_id: column.id,
+    category_id: undefined
   });
 
   const [{ isOver }, drop] = useDrop({
@@ -58,6 +66,18 @@ export function TaskColumn({
       setIsCreatingCategory(false);
     } catch (error) {
       console.error('Failed to create category:', error);
+    }
+  };
+
+  const handleCreateTask = async () => {
+    if (!newTaskData.title.trim() || !onCreateTask) return;
+    
+    try {
+      await onCreateTask(newTaskData);
+      setNewTaskData({ title: '', priority: 'medium', project: '', column_id: column.id, category_id: undefined });
+      setIsCreatingTask(false);
+    } catch (error) {
+      console.error('Failed to create task:', error);
     }
   };
 
@@ -142,19 +162,19 @@ export function TaskColumn({
                     </Button>
                   </div>
                 </DialogTrigger>
-                <DialogContent className="bg-white/95 backdrop-blur-xl border border-white/40">
+                <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
                   <DialogHeader>
-                    <DialogTitle>Add New Category</DialogTitle>
+                    <DialogTitle className="text-lg font-semibold text-gray-900">Add New Category</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="categoryName">Category Name</Label>
+                      <Label htmlFor="categoryName" className="text-sm font-medium text-gray-700">Category Name</Label>
                       <Input
                         id="categoryName"
                         value={newCategoryData.name}
                         onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
                         placeholder="Enter category name..."
-                        className="bg-white/50 border-white/30"
+                        className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       />
                     </div>
                     <div className="flex gap-2 pt-2">
@@ -168,7 +188,7 @@ export function TaskColumn({
                       <Button 
                         variant="outline" 
                         onClick={() => setIsCreatingCategory(false)}
-                        className="flex-1"
+                        className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                       >
                         Cancel
                       </Button>
@@ -208,26 +228,76 @@ export function TaskColumn({
               ))}
               
               {/* Add task button for non-day columns */}
-              {onCreateTask && (
-                <Button 
-                  variant="ghost" 
-                  className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl hover:scale-[1.01] text-sm"
-                  onClick={() => {
-                    // Simple task creation for non-day columns
-                    const taskName = prompt('Enter task name:');
-                    if (taskName && onCreateTask) {
-                      onCreateTask({
-                        title: taskName,
-                        column_id: column.id,
-                        priority: 'medium'
-                      });
-                    }
-                  }}
-                >
-                  <Plus className="w-3 h-3 mr-2" />
-                  Add Task
-                </Button>
-              )}
+              <Dialog open={isCreatingTask} onOpenChange={setIsCreatingTask}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl hover:scale-[1.01] text-sm"
+                  >
+                    <Plus className="w-3 h-3 mr-2" />
+                    Add Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-lg font-semibold text-gray-900">Add New Task</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="taskTitle" className="text-sm font-medium text-gray-700">Task Title</Label>
+                      <Input
+                        id="taskTitle"
+                        value={newTaskData.title}
+                        onChange={(e) => setNewTaskData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Enter task title..."
+                        className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="taskPriority" className="text-sm font-medium text-gray-700">Priority</Label>
+                      <Select
+                        value={newTaskData.priority}
+                        onValueChange={(value) => setNewTaskData(prev => ({ ...prev, priority: value }))}
+                      >
+                        <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="taskProject" className="text-sm font-medium text-gray-700">Project (Optional)</Label>
+                      <Input
+                        id="taskProject"
+                        value={newTaskData.project}
+                        onChange={(e) => setNewTaskData(prev => ({ ...prev, project: e.target.value }))}
+                        placeholder="Enter project name..."
+                        className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        onClick={handleCreateTask}
+                        disabled={!newTaskData.title.trim()}
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                      >
+                        Create Task
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsCreatingTask(false)}
+                        className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               
               {/* Show message if no tasks exist in non-day columns */}
               {column.tasks.length === 0 && (
