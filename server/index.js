@@ -96,12 +96,6 @@ db.serialize(() => {
     { id: 'today_big_tasks', name: 'BIG TASKS', column_id: 'today', order_index: 2, is_default: 1 },
     { id: 'today_done', name: 'DONE', column_id: 'today', order_index: 3, is_default: 1 },
     
-    // Later - Day column with categories
-    { id: 'later_standing', name: 'STANDING', column_id: 'later', order_index: 0, is_default: 1 },
-    { id: 'later_comms', name: 'COMMS', column_id: 'later', order_index: 1, is_default: 1 },
-    { id: 'later_big_tasks', name: 'BIG TASKS', column_id: 'later', order_index: 2, is_default: 1 },
-    { id: 'later_done', name: 'DONE', column_id: 'later', order_index: 3, is_default: 1 },
-    
     // Follow-Up - Only for team member assignments
     { id: 'follow-up_people', name: 'People', column_id: 'follow-up', order_index: 0, is_default: 1 }
   ];
@@ -138,10 +132,6 @@ db.serialize(() => {
         { title: 'Daily standup', priority: 'medium', project: 'Daily', column_id: 'today', category_id: 'today_standing' },
         { title: 'Code review', priority: 'high', project: 'Development', column_id: 'today', category_id: 'today_big_tasks' },
         { title: 'Email responses', priority: 'medium', project: 'Communication', column_id: 'today', category_id: 'today_comms' },
-        
-        // Later column tasks with categories
-        { title: 'Backup system check', priority: 'low', project: 'Maintenance', column_id: 'later', category_id: 'later_standing' },
-        { title: 'Monthly report', priority: 'high', project: 'Report', column_id: 'later', category_id: 'later_big_tasks' },
         
         // Follow-Up column task
         { title: 'Design system updates', priority: 'medium', project: 'Design', column_id: 'follow-up', category_id: 'follow-up_people' },
