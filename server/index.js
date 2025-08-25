@@ -81,6 +81,11 @@ db.serialize(() => {
     { id: 'completed', title: 'Completed', color: 'from-emerald-400 to-green-500', order_index: 4 }
   ];
 
+  // Clean up any old 'blocked' column data
+  db.run('DELETE FROM columns WHERE id = ?', ['blocked']);
+  db.run('DELETE FROM categories WHERE column_id = ?', ['blocked']);
+  db.run('UPDATE tasks SET column_id = ? WHERE column_id = ?', ['follow-up', 'blocked']);
+
   defaultColumns.forEach(column => {
     db.run(`
       INSERT OR IGNORE INTO columns (id, title, color, order_index) 
