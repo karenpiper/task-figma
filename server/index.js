@@ -30,6 +30,13 @@ db.serialize(() => {
     )
   `);
 
+  // Add category_id column if it doesn't exist (migration for existing databases)
+  db.run(`ALTER TABLE tasks ADD COLUMN category_id TEXT`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+      console.log('Migration note:', err.message);
+    }
+  });
+
   // Create columns table
   db.run(`
     CREATE TABLE IF NOT EXISTS columns (
