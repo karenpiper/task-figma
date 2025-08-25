@@ -3,6 +3,23 @@
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "functions": {
+    "api/board.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/tasks.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/team-members.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/categories.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/tasks/[id]/move.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
