@@ -83,26 +83,20 @@ db.serialize(() => {
 
   // Insert default categories for each column
   const defaultCategories = [
-    // Uncategorized
-    { id: 'uncategorized_standing', name: 'STANDING', column_id: 'uncategorized', order_index: 0, is_default: 1 },
-    { id: 'uncategorized_comms', name: 'COMMS', column_id: 'uncategorized', order_index: 1, is_default: 1 },
-    { id: 'uncategorized_big_tasks', name: 'BIG TASKS', column_id: 'uncategorized', order_index: 2, is_default: 1 },
-    
-    // Today
+    // Today - Day column with categories
     { id: 'today_standing', name: 'STANDING', column_id: 'today', order_index: 0, is_default: 1 },
     { id: 'today_comms', name: 'COMMS', column_id: 'today', order_index: 1, is_default: 1 },
     { id: 'today_big_tasks', name: 'BIG TASKS', column_id: 'today', order_index: 2, is_default: 1 },
+    { id: 'today_done', name: 'DONE', column_id: 'today', order_index: 3, is_default: 1 },
     
-    // Follow-Up (formerly Blocked)
-    { id: 'follow-up_people', name: 'People', column_id: 'follow-up', order_index: 0, is_default: 1 },
-    
-    // Later
+    // Later - Day column with categories
     { id: 'later_standing', name: 'STANDING', column_id: 'later', order_index: 0, is_default: 1 },
     { id: 'later_comms', name: 'COMMS', column_id: 'later', order_index: 1, is_default: 1 },
     { id: 'later_big_tasks', name: 'BIG TASKS', column_id: 'later', order_index: 2, is_default: 1 },
+    { id: 'later_done', name: 'DONE', column_id: 'later', order_index: 3, is_default: 1 },
     
-    // Completed
-    { id: 'completed_done', name: 'DONE', column_id: 'completed', order_index: 0, is_default: 1 }
+    // Follow-Up - Only for team member assignments
+    { id: 'follow-up_people', name: 'People', column_id: 'follow-up', order_index: 0, is_default: 1 }
   ];
 
   defaultCategories.forEach(category => {
@@ -133,14 +127,23 @@ db.serialize(() => {
   db.get('SELECT COUNT(*) as count FROM tasks', (err, row) => {
     if (row.count === 0) {
       const sampleTasks = [
-        { title: 'Quick email check', priority: 'medium', project: 'Email', column_id: 'uncategorized', category_id: 'uncategorized_standing' },
-        { title: 'Weekly team sync', priority: 'high', project: 'Team', column_id: 'uncategorized', category_id: 'uncategorized_comms' },
-        { title: 'Review quarterly goals', priority: 'high', project: 'Strategic', column_id: 'uncategorized', category_id: 'uncategorized_big_tasks' },
+        // Today column tasks with categories
         { title: 'Daily standup', priority: 'medium', project: 'Daily', column_id: 'today', category_id: 'today_standing' },
         { title: 'Code review', priority: 'high', project: 'Development', column_id: 'today', category_id: 'today_big_tasks' },
-        { title: 'Design system updates', priority: 'medium', project: 'Design', column_id: 'follow-up', category_id: 'follow-up_people' },
+        { title: 'Email responses', priority: 'medium', project: 'Communication', column_id: 'today', category_id: 'today_comms' },
+        
+        // Later column tasks with categories
         { title: 'Backup system check', priority: 'low', project: 'Maintenance', column_id: 'later', category_id: 'later_standing' },
-        { title: 'Monthly report', priority: 'high', project: 'Report', column_id: 'completed', category_id: 'completed_done' }
+        { title: 'Monthly report', priority: 'high', project: 'Report', column_id: 'later', category_id: 'later_big_tasks' },
+        
+        // Follow-Up column task
+        { title: 'Design system updates', priority: 'medium', project: 'Design', column_id: 'follow-up', category_id: 'follow-up_people' },
+        
+        // Uncategorized column task (no category)
+        { title: 'Quick email check', priority: 'medium', project: 'Email', column_id: 'uncategorized', category_id: null },
+        
+        // Completed column task (no category)
+        { title: 'Weekly planning', priority: 'medium', project: 'Planning', column_id: 'completed', category_id: null }
       ];
 
       const stmt = db.prepare('INSERT INTO tasks (title, priority, project, column_id, category_id) VALUES (?, ?, ?, ?, ?)');

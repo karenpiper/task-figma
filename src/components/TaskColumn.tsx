@@ -64,6 +64,14 @@ export function TaskColumn({
   const totalTasks = column.tasks.length;
   const isFollowUpColumn = column.id === 'follow-up';
 
+  const isDayColumn = (columnId: string) => {
+    return columnId === 'today' || columnId === 'later';
+  };
+
+  const shouldShowCategories = (columnId: string) => {
+    return isDayColumn(columnId) || columnId === 'follow-up';
+  };
+
   return (
     <div 
       ref={drop}
@@ -104,88 +112,134 @@ export function TaskColumn({
         
         {/* Categories container */}
         <div className="p-4 min-h-[400px] max-h-[700px] overflow-y-auto">
-          {/* Render categories */}
-          {column.categories.map((category) => (
-            <TaskCategory
-              key={category.id}
-              columnId={column.id}
-              category={category}
-              onTaskComplete={onTaskComplete}
-              onCreateTask={onCreateTask}
-              onMoveTask={onMoveTask}
-              onDeleteCategory={onDeleteCategory}
-              teamMembers={teamMembers}
-            />
-          ))}
-          
-          {/* Add category button */}
-          <Dialog open={isCreatingCategory} onOpenChange={setIsCreatingCategory}>
-            <DialogTrigger asChild>
-              <div className="group">
+          {/* Check if this is a day column that should show categories */}
+          {shouldShowCategories(column.id) ? (
+            <>
+              {/* Render categories for day columns */}
+              {column.categories.map((category) => (
+                <TaskCategory
+                  key={category.id}
+                  columnId={column.id}
+                  category={category}
+                  onTaskComplete={onTaskComplete}
+                  onCreateTask={onCreateTask}
+                  onMoveTask={onMoveTask}
+                  onDeleteCategory={onDeleteCategory}
+                  teamMembers={teamMembers}
+                />
+              ))}
+              
+              {/* Add category button for day columns */}
+              <Dialog open={isCreatingCategory} onOpenChange={setIsCreatingCategory}>
+                <DialogTrigger asChild>
+                  <div className="group">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl group-hover:scale-[1.01] text-sm"
+                    >
+                      <Plus className="w-3 h-3 mr-2" />
+                      Add Category
+                    </Button>
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="bg-white/95 backdrop-blur-xl border border-white/40">
+                  <DialogHeader>
+                    <DialogTitle>Add New Category</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="categoryName">Category Name</Label>
+                      <Input
+                        id="categoryName"
+                        value={newCategoryData.name}
+                        onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Enter category name..."
+                        className="bg-white/50 border-white/30"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        onClick={handleCreateCategory}
+                        disabled={!newCategoryData.name.trim()}
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                      >
+                        Create Category
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsCreatingCategory(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
+              {/* Show message if no categories exist in day columns */}
+              {column.categories.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-6 h-6 text-slate-500" />
+                  </div>
+                  <h4 className="font-medium text-slate-600 mb-2">No Categories</h4>
+                  <p className="text-sm text-slate-500">Categories will appear here</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* For non-day columns, show tasks directly */}
+              {column.tasks.map((task) => (
+                <div key={task.id} className="mb-3 p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:border-white/30 transition-all duration-200">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-medium text-slate-800">{task.title}</h4>
+                    <div className={`w-3 h-3 rounded-full ${
+                      task.priority === 'high' ? 'bg-red-500' :
+                      task.priority === 'medium' ? 'bg-yellow-500' :
+                      'bg-green-500'
+                    }`}></div>
+                  </div>
+                  {task.project && (
+                    <p className="text-sm text-slate-600 mb-2">Project: {task.project}</p>
+                  )}
+                </div>
+              ))}
+              
+              {/* Add task button for non-day columns */}
+              {onCreateTask && (
                 <Button 
                   variant="ghost" 
-                  className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl group-hover:scale-[1.01] text-sm"
+                  className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl hover:scale-[1.01] text-sm"
+                  onClick={() => {
+                    // Simple task creation for non-day columns
+                    const taskName = prompt('Enter task name:');
+                    if (taskName && onCreateTask) {
+                      onCreateTask({
+                        title: taskName,
+                        column_id: column.id,
+                        priority: 'medium'
+                      });
+                    }
+                  }}
                 >
                   <Plus className="w-3 h-3 mr-2" />
-                  {isFollowUpColumn ? 'Add Team Member' : 'Add Category'}
+                  Add Task
                 </Button>
-              </div>
-            </DialogTrigger>
-            <DialogContent className="bg-white/95 backdrop-blur-xl border border-white/40">
-              <DialogHeader>
-                <DialogTitle>
-                  {isFollowUpColumn ? 'Add Team Member Category' : 'Add New Category'}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="categoryName">
-                    {isFollowUpColumn ? 'Team Member Name' : 'Category Name'}
-                  </Label>
-                  <Input
-                    id="categoryName"
-                    value={newCategoryData.name}
-                    onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder={isFollowUpColumn ? "Enter team member name..." : "Enter category name..."}
-                    className="bg-white/50 border-white/30"
-                  />
+              )}
+              
+              {/* Show message if no tasks exist in non-day columns */}
+              {column.tasks.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-6 h-6 text-slate-500" />
+                  </div>
+                  <h4 className="font-medium text-slate-600 mb-2">No Tasks</h4>
+                  <p className="text-sm text-slate-500">Tasks will appear here</p>
                 </div>
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    onClick={handleCreateCategory}
-                    disabled={!newCategoryData.name.trim()}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                  >
-                    {isFollowUpColumn ? 'Add Member' : 'Create Category'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsCreatingCategory(false)}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          
-          {/* Show message if no categories exist */}
-          {column.categories.length === 0 && (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-slate-500" />
-              </div>
-              <h4 className="font-medium text-slate-600 mb-2">
-                {isFollowUpColumn ? 'No Team Members' : 'No Categories'}
-              </h4>
-              <p className="text-sm text-slate-500">
-                {isFollowUpColumn 
-                  ? 'Add team members to track follow-up tasks' 
-                  : 'Categories will appear here'
-                }
-              </p>
-            </div>
+              )}
+            </>
           )}
         </div>
       </div>
