@@ -8,12 +8,18 @@ import { FocusZone } from './components/FocusZone';
 import { AchievementSystem } from './components/AchievementSystem';
 import { ParticleSystem } from './components/ParticleSystem';
 import { AmbientLighting } from './components/AmbientLighting';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function App() {
   const [showParticles, setShowParticles] = useState(false);
+  const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
 
   const triggerCelebration = () => {
     setShowParticles(true);
+  };
+
+  const toggleStats = () => {
+    setIsStatsCollapsed(!isStatsCollapsed);
   };
 
   return (
@@ -41,16 +47,51 @@ export default function App() {
               </div>
               
               {/* Right sidebar with focus zone and achievements */}
-              <div className="w-96 flex-shrink-0 space-y-6 overflow-y-auto">
-                {/* Focus tracking and daily progress */}
-                <div className="glass-panel">
-                  <FocusZone />
-                </div>
+              <div className={`relative transition-all duration-300 ease-in-out ${
+                isStatsCollapsed ? 'w-16' : 'w-96'
+              } flex-shrink-0`}>
                 
-                {/* Achievement system and gamification */}
-                <div className="glass-panel">
-                  <AchievementSystem />
+                {/* Collapse/Expand Toggle Button */}
+                <button
+                  onClick={toggleStats}
+                  className="absolute -left-3 top-1/2 transform -translate-y-1/2 z-20 w-6 h-6 bg-white/80 backdrop-blur-sm border border-white/40 rounded-full flex items-center justify-center shadow-lg hover:bg-white/90 transition-all duration-200 hover:scale-110"
+                  aria-label={isStatsCollapsed ? "Expand stats" : "Collapse stats"}
+                >
+                  {isStatsCollapsed ? (
+                    <ChevronLeft className="w-4 h-4 text-slate-600" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-slate-600" />
+                  )}
+                </button>
+
+                {/* Stats Content */}
+                <div className={`h-full transition-all duration-300 ease-in-out ${
+                  isStatsCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}>
+                  <div className="space-y-6 overflow-y-auto h-full">
+                    {/* Focus tracking and daily progress */}
+                    <div className="glass-panel">
+                      <FocusZone />
+                    </div>
+                    
+                    {/* Achievement system and gamification */}
+                    <div className="glass-panel">
+                      <AchievementSystem />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Collapsed State Indicator */}
+                {isStatsCollapsed && (
+                  <div className="h-full flex flex-col items-center justify-center space-y-4">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                      <span className="text-white text-xs font-bold">F</span>
+                    </div>
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
+                      <span className="text-white text-xs font-bold">A</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

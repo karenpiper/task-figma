@@ -1,42 +1,40 @@
 import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
-import { MoreHorizontal, Plus } from 'lucide-react';
+import { MoreHorizontal, Plus, Users } from 'lucide-react';
 import { TaskCategory } from './TaskCategory';
-import { AddPersonCategory } from './AddPersonCategory';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  priority: string;
-  status: string;
-  labels: string[];
-  category?: string;
-  assignees?: Array<{
-    name: string;
-    avatar: string;
-    color: string;
-  }>;
-}
-
-interface Column {
-  id: string;
-  title: string;
-  count: number;
-  color: string;
-  tasks: Task[];
-  categories?: string[];
-}
+import { Input } from './ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Category, Column, TeamMember } from '../hooks/useTasks';
 
 interface TaskColumnProps {
   column: Column;
   onTaskComplete?: () => void;
+  onCreateTask?: (taskData: { title: string; priority?: string; project?: string; column_id?: string; category_id?: string }) => Promise<any>;
+  onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
+  onCreateCategory?: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
+  onDeleteCategory?: (categoryId: string) => Promise<void>;
+  teamMembers?: TeamMember[];
 }
 
-export function TaskColumn({ column, onTaskComplete }: TaskColumnProps) {
-  const [customCategories, setCustomCategories] = useState<string[]>([]);
+export function TaskColumn({ 
+  column, 
+  onTaskComplete, 
+  onCreateTask, 
+  onMoveTask,
+  onCreateCategory,
+  onDeleteCategory,
+  teamMembers = []
+}: TaskColumnProps) {
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [newCategoryData, setNewCategoryData] = useState({
+    name: '',
+    column_id: column.id,
+    order_index: column.categories.length
+  });
 
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
@@ -51,45 +49,20 @@ export function TaskColumn({ column, onTaskComplete }: TaskColumnProps) {
     }),
   });
 
-  // Default categories based on column type
-  const getDefaultCategories = (columnId: string): string[] => {
-    if (columnId === 'blocked') {
-      return []; // Blocked column uses custom people categories
+  const handleCreateCategory = async () => {
+    if (!newCategoryData.name.trim() || !onCreateCategory) return;
+    
+    try {
+      await onCreateCategory(newCategoryData);
+      setNewCategoryData({ name: '', column_id: column.id, order_index: column.categories.length });
+      setIsCreatingCategory(false);
+    } catch (error) {
+      console.error('Failed to create category:', error);
     }
-    return ['Standing Tasks', 'Comms', 'Big Tasks', 'Done'];
-  };
-
-  const isBlockedColumn = column.id === 'blocked';
-  const defaultCategories = getDefaultCategories(column.id);
-  const allCategories = isBlockedColumn ? customCategories : defaultCategories;
-
-  // Group tasks by category
-  const getTasksByCategory = (category: string): Task[] => {
-    return column.tasks.filter(task => {
-      // If task has no category, put it in the first default category
-      if (!task.category) {
-        return category === (isBlockedColumn ? customCategories[0] : 'Standing Tasks');
-      }
-      return task.category === category;
-    });
-  };
-
-  const handleDropTask = (taskId: string, categoryName: string) => {
-    console.log('Moving task', taskId, 'to category', categoryName, 'in column', column.id);
-    // This would be handled by parent component in a real app
-  };
-
-  const handleAddPerson = (personName: string) => {
-    if (!customCategories.includes(personName)) {
-      setCustomCategories([...customCategories, personName]);
-    }
-  };
-
-  const handleDeleteCategory = (categoryName: string) => {
-    setCustomCategories(customCategories.filter(cat => cat !== categoryName));
   };
 
   const totalTasks = column.tasks.length;
+  const isFollowUpColumn = column.id === 'follow-up';
 
   return (
     <div 
@@ -131,38 +104,84 @@ export function TaskColumn({ column, onTaskComplete }: TaskColumnProps) {
         
         {/* Categories container */}
         <div className="p-4 min-h-[400px] max-h-[700px] overflow-y-auto">
-          {/* Add person category for blocked column */}
-          {isBlockedColumn && (
-            <AddPersonCategory onAddPerson={handleAddPerson} />
-          )}
-          
           {/* Render categories */}
-          {allCategories.map((category) => (
+          {column.categories.map((category) => (
             <TaskCategory
-              key={category}
+              key={category.id}
               columnId={column.id}
-              categoryName={category}
-              tasks={getTasksByCategory(category)}
+              category={category}
               onTaskComplete={onTaskComplete}
-              onDropTask={handleDropTask}
-              canAddPeople={isBlockedColumn}
-              onDeleteCategory={isBlockedColumn ? handleDeleteCategory : undefined}
-              isCustomCategory={isBlockedColumn}
+              onCreateTask={onCreateTask}
+              onMoveTask={onMoveTask}
+              onDeleteCategory={onDeleteCategory}
+              teamMembers={teamMembers}
             />
           ))}
           
+          {/* Add category button */}
+          <Dialog open={isCreatingCategory} onOpenChange={setIsCreatingCategory}>
+            <DialogTrigger asChild>
+              <div className="group">
+                <Button 
+                  variant="ghost" 
+                  className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl group-hover:scale-[1.01] text-sm"
+                >
+                  <Plus className="w-3 h-3 mr-2" />
+                  {isFollowUpColumn ? 'Add Team Member' : 'Add Category'}
+                </Button>
+              </div>
+            </DialogTrigger>
+            <DialogContent className="bg-white/95 backdrop-blur-xl border border-white/40">
+              <DialogHeader>
+                <DialogTitle>
+                  {isFollowUpColumn ? 'Add Team Member Category' : 'Add New Category'}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="categoryName">
+                    {isFollowUpColumn ? 'Team Member Name' : 'Category Name'}
+                  </Label>
+                  <Input
+                    id="categoryName"
+                    value={newCategoryData.name}
+                    onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder={isFollowUpColumn ? "Enter team member name..." : "Enter category name..."}
+                    className="bg-white/50 border-white/30"
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button 
+                    onClick={handleCreateCategory}
+                    disabled={!newCategoryData.name.trim()}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                  >
+                    {isFollowUpColumn ? 'Add Member' : 'Create Category'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsCreatingCategory(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
           {/* Show message if no categories exist */}
-          {allCategories.length === 0 && (
+          {column.categories.length === 0 && (
             <div className="text-center py-8">
               <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
-                <Plus className="w-6 h-6 text-slate-500" />
+                <Users className="w-6 h-6 text-slate-500" />
               </div>
               <h4 className="font-medium text-slate-600 mb-2">
-                {isBlockedColumn ? 'No People Added' : 'No Categories'}
+                {isFollowUpColumn ? 'No Team Members' : 'No Categories'}
               </h4>
               <p className="text-sm text-slate-500">
-                {isBlockedColumn 
-                  ? 'Add people who are blocking tasks' 
+                {isFollowUpColumn 
+                  ? 'Add team members to track follow-up tasks' 
                   : 'Categories will appear here'
                 }
               </p>

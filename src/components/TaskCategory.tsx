@@ -1,62 +1,82 @@
 import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
-import { Plus, MoreHorizontal, Users, X } from 'lucide-react';
+import { Plus, MoreHorizontal, X } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  priority: string;
-  status: string;
-  labels: string[];
-  assignees?: Array<{
-    name: string;
-    avatar: string;
-    color: string;
-  }>;
-}
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Category, Task } from '../hooks/useTasks';
 
 interface TaskCategoryProps {
   columnId: string;
-  categoryName: string;
-  tasks: Task[];
+  category: Category;
   onTaskComplete?: () => void;
-  onDropTask?: (taskId: string, categoryName: string) => void;
-  canAddPeople?: boolean;
-  onDeleteCategory?: (categoryName: string) => void;
-  isCustomCategory?: boolean;
+  onCreateTask?: (taskData: { title: string; priority?: string; project?: string; column_id?: string; category_id?: string }) => Promise<Task>;
+  onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
+  onDeleteCategory?: (categoryId: string) => Promise<void>;
+  teamMembers?: Array<{ id: number; name: string; avatar: string; color: string }>;
 }
 
 export function TaskCategory({ 
   columnId, 
-  categoryName, 
-  tasks, 
+  category, 
   onTaskComplete, 
-  onDropTask,
-  canAddPeople = false,
+  onCreateTask, 
+  onMoveTask,
   onDeleteCategory,
-  isCustomCategory = false
+  teamMembers = []
 }: TaskCategoryProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [newTaskData, setNewTaskData] = useState({
+    title: '',
+    priority: 'medium',
+    project: '',
+    column_id: columnId,
+    category_id: category.id
+  });
 
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
-    drop: (item: any) => {
-      console.log('Dropped task:', item.id, 'into category:', categoryName, 'in column:', columnId);
-      onDropTask?.(item.id, categoryName);
+    drop: async (item: any) => {
+      console.log('Dropped task:', item.id, 'into category:', category.name, 'in column:', columnId);
+      
+      // Handle task completion if moving to completed column
+      if (columnId === 'completed' && onTaskComplete) {
+        onTaskComplete();
+      }
+      
+      // Move task to this category if onMoveTask is provided
+      if (onMoveTask && item.id) {
+        try {
+          await onMoveTask(item.id, columnId, category.id);
+        } catch (error) {
+          console.error('Failed to move task:', error);
+        }
+      }
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
   });
 
-  const getCategoryConfig = (category: string) => {
-    switch (category.toLowerCase()) {
-      case 'standing tasks':
+  const handleCreateTask = async () => {
+    if (!newTaskData.title.trim() || !onCreateTask) return;
+    
+    try {
+      await onCreateTask(newTaskData);
+      setNewTaskData({ title: '', priority: 'medium', project: '', column_id: columnId, category_id: category.id });
+      setIsCreatingTask(false);
+    } catch (error) {
+      console.error('Failed to create task:', error);
+    }
+  };
+
+  const getCategoryConfig = (categoryName: string) => {
+    switch (categoryName.toLowerCase()) {
+      case 'standing':
         return {
           color: 'from-blue-400 to-blue-500',
           bg: 'bg-blue-50/60',
@@ -84,18 +104,26 @@ export function TaskCategory({
           text: 'text-emerald-700',
           icon: '✅'
         };
-      default:
-        // For people names in blocked column
+      case 'people':
         return {
           color: 'from-red-400 to-red-500',
           bg: 'bg-red-50/60',
           text: 'text-red-700',
-          icon: canAddPeople ? '👤' : '📁'
+          icon: '👥'
+        };
+      default:
+        // For custom categories (team member names)
+        return {
+          color: 'from-orange-400 to-orange-500',
+          bg: 'bg-orange-50/60',
+          text: 'text-orange-700',
+          icon: '👤'
         };
     }
   };
 
-  const config = getCategoryConfig(categoryName);
+  const config = getCategoryConfig(category.name);
+  const isCustomCategory = !category.is_default;
 
   return (
     <div 
@@ -106,31 +134,21 @@ export function TaskCategory({
     >
       {/* Category Header */}
       <div className="flex items-center justify-between mb-3 group">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="flex items-center gap-3 hover:bg-white/20 backdrop-blur-sm rounded-xl p-2 transition-all duration-200 flex-1"
-        >
+        <div className="flex items-center gap-3 flex-1">
           <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${config.color} flex items-center justify-center text-white shadow-lg`}>
             <span className="text-sm">{config.icon}</span>
           </div>
-          <div className="flex-1 text-left">
-            <h4 className="font-semibold text-slate-800 text-sm">{categoryName}</h4>
-            <p className="text-xs text-slate-600">{tasks.length} tasks</p>
+          <div className="flex-1">
+            <h4 className="font-semibold text-slate-800 text-sm">{category.name}</h4>
+            <p className="text-xs text-slate-600">{category.count} tasks</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge 
-              variant="secondary" 
-              className={`${config.bg} ${config.text} border-0 font-medium text-xs`}
-            >
-              {tasks.length}
-            </Badge>
-            <div className={`transform transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}>
-              <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
-        </button>
+          <Badge 
+            variant="secondary" 
+            className={`${config.bg} ${config.text} border-0 font-medium text-xs`}
+          >
+            {category.count}
+          </Badge>
+        </div>
         
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           {isCustomCategory && onDeleteCategory && (
@@ -138,10 +156,7 @@ export function TaskCategory({
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 rounded-xl hover:bg-red-100/60 backdrop-blur-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteCategory(categoryName);
-              }}
+              onClick={() => onDeleteCategory(category.id)}
             >
               <X className="w-3 h-3 text-red-600" />
             </Button>
@@ -157,24 +172,82 @@ export function TaskCategory({
       </div>
 
       {/* Tasks Container */}
-      {!isCollapsed && (
-        <div className="space-y-3 ml-2 pl-4 border-l-2 border-white/30">
-          {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onComplete={onTaskComplete} />
-          ))}
-          
-          {/* Add task button */}
-          <div className="group">
-            <Button 
-              variant="ghost" 
-              className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl group-hover:scale-[1.01] text-sm"
-            >
-              <Plus className="w-3 h-3 mr-2" />
-              Add task
-            </Button>
-          </div>
-        </div>
-      )}
+      <div className="space-y-3 ml-2 pl-4 border-l-2 border-white/30">
+        {category.tasks.map((task) => (
+          <TaskCard key={task.id} task={task} onComplete={onTaskComplete} />
+        ))}
+        
+        {/* Add task button */}
+        <Dialog open={isCreatingTask} onOpenChange={setIsCreatingTask}>
+          <DialogTrigger asChild>
+            <div className="group">
+              <Button 
+                variant="ghost" 
+                className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl group-hover:scale-[1.01] text-sm"
+              >
+                <Plus className="w-3 h-3 mr-2" />
+                Add task
+              </Button>
+            </div>
+          </DialogTrigger>
+          <DialogContent className="bg-white/95 backdrop-blur-xl border border-white/40">
+            <DialogHeader>
+              <DialogTitle>Create New Task in {category.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Task Title</Label>
+                <Input
+                  id="title"
+                  value={newTaskData.title}
+                  onChange={(e) => setNewTaskData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter task title..."
+                  className="bg-white/50 border-white/30"
+                />
+              </div>
+              <div>
+                <Label htmlFor="priority">Priority</Label>
+                <Select value={newTaskData.priority} onValueChange={(value) => setNewTaskData(prev => ({ ...prev, priority: value }))}>
+                  <SelectTrigger className="bg-white/50 border-white/30">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="project">Project (Optional)</Label>
+                <Input
+                  id="project"
+                  value={newTaskData.project}
+                  onChange={(e) => setNewTaskData(prev => ({ ...prev, project: e.target.value }))}
+                  placeholder="Enter project name..."
+                  className="bg-white/50 border-white/30"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  onClick={handleCreateTask}
+                  disabled={!newTaskData.title.trim()}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                >
+                  Create Task
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsCreatingTask(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
-}
+} 
