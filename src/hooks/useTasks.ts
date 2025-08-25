@@ -113,21 +113,31 @@ export function useTasks() {
       setColumns(prevColumns => 
         prevColumns.map(column => {
           if (column.id === newTask.column_id) {
-            return {
-              ...column,
-              categories: column.categories.map(category => {
-                if (category.id === newTask.category_id) {
-                  return {
-                    ...category,
-                    tasks: [newTask, ...category.tasks],
-                    count: category.count + 1
-                  };
-                }
-                return category;
-              }),
-              tasks: [newTask, ...column.tasks],
-              count: column.count + 1
-            };
+            // If the task has a category_id, update the category
+            if (newTask.category_id) {
+              return {
+                ...column,
+                categories: column.categories.map(category => {
+                  if (category.id === newTask.category_id) {
+                    return {
+                      ...category,
+                      tasks: [newTask, ...category.tasks],
+                      count: category.count + 1
+                    };
+                  }
+                  return category;
+                }),
+                tasks: [newTask, ...column.tasks],
+                count: column.count + 1
+              };
+            } else {
+              // If no category_id, just add to column tasks
+              return {
+                ...column,
+                tasks: [newTask, ...column.tasks],
+                count: column.count + 1
+              };
+            }
           }
           return column;
         })
