@@ -372,18 +372,17 @@ export function useTasks() {
       setColumns(prevColumns => {
         let taskToMove: Task | null = null;
         let sourceColumnId: string | null = null;
-        let sourceCategoryId: string | null = null;
 
         // Find the task and remove it from source
         const updatedColumns = prevColumns.map(column => {
-          if (column.id === newColumnId) return column; // Skip destination column for now
-          
+          // First check if task is in any category within this column
+          let taskFoundInCategory = false;
           const updatedCategories = column.categories.map(category => {
             const taskIndex = category.tasks.findIndex(task => task.id === taskId);
             if (taskIndex !== -1) {
               taskToMove = category.tasks[taskIndex];
               sourceColumnId = column.id;
-              sourceCategoryId = category.id;
+              taskFoundInCategory = true;
               return {
                 ...category,
                 tasks: category.tasks.filter(task => task.id !== taskId),
@@ -392,6 +391,15 @@ export function useTasks() {
             }
             return category;
           });
+
+          // If task wasn't found in categories, check column tasks directly
+          if (!taskFoundInCategory) {
+            const taskIndex = column.tasks.findIndex(task => task.id === taskId);
+            if (taskIndex !== -1) {
+              taskToMove = column.tasks[taskIndex];
+              sourceColumnId = column.id;
+            }
+          }
 
           return {
             ...column,
@@ -405,23 +413,33 @@ export function useTasks() {
         if (taskToMove && sourceColumnId !== newColumnId) {
           return updatedColumns.map(column => {
             if (column.id === newColumnId) {
-              const updatedCategories = column.categories.map(category => {
-                if (category.id === newCategoryId) {
-                  return {
-                    ...category,
-                    tasks: [taskToMove!, ...category.tasks],
-                    count: category.count + 1
-                  };
-                }
-                return category;
-              });
+              // If destination has categories and newCategoryId is provided, add to that category
+              if (newCategoryId && column.categories.length > 0) {
+                const updatedCategories = column.categories.map(category => {
+                  if (category.id === newCategoryId) {
+                    return {
+                      ...category,
+                      tasks: [taskToMove!, ...category.tasks],
+                      count: category.count + 1
+                    };
+                  }
+                  return category;
+                });
 
-              return {
-                ...column,
-                categories: updatedCategories,
-                tasks: [taskToMove!, ...column.tasks],
-                count: column.count + 1
-              };
+                return {
+                  ...column,
+                  categories: updatedCategories,
+                  tasks: [taskToMove!, ...column.tasks],
+                  count: column.count + 1
+                };
+              } else {
+                // If no category specified or destination has no categories, add directly to column
+                return {
+                  ...column,
+                  tasks: [taskToMove!, ...column.tasks],
+                  count: column.count + 1
+                };
+              }
             }
             return column;
           });
