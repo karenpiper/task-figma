@@ -5,19 +5,19 @@
   "framework": "vite",
   "functions": {
     "api/board.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs@18"
     },
     "api/tasks.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs@18"
     },
     "api/team-members.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs@18"
     },
     "api/categories.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs@18"
     },
     "api/tasks/[id]/move.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs@18"
     }
   },
   "rewrites": [
