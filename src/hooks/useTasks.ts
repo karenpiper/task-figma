@@ -178,13 +178,41 @@ export const useTasks = () => {
 
       if (error) throw error;
       
-      // Refresh board data
-      await fetchBoard();
+      // Update local state optimistically instead of refetching
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === data.column_id) {
+            if (data.category_id) {
+              // Add to category
+              const updatedCategories = column.categories.map(category => {
+                if (category.id === data.category_id) {
+                  return {
+                    ...category,
+                    tasks: [...category.tasks, data],
+                    count: category.tasks.length + 1
+                  };
+                }
+                return category;
+              });
+              return { ...column, categories: updatedCategories, count: column.count + 1 };
+            } else {
+              // Add directly to column
+              return {
+                ...column,
+                tasks: [...column.tasks, data],
+                count: column.tasks.length + 1
+              };
+            }
+          }
+          return column;
+        });
+      });
+      
       return data;
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to create task');
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Move task to different column/category
   const moveTask = useCallback(async (taskId: number, columnId: string, categoryId?: string) => {
@@ -200,15 +228,95 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      // Refresh board data
-      await fetchBoard();
+      // Update local state optimistically instead of refetching
+      setColumns(prevColumns => {
+        let movedTask: Task | null = null;
+        let sourceColumn: Column | null = null;
+        let sourceCategory: Category | null = null;
+
+        // Find and remove task from source
+        const updatedColumns = prevColumns.map(column => {
+          if (column.id === columnId) {
+            // This is the destination column
+            return column;
+          }
+
+          // Check if task is in this column's categories
+          const updatedCategories = column.categories.map(category => {
+            const taskIndex = category.tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+              movedTask = category.tasks[taskIndex];
+              sourceColumn = column;
+              sourceCategory = category;
+              return {
+                ...category,
+                tasks: category.tasks.filter(t => t.id !== taskId),
+                count: category.tasks.length - 1
+              };
+            }
+            return category;
+          });
+
+          // Check if task is directly in this column
+          const taskIndex = column.tasks.findIndex(t => t.id === taskId);
+          if (taskIndex !== -1) {
+            movedTask = column.tasks[taskIndex];
+            sourceColumn = column;
+            return {
+              ...column,
+              tasks: column.tasks.filter(t => t.id !== taskId),
+              count: column.tasks.length - 1
+            };
+          }
+
+          return { ...column, categories: updatedCategories };
+        });
+
+        // Add task to destination
+        if (movedTask && sourceColumn) {
+          return updatedColumns.map(column => {
+            if (column.id === columnId) {
+              const updatedTask = { ...movedTask!, column_id: columnId, category_id: categoryId };
+              
+              if (categoryId) {
+                // Add to category
+                const updatedCategories = column.categories.map(category => {
+                  if (category.id === categoryId) {
+                    return {
+                      ...category,
+                      tasks: [...category.tasks, updatedTask],
+                      count: category.tasks.length + 1
+                    };
+                  }
+                  return category;
+                });
+                return {
+                  ...column,
+                  categories: updatedCategories,
+                  count: column.count + 1
+                };
+              } else {
+                // Add directly to column
+                return {
+                  ...column,
+                  tasks: [...column.tasks, updatedTask],
+                  count: column.count + 1
+                };
+              }
+            }
+            return column;
+          });
+        }
+
+        return updatedColumns;
+      });
 
       console.log('Task moved successfully');
     } catch (err) {
       console.error('Error moving task:', err);
       throw err;
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Create new category
   const createCategory = useCallback(async (categoryData: { name: string; column_id: string; order_index?: number }) => {
@@ -221,14 +329,25 @@ export const useTasks = () => {
 
       if (error) throw error;
       
-      // Refresh board data
-      await fetchBoard();
+      // Update local state optimistically instead of refetching
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === data.column_id) {
+            return {
+              ...column,
+              categories: [...column.categories, { ...data, tasks: [], count: 0 }]
+            };
+          }
+          return column;
+        });
+      });
+      
       return data;
     } catch (err) {
       console.error('Error creating category:', err);
       throw err;
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
@@ -240,13 +359,20 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      // Refresh board data
-      await fetchBoard();
+      // Update local state optimistically instead of refetching
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          return {
+            ...column,
+            categories: column.categories.filter(cat => cat.id !== categoryId)
+          };
+        });
+      });
     } catch (err) {
       console.error('Error deleting category:', err);
       throw err;
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Create new team member
   const createTeamMember = useCallback(async (memberData: Partial<TeamMember>) => {
