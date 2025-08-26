@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useDrop } from 'react-dnd';
 import { MoreHorizontal, Plus, Users } from 'lucide-react';
 import { TaskCategory } from './TaskCategory';
@@ -45,69 +45,66 @@ export function TaskColumn({
     category_id: undefined
   });
 
+  // Memoize the drop handler to prevent recreation on every render
+  const handleDrop = useCallback(async (item: any, monitor: any) => {
+    // Prevent drop if this is a nested drop (already handled by category)
+    if (monitor.didDrop()) {
+      console.log('🔄 Drop already handled by child component, skipping column drop');
+      return;
+    }
+    
+    console.log('🎯 TaskColumn drop event:', {
+      taskId: item.id,
+      taskTitle: item.title,
+      targetColumn: column.id,
+      targetColumnTitle: column.title,
+      hasOnMoveTask: !!onMoveTask,
+      hasCategories: column.categories.length > 0
+    });
+    
+    // Handle task completion if moving to completed column
+    if (column.id === 'completed' && onTaskComplete) {
+      console.log('✅ Task completed, triggering celebration');
+      onTaskComplete();
+    }
+    
+    // Move task to this column if onMoveTask is provided
+    if (onMoveTask && item.id) {
+      try {
+        console.log(`🚀 Attempting to move task ${item.id} to column ${column.id}`);
+        
+        // For columns with categories, determine the target category
+        let targetCategoryId: string | undefined = undefined;
+        
+        if (column.categories.length > 0) {
+          // Find the first available category (usually the default one)
+          const defaultCategory = column.categories.find(cat => cat.is_default) || column.categories[0];
+          if (defaultCategory) {
+            targetCategoryId = defaultCategory.id;
+            console.log(`🎯 Auto-selecting category: ${defaultCategory.name} (${defaultCategory.id})`);
+          }
+        }
+        
+        await onMoveTask(item.id, column.id, targetCategoryId);
+        console.log(`✅ Task ${item.id} moved successfully to column ${column.id}${targetCategoryId ? ` in category ${targetCategoryId}` : ''}`);
+      } catch (error) {
+        console.error('❌ Failed to move task:', error);
+      }
+    } else {
+      console.warn('⚠️ onMoveTask not provided or item.id missing:', { onMoveTask: !!onMoveTask, itemId: item.id });
+    }
+  }, [column.id, column.title, column.categories, onMoveTask, onTaskComplete]);
+
   const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
-    drop: async (item: any, monitor) => {
-      // Prevent drop if this is a nested drop (already handled by category)
-      if (monitor.didDrop()) {
-        console.log('🔄 Drop already handled by child component, skipping column drop');
-        return;
-      }
-      
-      console.log('🎯 TaskColumn drop event:', {
-        taskId: item.id,
-        taskTitle: item.title,
-        targetColumn: column.id,
-        targetColumnTitle: column.title,
-        hasOnMoveTask: !!onMoveTask,
-        hasCategories: column.categories.length > 0
-      });
-      
-      // Handle task completion if moving to completed column
-      if (column.id === 'completed' && onTaskComplete) {
-        console.log('✅ Task completed, triggering celebration');
-        onTaskComplete();
-      }
-      
-      // Move task to this column if onMoveTask is provided
-      if (onMoveTask && item.id) {
-        try {
-          console.log(`🚀 Attempting to move task ${item.id} to column ${column.id}`);
-          
-          // For columns with categories, determine the target category
-          let targetCategoryId: string | undefined = undefined;
-          
-          if (column.categories.length > 0) {
-            // Find the first available category (usually the default one)
-            const defaultCategory = column.categories.find(cat => cat.is_default) || column.categories[0];
-            if (defaultCategory) {
-              targetCategoryId = defaultCategory.id;
-              console.log(`🎯 Auto-selecting category: ${defaultCategory.name} (${defaultCategory.id})`);
-            }
-          }
-          
-          await onMoveTask(item.id, column.id, targetCategoryId);
-          console.log(`✅ Task ${item.id} moved successfully to column ${column.id}${targetCategoryId ? ` in category ${targetCategoryId}` : ''}`);
-        } catch (error) {
-          console.error('❌ Failed to move task:', error);
-        }
-      } else {
-        console.warn('⚠️ onMoveTask not provided or item.id missing:', { onMoveTask: !!onMoveTask, itemId: item.id });
-      }
-    },
+    drop: handleDrop,
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
   });
 
-  // Cast the dropRef to the correct type for React
-  const dropRefCallback = React.useCallback((node: HTMLDivElement | null) => {
-    if (dropRef) {
-      (dropRef as any)(node);
-    }
-  }, [dropRef]);
-
-  const handleCreateCategory = async () => {
+  // Memoize callback functions to prevent recreation
+  const handleCreateCategory = useCallback(async () => {
     if (!newCategoryData.name.trim() || !onCreateCategory) return;
     
     try {
@@ -117,9 +114,9 @@ export function TaskColumn({
     } catch (error) {
       console.error('Failed to create category:', error);
     }
-  };
+  }, [newCategoryData, onCreateCategory, column.id, column.categories.length]);
 
-  const handleCreateTask = async () => {
+  const handleCreateTask = useCallback(async () => {
     if (!newTaskData.title.trim() || !onCreateTask) return;
     
     try {
@@ -129,27 +126,18 @@ export function TaskColumn({
     } catch (error) {
       console.error('Failed to create task:', error);
     }
-  };
+  }, [newTaskData, onCreateTask, column.id]);
 
-  const totalTasks = column.tasks.length;
-  const isFollowUpColumn = column.id === 'follow-up';
-
-  const isDayColumn = (columnId: string) => {
-    return columnId === 'today';
-  };
-
-  const shouldShowCategories = (columnId: string) => {
-    return isDayColumn(columnId) || columnId === 'follow-up';
-  };
-
-  const shouldShowAddCategoryButton = (columnId: string) => {
-    // Only show add category button for today column, not follow-up
-    return isDayColumn(columnId);
-  };
+  // Memoize computed values
+  const totalTasks = useMemo(() => column.tasks.length, [column.tasks.length]);
+  const isFollowUpColumn = useMemo(() => column.id === 'follow-up', [column.id]);
+  const isDayColumn = useMemo(() => column.id === 'today', [column.id]);
+  const shouldShowCategories = useMemo(() => isDayColumn || column.id === 'follow-up', [isDayColumn, column.id]);
+  const shouldShowAddCategoryButton = useMemo(() => isDayColumn, [isDayColumn]);
 
   return (
     <div 
-      ref={dropRefCallback}
+      ref={dropRef}
       className={`w-80 flex-shrink-0 transition-all duration-200 ${
         isOver ? 'scale-105' : 'scale-100'
       }`}
@@ -184,7 +172,7 @@ export function TaskColumn({
           </Button>
           
           {/* Only show Add Category button for columns that should have it */}
-          {shouldShowAddCategoryButton(column.id) && (
+          {shouldShowAddCategoryButton && (
             <Dialog open={isCreatingCategory} onOpenChange={setIsCreatingCategory}>
               <DialogTrigger asChild>
                 <div className="group">
@@ -193,17 +181,17 @@ export function TaskColumn({
                     className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl group-hover:scale-[1.01] text-sm"
                   >
                     <Plus className="w-3 h-3 mr-2" />
-                    {isDayColumn(column.id) ? 'Add Category' : 'Add Person'}
+                    {isDayColumn ? 'Add Category' : 'Add Person'}
                   </Button>
                 </div>
               </DialogTrigger>
               <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
                 <DialogHeader>
                   <DialogTitle className="text-lg font-semibold text-gray-900">
-                    {isDayColumn(column.id) ? 'Add New Category' : 'Add New Person'}
+                    {isDayColumn ? 'Add New Category' : 'Add New Person'}
                   </DialogTitle>
                   <p className="text-sm text-gray-600">
-                    {isDayColumn(column.id) 
+                    {isDayColumn 
                       ? 'Create a new category to organize tasks in this column.'
                       : 'Add a new person to assign tasks to.'
                     }
@@ -212,13 +200,13 @@ export function TaskColumn({
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="categoryName" className="text-sm font-medium text-gray-700">
-                      {isDayColumn(column.id) ? 'Category Name' : 'Person Name'}
+                      {isDayColumn ? 'Category Name' : 'Person Name'}
                     </Label>
                     <Input
                       id="categoryName"
                       value={newCategoryData.name}
                       onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder={isDayColumn(column.id) ? "Enter category name..." : "Enter person name..."}
+                      placeholder={isDayColumn ? "Enter category name..." : "Enter person name..."}
                       className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
@@ -228,7 +216,7 @@ export function TaskColumn({
                       disabled={!newCategoryData.name.trim()}
                       className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                     >
-                      {isDayColumn(column.id) ? 'Create Category' : 'Add Person'}
+                      {isDayColumn ? 'Create Category' : 'Add Person'}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -248,7 +236,7 @@ export function TaskColumn({
         {/* Categories container */}
         <div className="p-4 min-h-[400px] max-h-[700px] overflow-y-auto">
           {/* Check if this is a day column that should show categories */}
-          {shouldShowCategories(column.id) ? (
+          {shouldShowCategories ? (
             <>
               {/* Render categories for day columns */}
               {column.categories.map((category) => (
