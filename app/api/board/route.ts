@@ -1,11 +1,8 @@
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-
-// Debug logging to help troubleshoot environment variables
-console.log('Board API - Supabase URL:', supabaseUrl ? 'SET' : 'NOT SET');
-console.log('Board API - Supabase Key:', supabaseKey ? 'SET' : 'NOT SET');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
@@ -13,11 +10,7 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+export async function GET() {
   try {
     // Get all columns
     const { data: columns, error: columnsError } = await supabase
@@ -93,8 +86,12 @@ export default async function handler(req, res) {
       }
     }));
     
-    res.json(boardData);
+    return NextResponse.json(boardData);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching board:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to fetch board' },
+      { status: 500 }
+    );
   }
 } 
