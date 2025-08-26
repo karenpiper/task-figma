@@ -216,47 +216,58 @@ export const useTasks = () => {
       
       // Update local state optimistically
       setColumns((prevColumns: Column[]) => {
-        return prevColumns.map((column: Column) => {
-          // Find the task in the current column/category
-          let foundTask: Task | undefined;
-          let sourceColumn = column;
-          let sourceCategory: Category | undefined;
-          
-          // Search in column tasks
-          foundTask = column.tasks.find((task: Task) => task.id === taskId);
-          
-          // Search in category tasks
-          if (!foundTask) {
-            for (const cat of column.categories) {
-              foundTask = cat.tasks.find((task: Task) => task.id === taskId);
-              if (foundTask) {
-                sourceCategory = cat;
-                break;
-              }
-            }
+        // First, find the task in the current state
+        let foundTask: Task | undefined;
+        let sourceColumnId: string | undefined;
+        let sourceCategoryId: string | undefined;
+        
+        for (const col of prevColumns) {
+          // Check direct column tasks
+          foundTask = col.tasks.find((task: Task) => task.id === taskId);
+          if (foundTask) {
+            sourceColumnId = col.id;
+            break;
           }
           
-          if (foundTask) {
-            console.log(`📦 Found task: "${foundTask.title}" in column "${column.title}"`);
-            
-            // Remove task from source
-            if (sourceCategory) {
+          // Check category tasks
+          for (const cat of col.categories) {
+            foundTask = cat.tasks.find((task: Task) => task.id === taskId);
+            if (foundTask) {
+              sourceColumnId = col.id;
+              sourceCategoryId = cat.id;
+              break;
+            }
+          }
+          if (foundTask) break;
+        }
+        
+        // If task not found, log warning and return current state
+        if (!foundTask) {
+          console.warn(`⚠️ Task ${taskId} not found in current state, skipping optimistic update`);
+          return prevColumns;
+        }
+        
+        console.log(`📦 Found task: "${foundTask.title}" in column "${sourceColumnId}"${sourceCategoryId ? `, category "${sourceCategoryId}"` : ''}`);
+        
+        return prevColumns.map((column: Column) => {
+          // Remove task from source
+          if (column.id === sourceColumnId) {
+            if (sourceCategoryId) {
               // Remove from category
               const updatedCategories = column.categories.map((cat: Category) => 
-                cat.id === sourceCategory!.id 
+                cat.id === sourceCategoryId 
                   ? { ...cat, tasks: cat.tasks.filter((t: Task) => t.id !== taskId), count: cat.count - 1 }
                   : cat
               );
               
-              // Update column with removed task
-              sourceColumn = {
+              return {
                 ...column,
                 categories: updatedCategories,
                 count: column.count - 1
               };
             } else {
               // Remove from column directly
-              sourceColumn = {
+              return {
                 ...column,
                 tasks: column.tasks.filter((t: Task) => t.id !== taskId),
                 count: column.count - 1
@@ -294,7 +305,7 @@ export const useTasks = () => {
             }
           }
           
-          return sourceColumn;
+          return column;
         });
       });
       
