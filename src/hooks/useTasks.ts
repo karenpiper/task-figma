@@ -47,11 +47,11 @@ export interface TeamMember {
 export const useTasks = () => {
   console.log('🔍 useTasks hook loaded - using Next.js API routes');
   
-  const [columns, setColumns] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
+  const [columns, setColumns] = useState<Column[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [operationLoading, setOperationLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch board data
   const fetchBoard = useCallback(async () => {
@@ -107,16 +107,16 @@ export const useTasks = () => {
       const newTask = await response.json();
       
       // Update local state optimistically
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
+      setColumns((prevColumns: Column[]) => {
+        return prevColumns.map((column: Column) => {
           if (column.id === newTask.column_id) {
             if (newTask.category_id) {
               // Add to category
-              const updatedCategories = column.categories.map(category => {
+              const updatedCategories = column.categories.map((category: Category) => {
                 if (category.id === newTask.category_id) {
                   return {
                     ...category,
-                    tasks: [newTask, ...category.tasks],
+                    tasks: [newTask as Task, ...category.tasks],
                     count: category.tasks.length + 1
                   };
                 }
@@ -127,8 +127,8 @@ export const useTasks = () => {
               // Add directly to column
               return {
                 ...column,
-                tasks: [newTask, ...column.tasks],
-                count: column.tasks.length + 1
+                tasks: [newTask as Task, ...column.tasks],
+                count: column.count + 1
               };
             }
           }
@@ -151,32 +151,32 @@ export const useTasks = () => {
       console.log(`Moving task ${taskId} to column ${columnId}, category ${categoryId}`);
       
       // Optimistic update - move task immediately in UI
-      setColumns(prevColumns => {
-        const updatedColumns = prevColumns.map(column => {
+      setColumns((prevColumns: Column[]) => {
+        const updatedColumns = prevColumns.map((column: Column) => {
           // Remove task from all columns/categories first
-          const updatedCategories = column.categories.map(category => ({
+          const updatedCategories = column.categories.map((category: Category) => ({
             ...category,
-            tasks: category.tasks.filter(t => t.id !== taskId)
+            tasks: category.tasks.filter((t: Task) => t.id !== taskId)
           }));
           
           return {
             ...column,
             categories: updatedCategories,
-            tasks: column.tasks.filter(t => t.id !== taskId)
+            tasks: column.tasks.filter((t: Task) => t.id !== taskId)
           };
         });
 
         // Add task to destination
-        return updatedColumns.map(column => {
+        return updatedColumns.map((column: Column) => {
           if (column.id === columnId) {
             if (categoryId) {
               // Add to specific category
-              const updatedCategories = column.categories.map(category => {
+              const updatedCategories = column.categories.map((category: Category) => {
                 if (category.id === categoryId) {
                   // Find the task in the original data
                   const task = prevColumns
-                    .flatMap(col => [...col.tasks, ...col.categories.flatMap(cat => cat.tasks)])
-                    .find(t => t.id === taskId);
+                    .flatMap((col: Column) => [...col.tasks, ...col.categories.flatMap((cat: Category) => cat.tasks)])
+                    .find((t: Task) => t.id === taskId);
                   
                   if (task) {
                     return {
@@ -191,8 +191,8 @@ export const useTasks = () => {
             } else {
               // Add directly to column
               const task = prevColumns
-                .flatMap(col => [...col.tasks, ...col.categories.flatMap(cat => cat.tasks)])
-                .find(t => t.id === taskId);
+                .flatMap((col: Column) => [...col.tasks, ...col.categories.flatMap((cat: Category) => cat.tasks)])
+                .find((t: Task) => t.id === taskId);
               
               if (task) {
                 return {
