@@ -281,11 +281,34 @@ export const useTasks = () => {
           if (foundTask) break;
         }
         
-        // If task not found, try to fetch fresh data from API
+        // If task not found, try to fetch fresh data from API and retry
         if (!foundTask) {
-          console.warn(`⚠️ Task ${taskId} not found in current state, attempting to refresh data...`);
-          // Trigger a refresh of the board data
-          fetchBoard();
+          console.warn(`⚠️ Task ${taskId} not found in current state, attempting to refresh data and retry...`);
+          
+          // Debug: Log what tasks actually exist in current state
+          console.log('🔍 DEBUG: Current state contains these tasks:');
+          prevColumns.forEach((col: Column) => {
+            console.log(`  Column "${col.id}": ${col.tasks.length} direct tasks`);
+            col.tasks.forEach((task: Task) => {
+              console.log(`    - Task ${task.id}: "${task.title}"`);
+            });
+            
+            col.categories.forEach((cat: Category) => {
+              console.log(`    Category "${cat.id}": ${cat.tasks.length} tasks`);
+              cat.tasks.forEach((task: Task) => {
+                console.log(`      - Task ${task.id}: "${task.title}"`);
+              });
+            });
+          });
+          
+          // Force a refresh and retry the operation
+          fetchBoard().then(() => {
+            // After refresh, retry the move operation
+            setTimeout(() => {
+              console.log(`🔄 Retrying move operation for task ${taskId} after data refresh...`);
+              moveTask(taskId, targetColumnId, targetCategoryId);
+            }, 1000); // Wait 1 second for data to load
+          });
           return prevColumns;
         }
         
