@@ -57,6 +57,13 @@ export function TaskCategory({
     }),
   });
 
+  // Cast the dropRef to the correct type for React
+  const dropRefCallback = React.useCallback((node: HTMLDivElement | null) => {
+    if (dropRef) {
+      (dropRef as any)(node);
+    }
+  }, [dropRef]);
+
   const handleCreateTask = async () => {
     if (!newTaskData.title.trim() || !onCreateTask) return;
     
@@ -122,7 +129,7 @@ export function TaskCategory({
 
   return (
     <div 
-      ref={dropRef}
+      ref={dropRefCallback}
       className={`mb-4 transition-all duration-300 ${
         isOver ? 'bg-white/40 backdrop-blur-md rounded-2xl border border-white/60' : ''
       }`}

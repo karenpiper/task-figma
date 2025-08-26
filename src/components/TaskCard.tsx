@@ -26,6 +26,13 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
     }),
   });
 
+  // Cast the dragRef to the correct type for React
+  const dragRefCallback = React.useCallback((node: HTMLDivElement | null) => {
+    if (dragRef) {
+      (dragRef as any)(node);
+    }
+  }, [dragRef]);
+
   const getPriorityConfig = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -63,7 +70,7 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
 
   return (
     <div
-      ref={dragRef}
+      ref={dragRefCallback}
       className={`group relative overflow-hidden rounded-xl transition-all duration-300 cursor-move ${
         isDragging 
           ? 'opacity-50 rotate-3 scale-110 z-50' 

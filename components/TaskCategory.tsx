@@ -48,7 +48,7 @@ export function TaskCategory({
     drop: async (item: any) => {
       console.log('Dropped task:', item.id, 'into category:', categoryName, 'in column:', columnId);
       
-      // Move task to this category if onMoveTask is provided
+      // Move task to this category if onDropTask is provided
       if (onDropTask && item.id) {
         try {
           await onDropTask(item.id, categoryName);
@@ -61,6 +61,13 @@ export function TaskCategory({
       isOver: monitor.isOver(),
     }),
   });
+
+  // Cast the dropRef to the correct type for React
+  const dropRefCallback = React.useCallback((node: HTMLDivElement | null) => {
+    if (dropRef) {
+      (dropRef as any)(node);
+    }
+  }, [dropRef]);
 
   const getCategoryConfig = (category: string) => {
     switch (category.toLowerCase()) {
@@ -107,7 +114,7 @@ export function TaskCategory({
 
   return (
     <div 
-      ref={dropRef}
+      ref={dropRefCallback}
       className={`mb-4 transition-all duration-300 ${
         isOver ? 'bg-white/40 backdrop-blur-md rounded-2xl border border-white/60' : ''
       }`}
