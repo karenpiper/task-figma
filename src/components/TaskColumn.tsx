@@ -47,7 +47,13 @@ export function TaskColumn({
 
   const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
-    drop: async (item: any) => {
+    drop: async (item: any, monitor) => {
+      // Prevent drop if this is a nested drop (already handled by category)
+      if (monitor.didDrop()) {
+        console.log('🔄 Drop already handled by child component, skipping column drop');
+        return;
+      }
+      
       console.log('🎯 TaskColumn drop event:', {
         taskId: item.id,
         taskTitle: item.title,

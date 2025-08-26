@@ -40,7 +40,12 @@ export function TaskCategory({
 
   const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
-    drop: async (item: any) => {
+    drop: async (item: any, monitor) => {
+      // Prevent drop if this is a nested drop (already handled by parent)
+      if (monitor.didDrop()) {
+        return;
+      }
+      
       console.log('🎯 TaskCategory drop event:', {
         taskId: item.id,
         taskTitle: item.title,
