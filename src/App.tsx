@@ -39,28 +39,6 @@ export default function App() {
     setIsStatsCollapsed(!isStatsCollapsed);
   }, [isStatsCollapsed]);
 
-  // Memoize the entire component props to prevent re-renders
-  const sidebarProps = useMemo(() => ({
-    onCelebrate: triggerCelebration,
-    teamMembers: teamMembers,
-    createTeamMember: createTeamMember,
-    updateTeamMember: updateTeamMember,
-    deleteTeamMember: deleteTeamMember,
-    tasks: tasks
-  }), [triggerCelebration, teamMembers, createTeamMember, updateTeamMember, deleteTeamMember, tasks]);
-
-  const kanbanBoardProps = useMemo(() => ({
-    onTaskComplete: triggerCelebration,
-    columns: columns,
-    teamMembers: teamMembers,
-    loading: loading,
-    error: error,
-    createTask: createTask,
-    moveTask: moveTask,
-    createCategory: createCategory,
-    deleteCategory: deleteCategory
-  }), [triggerCelebration, columns, teamMembers, loading, error, createTask, moveTask, createCategory, deleteCategory]);
-
   return (
     <DndProvider backend={HTML5Backend}>
       {/* Main container with full viewport height and overflow control */}
@@ -72,7 +50,12 @@ export default function App() {
         <div className="relative z-10 h-full backdrop-blur-sm bg-white/10 flex">
           {/* Left sidebar with celebration trigger */}
           <Sidebar 
-            {...sidebarProps}
+            onCelebrate={triggerCelebration}
+            teamMembers={teamMembers}
+            createTeamMember={createTeamMember}
+            updateTeamMember={updateTeamMember}
+            deleteTeamMember={deleteTeamMember}
+            tasks={tasks}
           />
           
           {/* Main content area */}
@@ -85,7 +68,15 @@ export default function App() {
               {/* Kanban board - main content area */}
               <div className="flex-1 min-w-0">
                 <KanbanBoard 
-                  {...kanbanBoardProps}
+                  onTaskComplete={triggerCelebration}
+                  columns={columns}
+                  teamMembers={teamMembers}
+                  loading={loading}
+                  error={error}
+                  createTask={createTask}
+                  moveTask={moveTask}
+                  createCategory={createCategory}
+                  deleteCategory={deleteCategory}
                 />
               </div>
               
