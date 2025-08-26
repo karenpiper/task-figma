@@ -266,20 +266,43 @@ export const useTasks = () => {
     try {
       setOperationLoading(true);
       
+      console.log('🚀 Creating category with data:', categoryData);
+      
+      // Validate required fields
+      if (!categoryData.name || !categoryData.column_id) {
+        throw new Error('Category name and column_id are required');
+      }
+      
+      // Check if category already exists
+      const existingCategory = columns
+        .find(col => col.id === categoryData.column_id)
+        ?.categories.find(cat => cat.name.toLowerCase() === categoryData.name.toLowerCase());
+      
+      if (existingCategory) {
+        console.warn(`⚠️ Category "${categoryData.name}" already exists in column "${categoryData.column_id}"`);
+        return existingCategory; // Return existing category instead of creating duplicate
+      }
+      
       const response = await fetch(`${API_BASE}/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(categoryData),
+        body: JSON.stringify({
+          ...categoryData,
+          order_index: categoryData.order_index || 0,
+          is_default: false
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create category');
+        console.error('❌ API Error:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to create category`);
       }
 
       const newCategory = await response.json();
+      console.log('✅ Category created successfully:', newCategory);
       
       // Update local state optimistically
       setColumns(prevColumns => {
@@ -296,12 +319,12 @@ export const useTasks = () => {
       
       return newCategory;
     } catch (err) {
-      console.error('Error creating category:', err);
+      console.error('❌ Error creating category:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, []);
+  }, [columns]);
 
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
