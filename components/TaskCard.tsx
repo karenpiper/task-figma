@@ -25,7 +25,7 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onComplete }: TaskCardProps) {
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, dragRef] = useDrag({
     type: 'TASK',
     item: { id: task.id, type: 'TASK' },
     collect: (monitor) => ({
@@ -81,7 +81,7 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
 
   return (
     <div
-      ref={drag}
+      ref={dragRef}
       className={`group relative overflow-hidden rounded-2xl transition-all duration-300 cursor-move ${
         isDragging 
           ? 'opacity-50 rotate-3 scale-110 z-50' 

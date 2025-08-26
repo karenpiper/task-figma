@@ -45,7 +45,7 @@ export function TaskColumn({
     category_id: undefined
   });
 
-  const [{ isOver }, drop] = useDrop({
+  const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
     drop: async (item: any) => {
       console.log('Dropped task:', item.id, 'into column:', column.id);
@@ -108,7 +108,7 @@ export function TaskColumn({
 
   return (
     <div 
-      ref={drop}
+      ref={dropRef}
       className={`w-80 flex-shrink-0 transition-all duration-300 ${
         isOver ? 'scale-105' : ''
       }`}

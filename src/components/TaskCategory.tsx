@@ -38,21 +38,15 @@ export function TaskCategory({
     category_id: category.id
   });
 
-  const [{ isOver }, drop] = useDrop({
+  const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
     drop: async (item: any) => {
-      console.log('Dropped task:', item.id, 'into category:', category.name, 'in column:', columnId);
-      
-      // Handle task completion if moving to completed column
-      if (columnId === 'completed' && onTaskComplete) {
-        onTaskComplete();
-      }
+      console.log('Dropped task:', item.id, 'into category:', category.id);
       
       // Move task to this category if onMoveTask is provided
       if (onMoveTask && item.id) {
         try {
-          // Pass the actual column ID, not the category ID
-          await onMoveTask(item.id, columnId, category.id);
+          await onMoveTask(item.id, category.column_id, category.id);
         } catch (error) {
           console.error('Failed to move task:', error);
         }
@@ -128,7 +122,7 @@ export function TaskCategory({
 
   return (
     <div 
-      ref={drop}
+      ref={dropRef}
       className={`mb-4 transition-all duration-300 ${
         isOver ? 'bg-white/40 backdrop-blur-md rounded-2xl border border-white/60' : ''
       }`}
