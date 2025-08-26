@@ -4,17 +4,28 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { TeamManagement } from './TeamManagement';
 import { OneOnOneMode } from './OneOnOneMode';
-import { useTasks } from '../hooks/useTasks';
+import { TeamMember, Task } from '../hooks/useTasks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface SidebarProps {
   onCelebrate?: () => void;
+  teamMembers: TeamMember[];
+  createTeamMember: (memberData: Partial<TeamMember>) => Promise<any>;
+  updateTeamMember: (id: number, updates: Partial<TeamMember>) => Promise<any>;
+  deleteTeamMember: (id: number) => Promise<any>;
+  tasks: Task[];
 }
 
-export function Sidebar({ onCelebrate }: SidebarProps) {
+export function Sidebar({ 
+  onCelebrate, 
+  teamMembers, 
+  createTeamMember, 
+  updateTeamMember, 
+  deleteTeamMember, 
+  tasks 
+}: SidebarProps) {
   const [activeView, setActiveView] = useState<'main' | 'team' | '1on1'>('main');
   const [selectedPerson, setSelectedPerson] = useState<string>('all');
-  const { teamMembers, createTeamMember, updateTeamMember, deleteTeamMember, tasks } = useTasks();
 
   const viewItems = [
     { icon: Eye, label: 'Today', active: activeView === 'main', onClick: () => setActiveView('main') },

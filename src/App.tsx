@@ -9,10 +9,27 @@ import { AchievementSystem } from './components/AchievementSystem';
 import { ParticleSystem } from './components/ParticleSystem';
 import { AmbientLighting } from './components/AmbientLighting';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTasks } from './hooks/useTasks';
 
 export default function App() {
   const [showParticles, setShowParticles] = useState(false);
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
+  
+  // Lift useTasks hook to App level to avoid multiple instances
+  const { 
+    columns, 
+    teamMembers, 
+    loading, 
+    error, 
+    createTask, 
+    moveTask, 
+    createCategory, 
+    deleteCategory,
+    createTeamMember,
+    updateTeamMember,
+    deleteTeamMember,
+    tasks
+  } = useTasks();
 
   const triggerCelebration = () => {
     setShowParticles(true);
@@ -32,7 +49,14 @@ export default function App() {
         {/* Glass morphism container with proper backdrop blur and transparency */}
         <div className="relative z-10 h-full backdrop-blur-sm bg-white/10 flex">
           {/* Left sidebar with celebration trigger */}
-          <Sidebar onCelebrate={triggerCelebration} />
+          <Sidebar 
+            onCelebrate={triggerCelebration}
+            teamMembers={teamMembers}
+            createTeamMember={createTeamMember}
+            updateTeamMember={updateTeamMember}
+            deleteTeamMember={deleteTeamMember}
+            tasks={tasks}
+          />
           
           {/* Main content area */}
           <div className="flex-1 flex flex-col min-w-0">
@@ -43,7 +67,17 @@ export default function App() {
             <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0">
               {/* Kanban board - main content area */}
               <div className="flex-1 min-w-0">
-                <KanbanBoard onTaskComplete={triggerCelebration} />
+                <KanbanBoard 
+                  onTaskComplete={triggerCelebration}
+                  columns={columns}
+                  teamMembers={teamMembers}
+                  loading={loading}
+                  error={error}
+                  createTask={createTask}
+                  moveTask={moveTask}
+                  createCategory={createCategory}
+                  deleteCategory={deleteCategory}
+                />
               </div>
               
               {/* Right sidebar with focus zone and achievements */}

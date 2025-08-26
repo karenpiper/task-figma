@@ -1,23 +1,31 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { TaskColumn } from './TaskColumn';
-import { useTasks } from '../hooks/useTasks';
+import { Column, TeamMember, Task } from '../hooks/useTasks';
 
 interface KanbanBoardProps {
   onTaskComplete?: () => void;
+  columns: Column[];
+  teamMembers: TeamMember[];
+  loading: boolean;
+  error: string | null;
+  createTask: (taskData: Partial<Task>) => Promise<any>;
+  moveTask: (taskId: number, columnId: string, categoryId?: string) => Promise<void>;
+  createCategory: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
+  deleteCategory: (categoryId: string) => Promise<void>;
 }
 
-export function KanbanBoard({ onTaskComplete }: KanbanBoardProps) {
-  const { 
-    columns, 
-    teamMembers, 
-    loading, 
-    error, 
-    createTask, 
-    moveTask, 
-    createCategory, 
-    deleteCategory 
-  } = useTasks();
+export function KanbanBoard({ 
+  onTaskComplete, 
+  columns, 
+  teamMembers, 
+  loading, 
+  error, 
+  createTask, 
+  moveTask, 
+  createCategory, 
+  deleteCategory 
+}: KanbanBoardProps) {
 
   if (loading) {
     return (
