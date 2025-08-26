@@ -55,8 +55,8 @@ export default function App() {
   }, []);
 
   const toggleStats = useCallback(() => {
-    setIsStatsCollapsed(!isStatsCollapsed);
-  }, [isStatsCollapsed]);
+    setIsStatsCollapsed(prev => !prev);
+  }, []);
 
   return (
     <StableDndProvider>

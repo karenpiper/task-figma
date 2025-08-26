@@ -328,8 +328,6 @@ export const useTasks = () => {
     try {
       setOperationLoading(true);
       
-      console.log('🚀 Creating category with data:', JSON.stringify(categoryData, null, 2));
-      
       // Validate required fields
       if (!categoryData.name || !categoryData.column_id) {
         throw new Error('Category name and column_id are required');
@@ -337,48 +335,33 @@ export const useTasks = () => {
       
       // Check if category already exists
       const existingCategory = columns
-        .find((col: Column) => col.id === categoryData.column_id)
-        ?.categories.find((cat: Category) => cat.name.toLowerCase() === categoryData.name.toLowerCase());
+        .flatMap(col => col.categories)
+        .find(cat => cat.name.toLowerCase() === categoryData.name.toLowerCase() && cat.column_id === categoryData.column_id);
       
       if (existingCategory) {
-        console.warn(`⚠️ Category "${categoryData.name}" already exists in column "${categoryData.column_id}"`);
-        return existingCategory; // Return existing category instead of creating duplicate
+        console.log(`ℹ️ Category "${categoryData.name}" already exists, returning existing category`);
+        return existingCategory;
       }
-      
-      const requestBody = {
-        ...categoryData,
-        order_index: categoryData.order_index || 0,
-        is_default: false
-      };
-      
-      console.log('📤 Sending request to API:', JSON.stringify(requestBody, null, 2));
       
       const response = await fetch(`${API_BASE}/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          name: categoryData.name,
+          column_id: categoryData.column_id,
+          order_index: categoryData.order_index || 0,
+          is_default: false
+        }),
       });
 
-      console.log('📥 API Response status:', response.status);
-      console.log('📥 API Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-          console.error('❌ API Error Response:', JSON.stringify(errorData, null, 2));
-        } catch (parseError) {
-          console.error('❌ Failed to parse error response:', parseError);
-          errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
-        }
-        
+        const errorData = await response.json();
         throw new Error(errorData.error || `HTTP ${response.status}: Failed to create category`);
       }
 
       const newCategory = await response.json();
-      console.log('✅ Category created successfully:', JSON.stringify(newCategory, null, 2));
       
       // Update local state optimistically
       setColumns((prevColumns: Column[]) => {
@@ -396,11 +379,6 @@ export const useTasks = () => {
       return newCategory;
     } catch (err) {
       console.error('❌ Error creating category:', err);
-      console.error('❌ Error details:', {
-        message: err instanceof Error ? err.message : 'Unknown error',
-        stack: err instanceof Error ? err.stack : 'No stack trace',
-        categoryData
-      });
       throw err;
     } finally {
       setOperationLoading(false);
@@ -410,13 +388,13 @@ export const useTasks = () => {
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
     try {
-      // Prevent deletion of auto-generated team member categories
-      if (categoryId.startsWith('follow-up_')) {
-        console.warn('⚠️ Cannot delete auto-generated team member category:', categoryId);
-        return; // Silently ignore deletion attempts for team member categories
-      }
-      
       setOperationLoading(true);
+      
+      // Prevent deletion of auto-generated team member categories
+      if (categoryId.startsWith('follow-up_') && /^follow-up_\d+$/.test(categoryId)) {
+        console.log(`🛡️ Preventing deletion of auto-generated team member category: ${categoryId}`);
+        return;
+      }
       
       const response = await fetch(`${API_BASE}/categories/${categoryId}`, {
         method: 'DELETE',
@@ -426,13 +404,15 @@ export const useTasks = () => {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP ${response.status}: Failed to delete category`);
       }
-
+      
       // Update local state optimistically
       setColumns((prevColumns: Column[]) => {
-        return prevColumns.map((column: Column) => ({
-          ...column,
-          categories: column.categories.filter((cat: Category) => cat.id !== categoryId)
-        }));
+        return prevColumns.map((column: Column) => {
+          return {
+            ...column,
+            categories: column.categories.filter((cat: Category) => cat.id !== categoryId)
+          };
+        });
       });
       
     } catch (err) {
