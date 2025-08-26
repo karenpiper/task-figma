@@ -116,40 +116,49 @@ export function TaskColumn({
   return (
     <div 
       ref={dropRefCallback}
-      className={`w-80 flex-shrink-0 transition-all duration-300 ${
-        isOver ? 'scale-105' : ''
+      className={`w-80 flex-shrink-0 transition-all duration-200 ${
+        isOver ? 'scale-105' : 'scale-100'
       }`}
     >
-      <div className={`relative overflow-hidden rounded-3xl transition-all duration-300 ${
+      {/* Column Header */}
+      <div className={`mb-6 p-4 rounded-2xl backdrop-blur-sm border transition-all duration-200 ${
         isOver 
-          ? 'bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl' 
-          : 'bg-white/20 backdrop-blur-xl border border-white/30 shadow-xl'
+          ? 'bg-white/40 border-blue-300/60 shadow-lg' 
+          : 'bg-white/20 border-white/30'
       }`}>
-        {/* Column gradient accent */}
-        <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${column.color}`}></div>
-        
-        {/* Header */}
-        <div className="p-6 border-b border-white/20">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${column.color} shadow-lg`}></div>
-              <h3 className="font-semibold text-slate-800">{column.title}</h3>
-              <Badge 
-                variant="secondary" 
-                className="bg-white/30 text-slate-700 border border-white/40 backdrop-blur-sm font-medium"
-              >
-                {totalTasks}
-              </Badge>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 w-8 p-0 rounded-xl hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
-            >
-              <MoreHorizontal className="w-4 h-4 text-slate-600" />
-            </Button>
-          </div>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-slate-800 text-lg">{column.title}</h3>
+          <Badge className="bg-slate-100/80 text-slate-700 border-slate-200/60">
+            {column.count}
+          </Badge>
         </div>
+        
+        {/* Drop zone indicator */}
+        {isOver && (
+          <div className="h-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full animate-pulse mb-2"></div>
+        )}
+        
+        {/* Column actions */}
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setIsCreatingTask(true)}
+            size="sm"
+            className="flex-1 bg-white/60 hover:bg-white/80 text-slate-700 border-white/40 hover:border-white/60"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Task
+          </Button>
+          
+          <Button
+            onClick={() => setIsCreatingCategory(true)}
+            size="sm"
+            variant="outline"
+            className="bg-white/40 hover:bg-white/60 text-slate-700 border-white/30 hover:border-white/50"
+          >
+            <Users className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
         
         {/* Categories container */}
         <div className="p-4 min-h-[400px] max-h-[700px] overflow-y-auto">
@@ -323,7 +332,6 @@ export function TaskColumn({
             </>
           )}
         </div>
-      </div>
     </div>
   );
 }

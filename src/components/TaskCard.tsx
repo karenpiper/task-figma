@@ -20,7 +20,7 @@ interface TaskCardProps {
 export function TaskCard({ task, onComplete }: TaskCardProps) {
   const [{ isDragging }, dragRef] = useDrag({
     type: 'TASK',
-    item: { id: task.id, type: 'TASK' },
+    item: { id: task.id, type: 'TASK', title: task.title },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -71,17 +71,31 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
   return (
     <div
       ref={dragRefCallback}
+      draggable
       className={`group relative overflow-hidden rounded-xl transition-all duration-300 cursor-move ${
         isDragging 
-          ? 'opacity-50 rotate-3 scale-110 z-50' 
-          : 'hover:scale-[1.02] hover:shadow-lg'
+          ? 'opacity-60 rotate-2 scale-105 z-50 shadow-2xl' 
+          : 'hover:scale-[1.02] hover:shadow-lg hover:rotate-1'
       }`}
+      style={{
+        transform: isDragging ? 'rotate(5deg)' : undefined,
+        transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}
     >
       {/* Glass card background */}
-      <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 rounded-xl"></div>
+      <div className={`absolute inset-0 backdrop-blur-xl border rounded-xl ${
+        isDragging 
+          ? 'bg-white/80 border-blue-300/60' 
+          : 'bg-white/60 border-white/40'
+      }`}></div>
       
       {/* Priority accent */}
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${priorityConfig.color}`}></div>
+      
+      {/* Drag indicator */}
+      {isDragging && (
+        <div className="absolute top-2 right-2 w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+      )}
       
       {/* Content */}
       <div className="relative z-10 p-4">
@@ -98,16 +112,19 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
               {task.project}
             </Badge>
           ) : (
-            <div></div>
+            <div className="w-16 h-5 bg-slate-100/60 rounded-md"></div>
           )}
           
-          {/* Priority indicator */}
-          <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${priorityConfig.color} shadow-sm`}></div>
+          <div className={`px-2 py-1 rounded-md text-xs font-medium ${priorityConfig.bg} ${priorityConfig.text}`}>
+            {task.priority}
+          </div>
         </div>
       </div>
       
-      {/* Hover glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+      {/* Hover effect overlay */}
+      {!isDragging && (
+        <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+      )}
     </div>
   );
 }
