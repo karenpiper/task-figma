@@ -149,36 +149,74 @@ export const useTasks = () => {
   }, []);
 
   // Move task between columns/categories
-  const moveTask = useCallback(async (taskId: number, targetColumnId: string, targetCategoryId?: string) => {
+  const moveTask = useCallback(async (taskId: string, targetColumnId: string, targetCategoryId?: string) => {
     try {
       setOperationLoading(true);
-      
       console.log(`🚀 Moving task ${taskId} to column ${targetColumnId}, category ${targetCategoryId || 'none'}`);
+      
+      // Check if target column has categories
+      const targetColumn = columns.find((col: Column) => col.id === targetColumnId);
+      if (targetColumn && targetColumn.categories.length > 0 && !targetCategoryId) {
+        // Prevent dropping tasks directly into columns with categories
+        throw new Error(`Cannot drop task directly into "${targetColumn.title}" column. Please drop it into a specific category.`);
+      }
+      
+      // Find the task to get team member info if needed
+      let foundTask: Task | undefined;
+      let sourceColumnId: string | undefined;
+      let sourceCategoryId: string | undefined;
+      
+      for (const col of columns) {
+        // Check direct column tasks
+        foundTask = col.tasks.find((task: Task) => task.id.toString() === taskId);
+        if (foundTask) {
+          sourceColumnId = col.id;
+          break;
+        }
+        
+        // Check category tasks
+        for (const cat of col.categories) {
+          foundTask = cat.tasks.find((task: Task) => task.id.toString() === taskId);
+          if (foundTask) {
+            sourceColumnId = col.id;
+            sourceCategoryId = cat.id;
+            break;
+          }
+        }
+        if (foundTask) break;
+      }
+      
+      if (!foundTask) {
+        throw new Error(`Task ${taskId} not found`);
+      }
+      
+      console.log(`🌐 Making API call to move task...`);
+      
+      // Prepare the request body
+      const requestBody: any = {
+        column_id: targetColumnId
+      };
+      
+      if (targetCategoryId) {
+        requestBody.category_id = targetCategoryId;
+      }
       
       let response: Response;
       
-      // Check if this is a team member category in follow-up column
-      // Only treat categories starting with 'follow-up_' followed by a number as team member categories
-      const isTeamMemberCategory = targetCategoryId && 
-        targetCategoryId.startsWith('follow-up_') && 
-        /^follow-up_\d+$/.test(targetCategoryId);
-      
+      // Check if this is a team member category (follow-up_1, follow-up_2, etc.)
+      const isTeamMemberCategory = targetCategoryId && targetCategoryId.match(/^follow-up_\d+$/);
       if (isTeamMemberCategory) {
-        console.log('🎯 Detected auto-generated team member category, handling specially...');
+        // Extract team member ID from category ID (e.g., "follow-up_1" -> "1")
+        const teamMemberId = targetCategoryId.split('_')[1];
+        const teamMember = teamMembers.find((tm: TeamMember) => tm.id.toString() === teamMemberId);
         
-        // Extract team member ID from category ID
-        const teamMemberId = targetCategoryId.replace('follow-up_', '');
-        
-        // Find the team member
-        const teamMember = teamMembers.find((member: TeamMember) => member.id.toString() === teamMemberId);
         if (!teamMember) {
           throw new Error(`Team member not found for category ${targetCategoryId}`);
         }
         
-        console.log(`👤 Moving task to team member: ${teamMember.name}`);
+        console.log(`👥 Moving task to team member category: ${teamMember.name}`);
         
-        // For team member categories, we don't set category_id since they don't exist in the database
-        // They're just visual groupings in the UI
+        // For team member categories, send team_member_id but not category_id
         response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
           method: 'POST',
           headers: {
@@ -191,18 +229,13 @@ export const useTasks = () => {
           }),
         });
       } else {
-        console.log('🌐 Making API call to move task to regular category...');
-        
         // Regular category move
         response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            column_id: targetColumnId,
-            category_id: targetCategoryId
-          }),
+          body: JSON.stringify(requestBody),
         });
       }
 
