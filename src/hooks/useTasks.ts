@@ -172,6 +172,45 @@ export const useTasks = () => {
   const createTask = useCallback(async (taskData: Partial<Task>) => {
     try {
       setOperationLoading(true);
+      
+      // Optimistic update - add task immediately to UI
+      const optimisticTask = {
+        ...taskData,
+        id: Date.now(), // Temporary ID for optimistic update
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as Task;
+      
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === taskData.column_id) {
+            if (taskData.category_id) {
+              // Add to category
+              const updatedCategories = column.categories.map(category => {
+                if (category.id === taskData.category_id) {
+                  return {
+                    ...category,
+                    tasks: [optimisticTask, ...category.tasks],
+                    count: category.tasks.length + 1
+                  };
+                }
+                return category;
+              });
+              return { ...column, categories: updatedCategories, count: column.count + 1 };
+            } else {
+              // Add directly to column
+              return {
+                ...column,
+                tasks: [optimisticTask, ...column.tasks],
+                count: column.tasks.length + 1
+              };
+            }
+          }
+          return column;
+        });
+      });
+
+      // Now do the actual database operation
       const { data, error } = await supabase
         .from('tasks')
         .insert(taskData)
@@ -180,16 +219,45 @@ export const useTasks = () => {
 
       if (error) throw error;
       
-      // Refresh board data to show the new task
-      await fetchBoard();
+      // Update the optimistic task with the real data
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === data.column_id) {
+            if (data.category_id) {
+              const updatedCategories = column.categories.map(category => {
+                if (category.id === data.category_id) {
+                  return {
+                    ...category,
+                    tasks: category.tasks.map(task => 
+                      task.id === optimisticTask.id ? data : task
+                    )
+                  };
+                }
+                return category;
+              });
+              return { ...column, categories: updatedCategories };
+            } else {
+              return {
+                ...column,
+                tasks: column.tasks.map(task => 
+                  task.id === optimisticTask.id ? data : task
+                )
+              };
+            }
+          }
+          return column;
+        });
+      });
       
       return data;
     } catch (err) {
+      // If there's an error, revert the optimistic update
+      await fetchBoard();
       throw new Error(err instanceof Error ? err.message : 'Failed to create task');
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Move task to different column/category
   const moveTask = useCallback(async (taskId: number, columnId: string, categoryId?: string) => {
@@ -197,6 +265,85 @@ export const useTasks = () => {
       setOperationLoading(true);
       console.log(`Moving task ${taskId} to column ${columnId}, category ${categoryId}`);
       
+      // Find the task to move
+      let taskToMove: Task | null = null;
+      let sourceColumn: Column | null = null;
+      let sourceCategory: Category | null = null;
+      
+      // Optimistic update - move task immediately in UI
+      setColumns(prevColumns => {
+        const updatedColumns = prevColumns.map(column => {
+          // Check if task is in this column's categories
+          const updatedCategories = column.categories.map(category => {
+            const taskIndex = category.tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+              taskToMove = category.tasks[taskIndex];
+              sourceColumn = column;
+              sourceCategory = category;
+              return {
+                ...category,
+                tasks: category.tasks.filter(t => t.id !== taskId),
+                count: category.tasks.length - 1
+              };
+            }
+            return category;
+          });
+
+          // Check if task is directly in this column
+          const taskIndex = column.tasks.findIndex(t => t.id === taskId);
+          if (taskIndex !== -1) {
+            taskToMove = column.tasks[taskIndex];
+            sourceColumn = column;
+            return {
+              ...column,
+              tasks: column.tasks.filter(t => t.id !== taskId),
+              count: column.tasks.length - 1
+            };
+          }
+
+          return { ...column, categories: updatedCategories };
+        });
+
+        // Add task to destination
+        if (taskToMove && sourceColumn) {
+          return updatedColumns.map(column => {
+            if (column.id === columnId) {
+              const updatedTask = { ...taskToMove!, column_id: columnId, category_id: categoryId };
+              
+              if (categoryId) {
+                // Add to category
+                const updatedCategories = column.categories.map(category => {
+                  if (category.id === categoryId) {
+                    return {
+                      ...category,
+                      tasks: [updatedTask, ...category.tasks],
+                      count: category.tasks.length + 1
+                    };
+                  }
+                  return category;
+                });
+                return {
+                  ...column,
+                  categories: updatedCategories,
+                  count: column.count + 1
+                };
+              } else {
+                // Add directly to column
+                return {
+                  ...column,
+                  tasks: [updatedTask, ...column.tasks],
+                  count: column.count + 1
+                };
+              }
+            }
+            return column;
+          });
+        }
+
+        return updatedColumns;
+      });
+
+      // Now do the actual database operation
       const { data, error } = await supabase
         .from('tasks')
         .update({ column_id: columnId, category_id: categoryId })
@@ -206,22 +353,44 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      // Refresh board data to show the moved task
-      await fetchBoard();
-
       console.log('Task moved successfully');
     } catch (err) {
+      // If there's an error, revert the optimistic update
+      await fetchBoard();
       console.error('Error moving task:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Create new category
   const createCategory = useCallback(async (categoryData: { name: string; column_id: string; order_index?: number }) => {
     try {
       setOperationLoading(true);
+      
+      // Optimistic update - add category immediately to UI
+      const optimisticCategory = {
+        ...categoryData,
+        id: `temp-${Date.now()}`, // Temporary ID
+        tasks: [],
+        count: 0,
+        is_default: false
+      } as Category;
+      
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === categoryData.column_id) {
+            return {
+              ...column,
+              categories: [...column.categories, optimisticCategory]
+            };
+          }
+          return column;
+        });
+      });
+      
+      // Now do the actual database operation
       const { data, error } = await supabase
         .from('categories')
         .insert(categoryData)
@@ -230,38 +399,63 @@ export const useTasks = () => {
 
       if (error) throw error;
       
-      // Refresh board data to show the new category
-      await fetchBoard();
+      // Update the optimistic category with the real data
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === data.column_id) {
+            return {
+              ...column,
+              categories: column.categories.map(cat => 
+                cat.id === optimisticCategory.id ? { ...data, tasks: [], count: 0 } : cat
+              )
+            };
+          }
+          return column;
+        });
+      });
       
       return data;
     } catch (err) {
+      // If there's an error, revert the optimistic update
+      await fetchBoard();
       console.error('Error creating category:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
     try {
       setOperationLoading(true);
+      
+      // Optimistic update - remove category immediately from UI
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          return {
+            ...column,
+            categories: column.categories.filter(cat => cat.id !== categoryId)
+          };
+        });
+      });
+      
+      // Now do the actual database operation
       const { error } = await supabase
         .from('categories')
         .delete()
         .eq('id', categoryId);
 
       if (error) throw error;
-
-      // Refresh board data to reflect the deletion
-      await fetchBoard();
     } catch (err) {
+      // If there's an error, revert the optimistic update
+      await fetchBoard();
       console.error('Error deleting category:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Create new team member
   const createTeamMember = useCallback(async (memberData: Partial<TeamMember>) => {
