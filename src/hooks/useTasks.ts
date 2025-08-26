@@ -1,15 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
 
-// Supabase configuration
-const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || process.env?.SUPABASE_URL;
-const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || process.env?.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables');
-}
-
-const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+// API base URL for Next.js API routes
+const API_BASE = '/api';
 
 export interface Task {
   id: number;
@@ -53,9 +45,7 @@ export interface TeamMember {
 }
 
 export const useTasks = () => {
-  console.log('🔍 useTasks hook loaded - using direct Supabase calls');
-  console.log('🔍 Supabase URL:', supabaseUrl ? 'SET' : 'NOT SET');
-  console.log('🔍 Supabase Key:', supabaseKey ? 'SET' : 'NOT SET');
+  console.log('🔍 useTasks hook loaded - using Next.js API routes');
   
   const [columns, setColumns] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
@@ -67,82 +57,12 @@ export const useTasks = () => {
   const fetchBoard = useCallback(async () => {
     try {
       setLoading(true);
-      
-      // Get all columns
-      const { data: columnsData, error: columnsError } = await supabase
-        .from('columns')
-        .select('*')
-        .order('order_index');
-      
-      if (columnsError) throw columnsError;
-      
-      // Get categories and tasks for each column
-      const boardData = await Promise.all(columnsData.map(async (column) => {
-        // Only get categories for columns that should have them
-        if (column.id === 'today' || column.id === 'follow-up') {
-          const { data: categories, error: categoriesError } = await supabase
-            .from('categories')
-            .select('*')
-            .eq('column_id', column.id)
-            .order('order_index');
-          
-          if (categoriesError) throw categoriesError;
-          
-          // Get tasks for each category
-          const categoriesWithTasks = await Promise.all(categories.map(async (category) => {
-            const { data: tasks, error: tasksError } = await supabase
-              .from('tasks')
-              .select('*')
-              .eq('category_id', category.id)
-              .order('created_at', { ascending: false });
-            
-            if (tasksError) throw tasksError;
-            
-            return {
-              ...category,
-              tasks: tasks || [],
-              count: (tasks || []).length
-            };
-          }));
-          
-          // Also get tasks that don't have a category_id (direct column tasks)
-          const { data: directTasks, error: directTasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .eq('column_id', column.id)
-            .is('category_id', null)
-            .order('created_at', { ascending: false });
-          
-          if (directTasksError) throw directTasksError;
-          
-          const allTasks = [...categoriesWithTasks.flatMap(cat => cat.tasks), ...(directTasks || [])];
-          return {
-            ...column,
-            categories: categoriesWithTasks,
-            tasks: directTasks || [],
-            count: allTasks.length
-          };
-        } else {
-          // For columns without categories, just get direct tasks
-          const { data: directTasks, error: directTasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .eq('column_id', column.id)
-            .is('category_id', null)
-            .order('created_at', { ascending: false });
-          
-          if (directTasksError) throw directTasksError;
-          
-          return {
-            ...column,
-            categories: [],
-            tasks: directTasks || [],
-            count: (directTasks || []).length
-          };
-        }
-      }));
-      
-      setColumns(boardData);
+      const response = await fetch(`${API_BASE}/board`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setColumns(data);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch board');
@@ -155,13 +75,11 @@ export const useTasks = () => {
   // Fetch team members
   const fetchTeamMembers = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-      
-      if (error) throw error;
+      const response = await fetch(`${API_BASE}/team-members`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
       setTeamMembers(data || []);
     } catch (err) {
       console.error('Error fetching team members:', err);
@@ -173,105 +91,137 @@ export const useTasks = () => {
     try {
       setOperationLoading(true);
       
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert(taskData)
-        .select()
-        .single();
+      const response = await fetch(`${API_BASE}/tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskData),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create task');
+      }
+
+      const newTask = await response.json();
       
-      // Simple and reliable: refresh the board data
-      await fetchBoard();
+      // Update local state optimistically
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === newTask.column_id) {
+            if (newTask.category_id) {
+              // Add to category
+              const updatedCategories = column.categories.map(category => {
+                if (category.id === newTask.category_id) {
+                  return {
+                    ...category,
+                    tasks: [newTask, ...category.tasks],
+                    count: category.tasks.length + 1
+                  };
+                }
+                return category;
+              });
+              return { ...column, categories: updatedCategories, count: column.count + 1 };
+            } else {
+              // Add directly to column
+              return {
+                ...column,
+                tasks: [newTask, ...column.tasks],
+                count: column.tasks.length + 1
+              };
+            }
+          }
+          return column;
+        });
+      });
       
-      return data;
+      return newTask;
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to create task');
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
-
-  // Visual drag and drop - gives immediate feedback without complex state management
-  const visualMoveTask = useCallback((taskId: number, columnId: string, categoryId?: string) => {
-    // Immediately update the UI for visual feedback
-    setColumns(prevColumns => {
-      const updatedColumns = prevColumns.map(column => {
-        // Remove task from all columns/categories first
-        const updatedCategories = column.categories.map(category => ({
-          ...category,
-          tasks: category.tasks.filter(t => t.id !== taskId)
-        }));
-        
-        return {
-          ...column,
-          categories: updatedCategories,
-          tasks: column.tasks.filter(t => t.id !== taskId)
-        };
-      });
-
-      // Add task to destination
-      return updatedColumns.map(column => {
-        if (column.id === columnId) {
-          if (categoryId) {
-            // Add to specific category
-            const updatedCategories = column.categories.map(category => {
-              if (category.id === categoryId) {
-                // Find the task in the original data
-                const task = prevColumns
-                  .flatMap(col => [...col.tasks, ...col.categories.flatMap(cat => cat.tasks)])
-                  .find(t => t.id === taskId);
-                
-                if (task) {
-                  return {
-                    ...category,
-                    tasks: [task, ...category.tasks]
-                  };
-                }
-              }
-              return category;
-            });
-            return { ...column, categories: updatedCategories };
-          } else {
-            // Add directly to column
-            const task = prevColumns
-              .flatMap(col => [...col.tasks, ...col.categories.flatMap(cat => cat.tasks)])
-              .find(t => t.id === taskId);
-            
-            if (task) {
-              return {
-                ...column,
-                tasks: [task, ...column.tasks]
-              };
-            }
-          }
-        }
-        return column;
-      });
-    });
   }, []);
 
-  // Move task to different column/category (with visual feedback)
+  // Move task to different column/category
   const moveTask = useCallback(async (taskId: number, columnId: string, categoryId?: string) => {
     try {
       setOperationLoading(true);
       console.log(`Moving task ${taskId} to column ${columnId}, category ${categoryId}`);
       
-      // Give immediate visual feedback
-      visualMoveTask(taskId, columnId, categoryId);
-      
-      // Now do the actual database operation
-      const { data, error } = await supabase
-        .from('tasks')
-        .update({ column_id: columnId, category_id: categoryId })
-        .eq('id', taskId)
-        .select()
-        .single();
+      // Optimistic update - move task immediately in UI
+      setColumns(prevColumns => {
+        const updatedColumns = prevColumns.map(column => {
+          // Remove task from all columns/categories first
+          const updatedCategories = column.categories.map(category => ({
+            ...category,
+            tasks: category.tasks.filter(t => t.id !== taskId)
+          }));
+          
+          return {
+            ...column,
+            categories: updatedCategories,
+            tasks: column.tasks.filter(t => t.id !== taskId)
+          };
+        });
 
-      if (error) throw error;
+        // Add task to destination
+        return updatedColumns.map(column => {
+          if (column.id === columnId) {
+            if (categoryId) {
+              // Add to specific category
+              const updatedCategories = column.categories.map(category => {
+                if (category.id === categoryId) {
+                  // Find the task in the original data
+                  const task = prevColumns
+                    .flatMap(col => [...col.tasks, ...col.categories.flatMap(cat => cat.tasks)])
+                    .find(t => t.id === taskId);
+                  
+                  if (task) {
+                    return {
+                      ...category,
+                      tasks: [task, ...category.tasks]
+                    };
+                  }
+                }
+                return category;
+              });
+              return { ...column, categories: updatedCategories };
+            } else {
+              // Add directly to column
+              const task = prevColumns
+                .flatMap(col => [...col.tasks, ...col.categories.flatMap(cat => cat.tasks)])
+                .find(t => t.id === taskId);
+              
+              if (task) {
+                return {
+                  ...column,
+                  tasks: [task, ...column.tasks]
+                };
+              }
+            }
+          }
+          return column;
+        });
+      });
 
-      // Refresh to ensure consistency
-      await fetchBoard();
+      // Now do the actual API call
+      const response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          column_id: columnId,
+          category_id: categoryId
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to move task');
+      }
 
       console.log('Task moved successfully');
     } catch (err) {
@@ -282,67 +232,104 @@ export const useTasks = () => {
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard, visualMoveTask]);
+  }, [fetchBoard]);
 
   // Create new category
   const createCategory = useCallback(async (categoryData: { name: string; column_id: string; order_index?: number }) => {
     try {
       setOperationLoading(true);
       
-      const { data, error } = await supabase
-        .from('categories')
-        .insert(categoryData)
-        .select()
-        .single();
+      const response = await fetch(`${API_BASE}/categories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(categoryData),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create category');
+      }
+
+      const newCategory = await response.json();
       
-      // Simple and reliable: refresh the board data
-      await fetchBoard();
+      // Update local state optimistically
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === newCategory.column_id) {
+            return {
+              ...column,
+              categories: [...column.categories, { ...newCategory, tasks: [], count: 0 }]
+            };
+          }
+          return column;
+        });
+      });
       
-      return data;
+      return newCategory;
     } catch (err) {
       console.error('Error creating category:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
     try {
       setOperationLoading(true);
       
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', categoryId);
+      const response = await fetch(`${API_BASE}/categories`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: categoryId }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete category');
+      }
 
-      // Simple and reliable: refresh the board data
-      await fetchBoard();
+      // Update local state optimistically
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          return {
+            ...column,
+            categories: column.categories.filter(cat => cat.id !== categoryId)
+          };
+        });
+      });
     } catch (err) {
       console.error('Error deleting category:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Create new team member
   const createTeamMember = useCallback(async (memberData: Partial<TeamMember>) => {
     try {
-      const { data, error } = await supabase
-        .from('team_members')
-        .insert(memberData)
-        .select()
-        .single();
+      const response = await fetch(`${API_BASE}/team-members`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(memberData),
+      });
 
-      if (error) throw error;
-      setTeamMembers(prev => [...prev, data]);
-      return data;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create team member');
+      }
+
+      const newMember = await response.json();
+      setTeamMembers(prev => [...prev, newMember]);
+      return newMember;
     } catch (err) {
       console.error('Error creating team member:', err);
       throw err;
@@ -352,16 +339,22 @@ export const useTasks = () => {
   // Update team member
   const updateTeamMember = useCallback(async (id: number, updates: Partial<TeamMember>) => {
     try {
-      const { data, error } = await supabase
-        .from('team_members')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const response = await fetch(`${API_BASE}/team-members`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, ...updates }),
+      });
 
-      if (error) throw error;
-      setTeamMembers(prev => prev.map(member => member.id === id ? data : member));
-      return data;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update team member');
+      }
+
+      const updatedMember = await response.json();
+      setTeamMembers(prev => prev.map(member => member.id === id ? updatedMember : member));
+      return updatedMember;
     } catch (err) {
       console.error('Error updating team member:', err);
       throw err;
@@ -371,12 +364,19 @@ export const useTasks = () => {
   // Delete team member
   const deleteTeamMember = useCallback(async (id: number) => {
     try {
-      const { error } = await supabase
-        .from('team_members')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`${API_BASE}/team-members`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete team member');
+      }
+
       setTeamMembers(prev => prev.filter(member => member.id !== id));
     } catch (err) {
       console.error('Error deleting team member:', err);
@@ -405,7 +405,6 @@ export const useTasks = () => {
     error,
     createTask,
     moveTask,
-    visualMoveTask,
     createCategory,
     deleteCategory,
     createTeamMember,
