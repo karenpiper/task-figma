@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Debug Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Task Debug Tool</h1>
+    
+    <div class="debug-section">
+        <h3>Step 1: Test API Connection</h3>
+        <button onclick="testAPI()">Test API Connection</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Step 2: Test Task Search Logic</h3>
+        <button onclick="testTaskSearch()">Test Task Search</button>
+        <div id="search-result"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Step 3: Manual Task Move Test</h3>
+        <input type="number" id="taskId" placeholder="Task ID (e.g., 19)" value="19">
+        <input type="text" id="targetColumn" placeholder="Target Column (e.g., follow-up)" value="follow-up">
+        <input type="text" id="targetCategory" placeholder="Target Category (e.g., follow-up_1)" value="follow-up_1">
+        <button onclick="testManualMove()">Test Manual Move</button>
+        <div id="move-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://task-figma-ten.vercel.app/api';
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p class="info">Testing API connection...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/board`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ API Connection Successful!</p>
+                        <p>Columns: ${data.length}</p>
+                        <p>Total Tasks: ${data.reduce((sum, col) => sum + (col.count || 0), 0)}</p>
+                        <details>
+                            <summary>View Full Response</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ API Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Network Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testTaskSearch() {
+            const resultDiv = document.getElementById('search-result');
+            resultDiv.innerHTML = '<p class="info">Testing task search logic...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/board`);
+                const columns = await response.json();
+                
+                if (!response.ok) {
+                    resultDiv.innerHTML = `<p class="error">❌ API Error: ${columns.error}</p>`;
+                    return;
+                }
+                
+                // Simulate the task search logic from useTasks.ts
+                const taskId = 19;
+                let foundTask = null;
+                let sourceColumnId = null;
+                let sourceCategoryId = null;
+                
+                console.log(`🔍 Searching for task ${taskId} in ${columns.length} columns...`);
+                
+                for (const col of columns) {
+                    console.log(`  Checking column "${col.id}" with ${col.tasks.length} direct tasks and ${col.categories.length} categories`);
+                    
+                    // Check direct column tasks
+                    foundTask = col.tasks.find(task => task.id === taskId);
+                    if (foundTask) {
+                        sourceColumnId = col.id;
+                        sourceCategoryId = undefined;
+                        console.log(`📦 Found task ${taskId} in direct column tasks of "${col.id}"`);
+                        break;
+                    }
+                    
+                    // Check nested category tasks
+                    for (const cat of col.categories) {
+                        foundTask = cat.tasks.find(task => task.id === taskId);
+                        if (foundTask) {
+                            sourceColumnId = col.id;
+                            sourceCategoryId = cat.id;
+                            console.log(`📦 Found task ${taskId} in category "${cat.id}" of column "${col.id}"`);
+                            break;
+                        }
+                    }
+                    if (foundTask) break;
+                }
+                
+                if (foundTask) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Task ${taskId} Found!</p>
+                        <p>Title: "${foundTask.title}"</p>
+                        <p>Source Column: ${sourceColumnId}</p>
+                        <p>Source Category: ${sourceCategoryId || 'None (direct column)'}</p>
+                        <p>Current Column ID: ${foundTask.column_id}</p>
+                        <p>Current Category ID: ${foundTask.category_id || 'None'}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Task ${taskId} Not Found!</p>
+                        <p>Available tasks:</p>
+                        <ul>
+                            ${columns.map(col => 
+                                `<li>Column "${col.id}": ${col.tasks.map(t => `${t.id}:"${t.title}"`).join(', ')}</li>`
+                            ).join('')}
+                        </ul>
+                    `;
+                }
+                
+                // Log to console for debugging
+                console.log('🔍 Task search completed. Check console for detailed logs.');
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testManualMove() {
+            const taskId = document.getElementById('taskId').value;
+            const targetColumn = document.getElementById('targetColumn').value;
+            const targetCategory = document.getElementById('targetCategory').value;
+            
+            const resultDiv = document.getElementById('move-result');
+            resultDiv.innerHTML = `<p class="info">Testing manual move: Task ${taskId} → ${targetColumn}${targetCategory ? ` (${targetCategory})` : ''}</p>`;
+            
+            try {
+                const response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        column_id: targetColumn,
+                        category_id: targetCategory || undefined
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Task Move Successful!</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Task Move Failed: ${result.error}</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html> 
