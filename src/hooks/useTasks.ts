@@ -266,7 +266,7 @@ export const useTasks = () => {
     try {
       setOperationLoading(true);
       
-      console.log('🚀 Creating category with data:', categoryData);
+      console.log('🚀 Creating category with data:', JSON.stringify(categoryData, null, 2));
       
       // Validate required fields
       if (!categoryData.name || !categoryData.column_id) {
@@ -283,26 +283,40 @@ export const useTasks = () => {
         return existingCategory; // Return existing category instead of creating duplicate
       }
       
+      const requestBody = {
+        ...categoryData,
+        order_index: categoryData.order_index || 0,
+        is_default: false
+      };
+      
+      console.log('📤 Sending request to API:', JSON.stringify(requestBody, null, 2));
+      
       const response = await fetch(`${API_BASE}/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...categoryData,
-          order_index: categoryData.order_index || 0,
-          is_default: false
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('📥 API Response status:', response.status);
+      console.log('📥 API Response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('❌ API Error:', errorData);
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.error('❌ API Error Response:', JSON.stringify(errorData, null, 2));
+        } catch (parseError) {
+          console.error('❌ Failed to parse error response:', parseError);
+          errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+        }
+        
         throw new Error(errorData.error || `HTTP ${response.status}: Failed to create category`);
       }
 
       const newCategory = await response.json();
-      console.log('✅ Category created successfully:', newCategory);
+      console.log('✅ Category created successfully:', JSON.stringify(newCategory, null, 2));
       
       // Update local state optimistically
       setColumns(prevColumns => {
@@ -320,6 +334,11 @@ export const useTasks = () => {
       return newCategory;
     } catch (err) {
       console.error('❌ Error creating category:', err);
+      console.error('❌ Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : 'No stack trace',
+        categoryData
+      });
       throw err;
     } finally {
       setOperationLoading(false);

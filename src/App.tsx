@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Sidebar } from './components/Sidebar';
@@ -31,13 +31,27 @@ export default function App() {
     tasks
   } = useTasks();
 
-  const triggerCelebration = () => {
-    setShowParticles(true);
-  };
+  // Memoize functions to prevent unnecessary re-renders
+  const memoizedCreateTask = useCallback(createTask, [createTask]);
+  const memoizedMoveTask = useCallback(moveTask, [moveTask]);
+  const memoizedCreateCategory = useCallback(createCategory, [createCategory]);
+  const memoizedDeleteCategory = useCallback(deleteCategory, [deleteCategory]);
+  const memoizedCreateTeamMember = useCallback(createTeamMember, [createTeamMember]);
+  const memoizedUpdateTeamMember = useCallback(updateTeamMember, [updateTeamMember]);
+  const memoizedDeleteTeamMember = useCallback(deleteTeamMember, [deleteTeamMember]);
 
-  const toggleStats = () => {
+  // Memoize data to prevent unnecessary re-renders
+  const memoizedColumns = useMemo(() => columns, [columns]);
+  const memoizedTeamMembers = useMemo(() => teamMembers, [teamMembers]);
+  const memoizedTasks = useMemo(() => tasks, [tasks]);
+
+  const triggerCelebration = useCallback(() => {
+    setShowParticles(true);
+  }, []);
+
+  const toggleStats = useCallback(() => {
     setIsStatsCollapsed(!isStatsCollapsed);
-  };
+  }, [isStatsCollapsed]);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -51,11 +65,11 @@ export default function App() {
           {/* Left sidebar with celebration trigger */}
           <Sidebar 
             onCelebrate={triggerCelebration}
-            teamMembers={teamMembers}
-            createTeamMember={createTeamMember}
-            updateTeamMember={updateTeamMember}
-            deleteTeamMember={deleteTeamMember}
-            tasks={tasks}
+            teamMembers={memoizedTeamMembers}
+            createTeamMember={memoizedCreateTeamMember}
+            updateTeamMember={memoizedUpdateTeamMember}
+            deleteTeamMember={memoizedDeleteTeamMember}
+            tasks={memoizedTasks}
           />
           
           {/* Main content area */}
@@ -69,14 +83,14 @@ export default function App() {
               <div className="flex-1 min-w-0">
                 <KanbanBoard 
                   onTaskComplete={triggerCelebration}
-                  columns={columns}
-                  teamMembers={teamMembers}
+                  columns={memoizedColumns}
+                  teamMembers={memoizedTeamMembers}
                   loading={loading}
                   error={error}
-                  createTask={createTask}
-                  moveTask={moveTask}
-                  createCategory={createCategory}
-                  deleteCategory={deleteCategory}
+                  createTask={memoizedCreateTask}
+                  moveTask={memoizedMoveTask}
+                  createCategory={memoizedCreateCategory}
+                  deleteCategory={memoizedDeleteCategory}
                 />
               </div>
               
