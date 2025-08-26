@@ -44,9 +44,40 @@ export async function GET() {
           count: 0
         }));
         
-        // Only use auto-generated team member categories, no manual ones
-        column.categories = teamMemberCategories;
-        column.count = teamMemberCategories.reduce((sum, cat) => sum + cat.count, 0);
+        // Get tasks for each team member category
+        const categoriesWithTasks = await Promise.all(teamMemberCategories.map(async (category) => {
+          const { data: tasks, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('category_id', category.id)
+            .order('created_at', { ascending: false });
+          
+          if (tasksError) throw tasksError;
+          
+          return {
+            ...category,
+            tasks: tasks || [],
+            count: (tasks || []).length
+          };
+        }));
+        
+        // Also get tasks that don't have a category_id (direct column tasks)
+        const { data: directTasks, error: directTasksError } = await supabase
+          .from('tasks')
+          .select('*')
+          .eq('column_id', column.id)
+          .is('category_id', null)
+          .order('created_at', { ascending: false });
+        
+        if (directTasksError) throw directTasksError;
+        
+        const allTasks = [...categoriesWithTasks.flatMap(cat => cat.tasks), ...(directTasks || [])];
+        return {
+          ...column,
+          categories: categoriesWithTasks,
+          tasks: directTasks || [],
+          count: allTasks.length
+        };
       }
       // Handle today column with existing categories
       else if (column.id === 'today') {
