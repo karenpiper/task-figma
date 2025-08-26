@@ -8,17 +8,17 @@ import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Category, Column, TeamMember } from '../hooks/useTasks';
+import { Category, Column, TeamMember, Task } from '../hooks/useTasks';
 import { TaskCard } from './TaskCard';
 
 interface TaskColumnProps {
   column: Column;
   onTaskComplete?: () => void;
-  onCreateTask?: (taskData: { title: string; priority?: string; project?: string; column_id?: string; category_id?: string }) => Promise<any>;
-  onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
+  onCreateTask: (taskData: Partial<Task>) => Promise<any>;
+  onMoveTask?: (taskId: string, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onCreateCategory?: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
-  teamMembers?: TeamMember[];
+  teamMembers: TeamMember[];
 }
 
 export function TaskColumn({ 

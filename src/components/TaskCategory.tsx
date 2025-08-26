@@ -14,10 +14,10 @@ interface TaskCategoryProps {
   columnId: string;
   category: Category;
   onTaskComplete?: () => void;
-  onCreateTask?: (taskData: { title: string; priority?: string; project?: string; column_id?: string; category_id?: string }) => Promise<Task>;
-  onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
+  onCreateTask: (taskData: Partial<Task>) => Promise<any>;
+  onMoveTask?: (taskId: string, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
-  teamMembers?: Array<{ id: number; name: string; avatar: string; color: string }>;
+  teamMembers: Array<{ id: number; name: string; avatar: string; color: string }>;
 }
 
 export function TaskCategory({ 
