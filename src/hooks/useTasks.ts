@@ -150,11 +150,13 @@ export const useTasks = () => {
       let response: Response;
       
       // Check if this is a team member category in follow-up column
-      const isTeamMemberCategory = targetCategoryId && targetCategoryId.startsWith('follow-up_');
+      // Only treat categories starting with 'follow-up_' followed by a number as team member categories
+      const isTeamMemberCategory = targetCategoryId && 
+        targetCategoryId.startsWith('follow-up_') && 
+        /^follow-up_\d+$/.test(targetCategoryId);
       
-      // For team member categories, we need to handle them specially since they don't exist in the database
       if (isTeamMemberCategory) {
-        console.log('🎯 Detected team member category, handling specially...');
+        console.log('🎯 Detected auto-generated team member category, handling specially...');
         
         // Extract team member ID from category ID
         const teamMemberId = targetCategoryId.replace('follow-up_', '');
@@ -185,8 +187,8 @@ export const useTasks = () => {
           throw new Error(errorData.error || `HTTP ${response.status}: Failed to move task`);
         }
       } else {
-        // Standard category movement
-        console.log('🌐 Making API call to move task...');
+        // Standard category movement (including manual categories like 'follow-up_people')
+        console.log('🌐 Making API call to move task to regular category...');
         
         response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
           method: 'POST',
@@ -270,9 +272,9 @@ export const useTasks = () => {
           
           // Add task to target
           if (column.id === targetColumnId) {
-            if (targetCategoryId && !targetCategoryId.startsWith('follow-up_')) {
-              // Add to regular category
-              console.log(`✅ Adding task to category ${targetCategoryId}`);
+            if (targetCategoryId && !isTeamMemberCategory) {
+              // Add to regular category (including manual categories)
+              console.log(`✅ Adding task to regular category ${targetCategoryId}`);
               return {
                 ...column,
                 categories: column.categories.map((cat: Category) => 
@@ -283,8 +285,8 @@ export const useTasks = () => {
               };
             } else {
               // Add directly to column (for team member categories or no category)
-              const categoryName = targetCategoryId?.startsWith('follow-up_') 
-                ? `Team Member (${targetCategoryId.replace('follow-up_', '')})`
+              const categoryName = isTeamMemberCategory 
+                ? `Team Member (${targetCategoryId?.replace('follow-up_', '')})`
                 : 'Direct Column';
               console.log(`✅ Adding task directly to column ${column.title}`);
               return {
