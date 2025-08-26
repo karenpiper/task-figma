@@ -254,9 +254,12 @@ export const useTasks = () => {
         let sourceColumnId: string | undefined;
         let sourceCategoryId: string | undefined;
         
+        // Convert taskId to number for comparisons with task.id
+        const numericTaskId = parseInt(taskId, 10);
+        
         for (const col of prevColumns) {
           // Check direct column tasks
-          foundTask = col.tasks.find((task: Task) => task.id === taskId);
+          foundTask = col.tasks.find((task: Task) => task.id === numericTaskId);
           if (foundTask) {
             sourceColumnId = col.id;
             break;
@@ -264,7 +267,7 @@ export const useTasks = () => {
           
           // Check category tasks
           for (const cat of col.categories) {
-            foundTask = cat.tasks.find((task: Task) => task.id === taskId);
+            foundTask = cat.tasks.find((task: Task) => task.id === numericTaskId);
             if (foundTask) {
               sourceColumnId = col.id;
               sourceCategoryId = cat.id;
@@ -296,7 +299,7 @@ export const useTasks = () => {
                   // Remove from source category
                   return {
                     ...cat,
-                    tasks: cat.tasks.filter((t: Task) => t.id !== taskId),
+                    tasks: cat.tasks.filter((t: Task) => t.id !== numericTaskId),
                     count: cat.count - 1
                   };
                 } else if (cat.id === targetCategoryId) {
@@ -328,7 +331,7 @@ export const useTasks = () => {
                 // Remove from category
                 const updatedCategories = column.categories.map((cat: Category) => 
                   cat.id === sourceCategoryId 
-                    ? { ...cat, tasks: cat.tasks.filter((t: Task) => t.id !== taskId), count: cat.count - 1 }
+                    ? { ...cat, tasks: cat.tasks.filter((t: Task) => t.id !== numericTaskId), count: cat.count - 1 }
                     : cat
                 );
                 
@@ -341,7 +344,7 @@ export const useTasks = () => {
                 // Remove from column directly
                 return {
                   ...column,
-                  tasks: column.tasks.filter((t: Task) => t.id !== taskId),
+                  tasks: column.tasks.filter((t: Task) => t.id !== numericTaskId),
                   count: column.count - 1
                 };
               }
