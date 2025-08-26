@@ -99,7 +99,7 @@ export const useTasks = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create task');
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to create task`);
       }
 
       const newTask = await response.json();
@@ -109,23 +109,20 @@ export const useTasks = () => {
         return prevColumns.map((column: Column) => {
           if (column.id === newTask.column_id) {
             if (newTask.category_id) {
-              // Add to category
-              const updatedCategories = column.categories.map((category: Category) => {
-                if (category.id === newTask.category_id) {
-                  return {
-                    ...category,
-                    tasks: [newTask as Task, ...category.tasks],
-                    count: category.tasks.length + 1
-                  };
-                }
-                return category;
-              });
-              return { ...column, categories: updatedCategories, count: column.count + 1 };
+              // Add to specific category
+              return {
+                ...column,
+                categories: column.categories.map((cat: Category) => 
+                  cat.id === newTask.category_id 
+                    ? { ...cat, tasks: [newTask, ...cat.tasks], count: cat.count + 1 }
+                    : cat
+                )
+              };
             } else {
               // Add directly to column
               return {
                 ...column,
-                tasks: [newTask as Task, ...column.tasks],
+                tasks: [newTask, ...column.tasks],
                 count: column.count + 1
               };
             }
@@ -136,7 +133,8 @@ export const useTasks = () => {
       
       return newTask;
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to create task');
+      console.error('❌ Error creating task:', err);
+      throw err;
     } finally {
       setOperationLoading(false);
     }
@@ -499,23 +497,25 @@ export const useTasks = () => {
   // Delete team member
   const deleteTeamMember = useCallback(async (id: number) => {
     try {
-      const response = await fetch(`${API_BASE}/team-members`, {
+      setOperationLoading(true);
+      
+      const response = await fetch(`${API_BASE}/team-members/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete team member');
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to delete team member`);
       }
 
-      setTeamMembers(prev => prev.filter(member => member.id !== id));
+      // Update local state optimistically
+      setTeamMembers((prev: TeamMember[]) => prev.filter(member => member.id !== id));
+      
     } catch (err) {
-      console.error('Error deleting team member:', err);
+      console.error('❌ Error deleting team member:', err);
       throw err;
+    } finally {
+      setOperationLoading(false);
     }
   }, []);
 
