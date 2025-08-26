@@ -67,7 +67,7 @@ export function KanbanBoard({
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10 pointer-events-none"></div>
       
       <div className="relative z-10 flex gap-6 min-w-max pb-8">
-        {(columns as any[]).map((column) => (
+        {columns.map((column) => (
           <TaskColumn 
             key={column.id} 
             column={column} 
