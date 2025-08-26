@@ -142,6 +142,11 @@ export function TaskColumn({
     return isDayColumn(columnId) || columnId === 'follow-up';
   };
 
+  const shouldShowAddCategoryButton = (columnId: string) => {
+    // Only show add category button for today column, not follow-up
+    return isDayColumn(columnId);
+  };
+
   return (
     <div 
       ref={dropRefCallback}
@@ -178,14 +183,65 @@ export function TaskColumn({
             Add Task
           </Button>
           
-          <Button
-            onClick={() => setIsCreatingCategory(true)}
-            size="sm"
-            variant="outline"
-            className="bg-white/40 hover:bg-white/60 text-slate-700 border-white/30 hover:border-white/50"
-          >
-            <Users className="w-4 h-4" />
-          </Button>
+          {/* Only show Add Category button for columns that should have it */}
+          {shouldShowAddCategoryButton(column.id) && (
+            <Dialog open={isCreatingCategory} onOpenChange={setIsCreatingCategory}>
+              <DialogTrigger asChild>
+                <div className="group">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl group-hover:scale-[1.01] text-sm"
+                  >
+                    <Plus className="w-3 h-3 mr-2" />
+                    {isDayColumn(column.id) ? 'Add Category' : 'Add Person'}
+                  </Button>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-lg font-semibold text-gray-900">
+                    {isDayColumn(column.id) ? 'Add New Category' : 'Add New Person'}
+                  </DialogTitle>
+                  <p className="text-sm text-gray-600">
+                    {isDayColumn(column.id) 
+                      ? 'Create a new category to organize tasks in this column.'
+                      : 'Add a new person to assign tasks to.'
+                    }
+                  </p>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="categoryName" className="text-sm font-medium text-gray-700">
+                      {isDayColumn(column.id) ? 'Category Name' : 'Person Name'}
+                    </Label>
+                    <Input
+                      id="categoryName"
+                      value={newCategoryData.name}
+                      onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder={isDayColumn(column.id) ? "Enter category name..." : "Enter person name..."}
+                      className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      onClick={handleCreateCategory}
+                      disabled={!newCategoryData.name.trim()}
+                      className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                    >
+                      {isDayColumn(column.id) ? 'Create Category' : 'Add Person'}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsCreatingCategory(false)}
+                      className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
         
@@ -209,55 +265,6 @@ export function TaskColumn({
               ))}
               
               {/* Add category button for day columns */}
-              <Dialog open={isCreatingCategory} onOpenChange={setIsCreatingCategory}>
-                <DialogTrigger asChild>
-                  <div className="group">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full h-10 border-2 border-dashed border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-slate-600 hover:text-slate-700 transition-all duration-300 rounded-xl group-hover:scale-[1.01] text-sm"
-                    >
-                      <Plus className="w-3 h-3 mr-2" />
-                      Add Category
-                    </Button>
-                  </div>
-                </DialogTrigger>
-                <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold text-gray-900">Add New Category</DialogTitle>
-                    <p className="text-sm text-gray-600">Create a new category to organize tasks in this column.</p>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="categoryName" className="text-sm font-medium text-gray-700">Category Name</Label>
-                      <Input
-                        id="categoryName"
-                        value={newCategoryData.name}
-                        onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Enter category name..."
-                        className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="flex gap-2 pt-2">
-                      <Button 
-                        onClick={handleCreateCategory}
-                        disabled={!newCategoryData.name.trim()}
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                      >
-                        Create Category
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setIsCreatingCategory(false)}
-                        className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              
-              {/* Show message if no categories exist in day columns */}
               {column.categories.length === 0 && (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
