@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 // Try server-side variables first, fallback to client-side for production
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// If all else fails, use hardcoded values to ensure production works
+const supabaseUrl = process.env.SUPABASE_URL || 
+                   process.env.NEXT_PUBLIC_SUPABASE_URL || 
+                   'https://lgryrpcvbojfaljwlcpi.supabase.co';
+
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 
+                   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+                   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncnlycGN2Ym9qZmFsandsY3BpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDAxMTMsImV4cCI6MjA3MTY3NjExM30.Kl7YKYlWEuXDjuXhcG7t2Ii0VmWCB64vu8BGOIk8wjo';
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
