@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
   try {
-    console.log('🔍 Board API: Starting fetch...');
+    console.log('🔍 Board API: Starting fetch... [UPDATED VERSION]');
     
     // Get all columns
     const { data: columns, error: columnsError } = await supabase
@@ -70,7 +70,7 @@ export async function GET() {
           };
         }));
         
-        // Also get tasks that don't have a category_id (direct column tasks)
+        // Get direct column tasks
         const { data: directTasks, error: directTasksError } = await supabase
           .from('tasks')
           .select('*')
@@ -152,14 +152,15 @@ export async function GET() {
       }
     }));
     
-    console.log('✅ Board data assembled successfully');
+    console.log('✅ Board data assembled successfully [UPDATED VERSION]');
     return NextResponse.json(boardData);
     
   } catch (error) {
     console.error('❌ Board API error:', error);
     return NextResponse.json({ 
       error: 'Failed to fetch board',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      version: 'UPDATED VERSION - ' + new Date().toISOString()
     }, { status: 500 });
   }
 } 
