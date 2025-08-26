@@ -159,59 +159,73 @@ export const useTasks = () => {
       setColumns((prevColumns: Column[]) => {
         console.log('📊 Updating columns state for optimistic update');
         
-        const updatedColumns = prevColumns.map((column: Column) => {
-          // Remove task from all columns/categories first
+        // First, find the task we're moving
+        let taskToMove: Task | undefined;
+        for (const column of prevColumns) {
+          // Check direct column tasks
+          const directTask = column.tasks.find((t: Task) => t.id === taskId);
+          if (directTask) {
+            taskToMove = directTask;
+            break;
+          }
+          // Check category tasks
+          for (const category of column.categories) {
+            const categoryTask = category.tasks.find((t: Task) => t.id === taskId);
+            if (categoryTask) {
+              taskToMove = categoryTask;
+              break;
+            }
+          }
+          if (taskToMove) break;
+        }
+        
+        if (!taskToMove) {
+          console.error('❌ Task not found for movement:', taskId);
+          return prevColumns;
+        }
+        
+        console.log(`📦 Found task: "${taskToMove.title}" in column "${columnId}"`);
+        
+        // Now update the columns
+        return prevColumns.map((column: Column) => {
+          // Remove task from this column (both direct and category tasks)
           const updatedCategories = column.categories.map((category: Category) => ({
             ...category,
             tasks: category.tasks.filter((t: Task) => t.id !== taskId)
           }));
           
-          return {
+          const updatedColumn = {
             ...column,
             categories: updatedCategories,
             tasks: column.tasks.filter((t: Task) => t.id !== taskId)
           };
-        });
-
-        // Add task to destination
-        return updatedColumns.map((column: Column) => {
+          
+          // If this is the destination column, add the task
           if (column.id === columnId) {
             if (categoryId) {
               // Add to specific category
-              const updatedCategories = column.categories.map((category: Category) => {
+              const updatedCategories = updatedColumn.categories.map((category: Category) => {
                 if (category.id === categoryId) {
-                  // Find the task in the original data
-                  const task = prevColumns
-                    .flatMap((col: Column) => [...col.tasks, ...col.categories.flatMap((cat: Category) => cat.tasks)])
-                    .find((t: Task) => t.id === taskId);
-                  
-                  if (task) {
-                    console.log(`✅ Adding task to category ${category.name}`);
-                    return {
-                      ...category,
-                      tasks: [task, ...category.tasks]
-                    };
-                  }
+                  console.log(`✅ Adding task to category ${category.name}`);
+                  return {
+                    ...category,
+                    tasks: [taskToMove!, ...category.tasks]
+                  };
                 }
                 return category;
               });
-              return { ...column, categories: updatedCategories };
+              return { ...updatedColumn, categories: updatedCategories };
             } else {
               // Add directly to column
-              const task = prevColumns
-                .flatMap((col: Column) => [...col.tasks, ...col.categories.flatMap((cat: Category) => cat.tasks)])
-                .find((t: Task) => t.id === taskId);
-              
-              if (task) {
-                console.log(`✅ Adding task directly to column ${column.title}`);
-                return {
-                  ...column,
-                  tasks: [task, ...column.tasks]
-                };
-              }
+              console.log(`✅ Adding task directly to column ${column.title}`);
+              return {
+                ...updatedColumn,
+                tasks: [taskToMove!, ...updatedColumn.tasks]
+              };
             }
           }
-          return column;
+          
+          return updatedColumn;
         });
       });
 

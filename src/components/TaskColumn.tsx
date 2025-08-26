@@ -48,22 +48,33 @@ export function TaskColumn({
   const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
     drop: async (item: any) => {
-      console.log('Dropped task:', item.id, 'into column:', column.id);
+      console.log('🎯 TaskColumn drop event:', {
+        taskId: item.id,
+        taskTitle: item.title,
+        targetColumn: column.id,
+        targetColumnTitle: column.title,
+        hasOnMoveTask: !!onMoveTask
+      });
       
       // Handle task completion if moving to completed column
       if (column.id === 'completed' && onTaskComplete) {
+        console.log('✅ Task completed, triggering celebration');
         onTaskComplete();
       }
       
       // Move task to this column if onMoveTask is provided
       if (onMoveTask && item.id) {
         try {
+          console.log(`🚀 Attempting to move task ${item.id} to column ${column.id}`);
           // For columns with categories, we'll need to determine the target category
           // For now, drop directly into the column (category_id will be null)
           await onMoveTask(item.id, column.id, undefined);
+          console.log(`✅ Task ${item.id} moved successfully to column ${column.id}`);
         } catch (error) {
-          console.error('Failed to move task:', error);
+          console.error('❌ Failed to move task:', error);
         }
+      } else {
+        console.warn('⚠️ onMoveTask not provided or item.id missing:', { onMoveTask: !!onMoveTask, itemId: item.id });
       }
     },
     collect: (monitor) => ({
