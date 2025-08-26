@@ -14,14 +14,14 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return handleTaskMove(request, params);
+  return handleTaskMove(request, { params });
 }
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return handleTaskMove(request, params);
+  return handleTaskMove(request, { params });
 }
 
 async function handleTaskMove(
