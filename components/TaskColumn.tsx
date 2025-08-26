@@ -48,16 +48,8 @@ export function TaskColumn({ column, onTaskComplete }: TaskColumnProps) {
         onTaskComplete();
       }
       
-      // Move task to this column if onMoveTask is provided
-      if (onMoveTask && item.id) {
-        try {
-          // For columns with categories, we'll need to determine the target category
-          // For now, drop directly into the column (category_id will be null)
-          await onMoveTask(item.id, column.id, undefined);
-        } catch (error) {
-          console.error('Failed to move task:', error);
-        }
-      }
+      // Log the drop for debugging
+      console.log('Task dropped into column:', column.id);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
