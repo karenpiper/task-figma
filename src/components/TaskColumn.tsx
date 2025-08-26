@@ -142,6 +142,13 @@ export function TaskColumn({
   const shouldShowCategories = useMemo(() => isDayColumn || column.id === 'follow-up', [isDayColumn, column.id]);
   const shouldShowAddCategoryButton = useMemo(() => isDayColumn, [isDayColumn]);
 
+  // Allow task creation in team member categories (like follow-up_1) but not manual categories
+  const shouldAllowTaskCreation = useMemo(() => {
+    if (isDayColumn) return true; // Always allow in day columns
+    if (column.id === 'follow-up') return true; // Allow in follow-up column for team member categories
+    return false; // Don't allow in other columns
+  }, [isDayColumn, column.id]);
+
   return (
     <div 
       ref={dropRefCallback}

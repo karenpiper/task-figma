@@ -109,6 +109,14 @@ export const useTasks = () => {
         return prevColumns.map((column: Column) => {
           if (column.id === newTask.column_id) {
             if (newTask.category_id) {
+              // Check if this is a team member category
+              const isTeamMemberCategory = newTask.category_id.startsWith('follow-up_') && 
+                /^follow-up_\d+$/.test(newTask.category_id);
+              
+              if (isTeamMemberCategory) {
+                console.log(`🎯 Creating task in team member category: ${newTask.category_id}`);
+              }
+              
               // Add to specific category
               return {
                 ...column,
@@ -169,7 +177,8 @@ export const useTasks = () => {
         
         console.log(`👤 Moving task to team member: ${teamMember.name}`);
         
-        // Move task to follow-up column without a category (we'll handle the visual grouping in the UI)
+        // For team member categories, we need to store the team_member_id
+        // Since the database doesn't have this field, we'll use the category_id as a reference
         response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
           method: 'POST',
           headers: {
@@ -177,19 +186,14 @@ export const useTasks = () => {
           },
           body: JSON.stringify({
             column_id: targetColumnId,
-            category_id: null, // No category_id for team member categories
-            team_member_id: teamMemberId // Store team member reference
+            category_id: targetCategoryId, // Store the team member category ID
+            team_member_id: teamMemberId
           }),
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `HTTP ${response.status}: Failed to move task`);
-        }
       } else {
-        // Standard category movement (including manual categories like 'follow-up_people')
         console.log('🌐 Making API call to move task to regular category...');
         
+        // Regular category move
         response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
           method: 'POST',
           headers: {
@@ -200,111 +204,109 @@ export const useTasks = () => {
             category_id: targetCategoryId
           }),
         });
+      }
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `HTTP ${response.status}: Failed to move task`);
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to move task`);
       }
 
       const result = await response.json();
       console.log('✅ Task moved successfully via API:', result);
       
-      // Optimistic update
+      // Update local state optimistically
       setColumns((prevColumns: Column[]) => {
-        console.log('📊 Updating columns state for optimistic update');
-        
-        // Find the task in current columns
-        let foundTask: Task | null = null;
-        let sourceColumn: Column | null = null;
-        let sourceCategory: Category | null = null;
-        
-        for (const col of prevColumns) {
-          // Check direct column tasks
-          const directTask = col.tasks.find((t: Task) => t.id === taskId);
-          if (directTask) {
-            foundTask = directTask;
-            sourceColumn = col;
-            break;
-          }
+        return prevColumns.map((column: Column) => {
+          // Find the task in the current column/category
+          let foundTask: Task | undefined;
+          let sourceColumn = column;
+          let sourceCategory: Category | undefined;
           
-          // Check category tasks
-          for (const cat of col.categories) {
-            const categoryTask = cat.tasks.find((t: Task) => t.id === taskId);
-            if (categoryTask) {
-              foundTask = categoryTask;
-              sourceColumn = col;
-              sourceCategory = cat;
-              break;
+          // Search in column tasks
+          foundTask = column.tasks.find((task: Task) => task.id === taskId);
+          
+          // Search in category tasks
+          if (!foundTask) {
+            for (const cat of column.categories) {
+              foundTask = cat.tasks.find((task: Task) => task.id === taskId);
+              if (foundTask) {
+                sourceCategory = cat;
+                break;
+              }
             }
           }
-          if (foundTask) break;
-        }
-        
-        if (!foundTask) {
-          console.warn('⚠️ Task not found in current state, skipping optimistic update');
-          return prevColumns;
-        }
-        
-        console.log(`📦 Found task: "${foundTask.title}" in column "${sourceColumn?.title}"`);
-        
-        return prevColumns.map((column: Column) => {
-          // Remove task from source
-          if (column.id === sourceColumn?.id) {
+          
+          if (foundTask) {
+            console.log(`📦 Found task: "${foundTask.title}" in column "${column.title}"`);
+            
+            // Remove task from source
             if (sourceCategory) {
               // Remove from category
-              return {
+              const updatedCategories = column.categories.map((cat: Category) => 
+                cat.id === sourceCategory!.id 
+                  ? { ...cat, tasks: cat.tasks.filter((t: Task) => t.id !== taskId), count: cat.count - 1 }
+                  : cat
+              );
+              
+              // Update column with removed task
+              sourceColumn = {
                 ...column,
-                categories: column.categories.map((cat: Category) => 
-                  cat.id === sourceCategory?.id 
-                    ? { ...cat, tasks: cat.tasks.filter((t: Task) => t.id !== taskId) }
-                    : cat
-                )
+                categories: updatedCategories,
+                count: column.count - 1
               };
             } else {
-              // Remove from direct column tasks
-              return {
+              // Remove from column directly
+              sourceColumn = {
                 ...column,
-                tasks: column.tasks.filter((t: Task) => t.id !== taskId)
+                tasks: column.tasks.filter((t: Task) => t.id !== taskId),
+                count: column.count - 1
               };
             }
           }
           
-          // Add task to target
+          // Add task to target column
           if (column.id === targetColumnId) {
-            if (targetCategoryId && !isTeamMemberCategory) {
-              // Add to regular category (including manual categories)
-              console.log(`✅ Adding task to regular category ${targetCategoryId}`);
+            if (targetCategoryId) {
+              // Add to specific category
+              const updatedCategories = column.categories.map((cat: Category) => {
+                if (cat.id === targetCategoryId) {
+                  return {
+                    ...cat,
+                    tasks: [foundTask!, ...cat.tasks],
+                    count: cat.count + 1
+                  };
+                }
+                return cat;
+              });
+              
               return {
                 ...column,
-                categories: column.categories.map((cat: Category) => 
-                  cat.id === targetCategoryId 
-                    ? { ...cat, tasks: [...cat.tasks, foundTask!] }
-                    : cat
-                )
+                categories: updatedCategories,
+                count: column.count + 1
               };
             } else {
-              // Add directly to column (for team member categories or no category)
-              const categoryName = isTeamMemberCategory 
-                ? `Team Member (${targetCategoryId?.replace('follow-up_', '')})`
-                : 'Direct Column';
-              console.log(`✅ Adding task directly to column ${column.title}`);
+              // Add directly to column
               return {
                 ...column,
-                tasks: [...column.tasks, foundTask!]
+                tasks: [foundTask!, ...column.tasks],
+                count: column.count + 1
               };
             }
           }
           
-          return column;
+          return sourceColumn;
         });
       });
       
       console.log(`✅ Task ${taskId} moved successfully to column ${targetColumnId}`);
-      return result;
-    } catch (error) {
-      console.error('❌ Failed to move task:', error);
-      throw error;
+      
+      if (targetCategoryId) {
+        console.log(`✅ Task ${taskId} moved successfully to category ${targetCategoryId}`);
+      }
+      
+    } catch (err) {
+      console.error('❌ Error moving task:', err);
+      throw err;
     } finally {
       setOperationLoading(false);
     }
