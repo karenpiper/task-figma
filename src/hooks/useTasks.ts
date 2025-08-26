@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 // API base URL for Next.js API routes
 const API_BASE = '/api';
@@ -411,13 +411,13 @@ export const useTasks = () => {
     }
   }, []);
 
-  // Get all tasks (computed getter)
-  const getTasks = () => {
+  // Get all tasks (memoized to prevent unnecessary re-renders)
+  const tasks = useMemo(() => {
     return columns.flatMap(column => [
       ...column.tasks,
       ...column.categories.flatMap(category => category.tasks)
     ]);
-  };
+  }, [columns]);
 
   // Initialize data only once
   useEffect(() => {
@@ -439,7 +439,7 @@ export const useTasks = () => {
     createTeamMember,
     updateTeamMember,
     deleteTeamMember,
-    tasks: getTasks(),
+    tasks,
     refetch: fetchBoard,
   };
 }; 
