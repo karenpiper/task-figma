@@ -130,47 +130,53 @@ export function TaskCategory({
   return (
     <div 
       ref={dropRefCallback}
-      className={`mb-4 transition-all duration-300 ${
-        isOver ? 'bg-white/40 backdrop-blur-md rounded-2xl border border-white/60' : ''
+      className={`mb-4 transition-all duration-200 ${
+        isOver ? 'scale-105' : 'scale-100'
       }`}
     >
       {/* Category Header */}
-      <div className="flex items-center justify-between mb-3 group">
-        <div className="flex items-center gap-3 flex-1">
-          <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${config.color} flex items-center justify-center text-white shadow-lg`}>
-            <span className="text-sm">{config.icon}</span>
+      <div className={`p-3 rounded-xl backdrop-blur-sm border transition-all duration-200 ${
+        isOver 
+          ? 'bg-white/40 border-green-300/60 shadow-lg' 
+          : 'bg-white/20 border-white/30'
+      }`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{getCategoryConfig(category.name).icon}</span>
+            <h4 className="font-medium text-slate-800 text-sm">{category.name}</h4>
+            <Badge className="bg-slate-100/80 text-slate-700 border-slate-200/60 text-xs">
+              {category.tasks.length}
+            </Badge>
           </div>
-          <div className="flex-1">
-            <h4 className="font-semibold text-slate-800 text-sm">{category.name}</h4>
-            <p className="text-xs text-slate-600">{category.count} tasks</p>
+          
+          {/* Category actions */}
+          <div className="flex items-center gap-1">
+            <Button
+              onClick={() => setIsCreatingTask(true)}
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 rounded-md hover:bg-white/40 text-slate-600"
+            >
+              <Plus className="w-3 h-3" />
+            </Button>
+            
+            {onDeleteCategory && (
+              <Button
+                onClick={() => onDeleteCategory(category.id)}
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 rounded-md hover:bg-red-100/40 text-red-600"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            )}
           </div>
-          <Badge 
-            variant="secondary" 
-            className={`${config.bg} ${config.text} border-0 font-medium text-xs`}
-          >
-            {category.count}
-          </Badge>
         </div>
         
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          {isCustomCategory && onDeleteCategory && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 rounded-xl hover:bg-red-100/60 backdrop-blur-sm"
-              onClick={() => onDeleteCategory(category.id)}
-            >
-              <X className="w-3 h-3 text-red-600" />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 rounded-xl hover:bg-white/30 backdrop-blur-sm"
-          >
-            <MoreHorizontal className="w-3 h-3 text-slate-600" />
-          </Button>
-        </div>
+        {/* Drop zone indicator */}
+        {isOver && (
+          <div className="h-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse mb-2"></div>
+        )}
       </div>
 
       {/* Tasks Container */}

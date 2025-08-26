@@ -148,10 +148,17 @@ export const useTasks = () => {
   const moveTask = useCallback(async (taskId: number, columnId: string, categoryId?: string) => {
     try {
       setOperationLoading(true);
-      console.log(`Moving task ${taskId} to column ${columnId}, category ${categoryId}`);
+      console.log(`🚀 Moving task ${taskId} to column ${columnId}, category ${categoryId || 'none'}`);
+      
+      // Validate inputs
+      if (!taskId || !columnId) {
+        throw new Error('Task ID and Column ID are required');
+      }
       
       // Optimistic update - move task immediately in UI
       setColumns((prevColumns: Column[]) => {
+        console.log('📊 Updating columns state for optimistic update');
+        
         const updatedColumns = prevColumns.map((column: Column) => {
           // Remove task from all columns/categories first
           const updatedCategories = column.categories.map((category: Category) => ({
@@ -179,6 +186,7 @@ export const useTasks = () => {
                     .find((t: Task) => t.id === taskId);
                   
                   if (task) {
+                    console.log(`✅ Adding task to category ${category.name}`);
                     return {
                       ...category,
                       tasks: [task, ...category.tasks]
@@ -195,6 +203,7 @@ export const useTasks = () => {
                 .find((t: Task) => t.id === taskId);
               
               if (task) {
+                console.log(`✅ Adding task directly to column ${column.title}`);
                 return {
                   ...column,
                   tasks: [task, ...column.tasks]
@@ -207,6 +216,7 @@ export const useTasks = () => {
       });
 
       // Now do the actual API call
+      console.log('🌐 Making API call to move task...');
       const response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
         method: 'PATCH',
         headers: {
@@ -220,14 +230,19 @@ export const useTasks = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to move task');
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to move task`);
       }
 
-      console.log('Task moved successfully');
+      const result = await response.json();
+      console.log('✅ Task moved successfully via API:', result);
+      
     } catch (err) {
+      console.error('❌ Error moving task:', err);
+      
       // If there's an error, revert to the correct state
+      console.log('🔄 Reverting state due to error...');
       await fetchBoard();
-      console.error('Error moving task:', err);
+      
       throw err;
     } finally {
       setOperationLoading(false);
