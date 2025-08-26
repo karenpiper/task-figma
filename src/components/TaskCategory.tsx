@@ -41,15 +41,26 @@ export function TaskCategory({
   const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
     drop: async (item: any) => {
-      console.log('Dropped task:', item.id, 'into category:', category.id);
+      console.log('🎯 TaskCategory drop event:', {
+        taskId: item.id,
+        taskTitle: item.title,
+        targetCategory: category.id,
+        targetCategoryName: category.name,
+        targetColumn: category.column_id,
+        hasOnMoveTask: !!onMoveTask
+      });
       
       // Move task to this category if onMoveTask is provided
       if (onMoveTask && item.id) {
         try {
+          console.log(`🚀 Attempting to move task ${item.id} to category ${category.id} in column ${category.column_id}`);
           await onMoveTask(item.id, category.column_id, category.id);
+          console.log(`✅ Task ${item.id} moved successfully to category ${category.id}`);
         } catch (error) {
-          console.error('Failed to move task:', error);
+          console.error('❌ Failed to move task:', error);
         }
+      } else {
+        console.warn('⚠️ onMoveTask not provided or item.id missing:', { onMoveTask: !!onMoveTask, itemId: item.id });
       }
     },
     collect: (monitor) => ({
