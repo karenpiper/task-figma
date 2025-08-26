@@ -171,7 +171,7 @@ export function TaskColumn({
             </Badge>
           </div>
           
-          {/* Add Task button for uncategorized and later columns */}
+          {/* Add Task button for uncategorized and later columns only */}
           {!shouldShowCategories && (
             <Dialog open={isCreatingTask} onOpenChange={setIsCreatingTask}>
               <DialogTrigger asChild>
@@ -243,7 +243,7 @@ export function TaskColumn({
             </Dialog>
           )}
           
-          {/* Removed Add Category button for cleaner design */}
+          {/* No buttons for columns with categories - tasks must be added to specific categories */}
         </div>
         
         {/* Drop zone indicator */}
