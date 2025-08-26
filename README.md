@@ -1,9 +1,16 @@
 
   # Premium Kanban Productivity Tool
 
-  A modern, feature-rich Kanban board application with team management, 1:1 meeting capabilities, and persistent storage.
+  A modern, feature-rich task management application built with React, TypeScript, and Supabase.
 
-  <!-- Triggering new deployment with environment variables -->
+  ## Features
+
+  - Drag and drop task management
+  - Team collaboration tools
+  - Real-time updates
+  - Beautiful, responsive UI
+
+  <!-- Triggering deployment update -->
 
   This is a code bundle for Premium Kanban Productivity Tool. The original project is available at https://www.figma.com/design/sde6NxpOjDRyI3geiElugn/Premium-Kanban-Productivity-Tool.
 
