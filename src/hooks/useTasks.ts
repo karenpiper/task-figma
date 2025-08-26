@@ -60,6 +60,7 @@ export const useTasks = () => {
   const [columns, setColumns] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [operationLoading, setOperationLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Fetch board data
@@ -170,6 +171,7 @@ export const useTasks = () => {
   // Create new task
   const createTask = useCallback(async (taskData: Partial<Task>) => {
     try {
+      setOperationLoading(true);
       const { data, error } = await supabase
         .from('tasks')
         .insert(taskData)
@@ -178,45 +180,21 @@ export const useTasks = () => {
 
       if (error) throw error;
       
-      // Update local state optimistically instead of refetching
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          if (column.id === data.column_id) {
-            if (data.category_id) {
-              // Add to category
-              const updatedCategories = column.categories.map(category => {
-                if (category.id === data.category_id) {
-                  return {
-                    ...category,
-                    tasks: [...category.tasks, data],
-                    count: category.tasks.length + 1
-                  };
-                }
-                return category;
-              });
-              return { ...column, categories: updatedCategories, count: column.count + 1 };
-            } else {
-              // Add directly to column
-              return {
-                ...column,
-                tasks: [...column.tasks, data],
-                count: column.tasks.length + 1
-              };
-            }
-          }
-          return column;
-        });
-      });
+      // Refresh board data to show the new task
+      await fetchBoard();
       
       return data;
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to create task');
+    } finally {
+      setOperationLoading(false);
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Move task to different column/category
   const moveTask = useCallback(async (taskId: number, columnId: string, categoryId?: string) => {
     try {
+      setOperationLoading(true);
       console.log(`Moving task ${taskId} to column ${columnId}, category ${categoryId}`);
       
       const { data, error } = await supabase
@@ -228,99 +206,22 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      // Update local state optimistically instead of refetching
-      setColumns(prevColumns => {
-        let movedTask: Task | null = null;
-        let sourceColumn: Column | null = null;
-        let sourceCategory: Category | null = null;
-
-        // Find and remove task from source
-        const updatedColumns = prevColumns.map(column => {
-          if (column.id === columnId) {
-            // This is the destination column
-            return column;
-          }
-
-          // Check if task is in this column's categories
-          const updatedCategories = column.categories.map(category => {
-            const taskIndex = category.tasks.findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-              movedTask = category.tasks[taskIndex];
-              sourceColumn = column;
-              sourceCategory = category;
-              return {
-                ...category,
-                tasks: category.tasks.filter(t => t.id !== taskId),
-                count: category.tasks.length - 1
-              };
-            }
-            return category;
-          });
-
-          // Check if task is directly in this column
-          const taskIndex = column.tasks.findIndex(t => t.id === taskId);
-          if (taskIndex !== -1) {
-            movedTask = column.tasks[taskIndex];
-            sourceColumn = column;
-            return {
-              ...column,
-              tasks: column.tasks.filter(t => t.id !== taskId),
-              count: column.tasks.length - 1
-            };
-          }
-
-          return { ...column, categories: updatedCategories };
-        });
-
-        // Add task to destination
-        if (movedTask && sourceColumn) {
-          return updatedColumns.map(column => {
-            if (column.id === columnId) {
-              const updatedTask = { ...movedTask!, column_id: columnId, category_id: categoryId };
-              
-              if (categoryId) {
-                // Add to category
-                const updatedCategories = column.categories.map(category => {
-                  if (category.id === categoryId) {
-                    return {
-                      ...category,
-                      tasks: [...category.tasks, updatedTask],
-                      count: category.tasks.length + 1
-                    };
-                  }
-                  return category;
-                });
-                return {
-                  ...column,
-                  categories: updatedCategories,
-                  count: column.count + 1
-                };
-              } else {
-                // Add directly to column
-                return {
-                  ...column,
-                  tasks: [...column.tasks, updatedTask],
-                  count: column.count + 1
-                };
-              }
-            }
-            return column;
-          });
-        }
-
-        return updatedColumns;
-      });
+      // Refresh board data to show the moved task
+      await fetchBoard();
 
       console.log('Task moved successfully');
     } catch (err) {
       console.error('Error moving task:', err);
       throw err;
+    } finally {
+      setOperationLoading(false);
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Create new category
   const createCategory = useCallback(async (categoryData: { name: string; column_id: string; order_index?: number }) => {
     try {
+      setOperationLoading(true);
       const { data, error } = await supabase
         .from('categories')
         .insert(categoryData)
@@ -329,29 +230,22 @@ export const useTasks = () => {
 
       if (error) throw error;
       
-      // Update local state optimistically instead of refetching
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          if (column.id === data.column_id) {
-            return {
-              ...column,
-              categories: [...column.categories, { ...data, tasks: [], count: 0 }]
-            };
-          }
-          return column;
-        });
-      });
+      // Refresh board data to show the new category
+      await fetchBoard();
       
       return data;
     } catch (err) {
       console.error('Error creating category:', err);
       throw err;
+    } finally {
+      setOperationLoading(false);
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
     try {
+      setOperationLoading(true);
       const { error } = await supabase
         .from('categories')
         .delete()
@@ -359,20 +253,15 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      // Update local state optimistically instead of refetching
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          return {
-            ...column,
-            categories: column.categories.filter(cat => cat.id !== categoryId)
-          };
-        });
-      });
+      // Refresh board data to reflect the deletion
+      await fetchBoard();
     } catch (err) {
       console.error('Error deleting category:', err);
       throw err;
+    } finally {
+      setOperationLoading(false);
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Create new team member
   const createTeamMember = useCallback(async (memberData: Partial<TeamMember>) => {
@@ -444,6 +333,7 @@ export const useTasks = () => {
     columns,
     teamMembers,
     loading,
+    operationLoading,
     error,
     createTask,
     moveTask,
