@@ -64,6 +64,13 @@ export function TaskColumn({ column, onTaskComplete }: TaskColumnProps) {
     }),
   });
 
+  // Cast the dropRef to the correct type for React
+  const dropRefCallback = React.useCallback((node: HTMLDivElement | null) => {
+    if (dropRef) {
+      (dropRef as any)(node);
+    }
+  }, [dropRef]);
+
   // Default categories based on column type
   const getDefaultCategories = (columnId: string): string[] => {
     if (columnId === 'blocked') {
@@ -106,7 +113,7 @@ export function TaskColumn({ column, onTaskComplete }: TaskColumnProps) {
 
   return (
     <div 
-      ref={dropRef}
+      ref={dropRefCallback}
       className={`w-80 flex-shrink-0 transition-all duration-300 ${
         isOver ? 'scale-105' : ''
       }`}

@@ -71,6 +71,13 @@ export function TaskColumn({
     }),
   });
 
+  // Cast the dropRef to the correct type for React
+  const dropRefCallback = React.useCallback((node: HTMLDivElement | null) => {
+    if (dropRef) {
+      (dropRef as any)(node);
+    }
+  }, [dropRef]);
+
   const handleCreateCategory = async () => {
     if (!newCategoryData.name.trim() || !onCreateCategory) return;
     
@@ -108,7 +115,7 @@ export function TaskColumn({
 
   return (
     <div 
-      ref={dropRef}
+      ref={dropRefCallback}
       className={`w-80 flex-shrink-0 transition-all duration-300 ${
         isOver ? 'scale-105' : ''
       }`}
