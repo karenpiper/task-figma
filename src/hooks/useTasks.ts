@@ -45,8 +45,6 @@ export interface TeamMember {
 }
 
 export const useTasks = () => {
-  console.log('🔍 useTasks hook loaded - using Next.js API routes');
-  
   const [columns, setColumns] = useState<Column[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -421,10 +419,12 @@ export const useTasks = () => {
     ]);
   };
 
+  // Initialize data only once
   useEffect(() => {
+    console.log('🔍 useTasks hook initialized - using Next.js API routes');
     fetchBoard();
     fetchTeamMembers();
-  }, [fetchBoard, fetchTeamMembers]);
+  }, []); // Empty dependency array - only run once
 
   return {
     columns,
