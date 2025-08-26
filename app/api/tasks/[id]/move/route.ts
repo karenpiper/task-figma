@@ -1,19 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Try server-side variables first, fallback to client-side for production
-// If all else fails, use hardcoded values to ensure production works
-const supabaseUrl = process.env.SUPABASE_URL || 
-                   process.env.NEXT_PUBLIC_SUPABASE_URL || 
-                   'https://lgryrpcvbojfaljwlcpi.supabase.co';
-
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 
-                   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncnlycGN2Ym9qZmFsandsY3BpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDAxMTMsImV4cCI6MjA3MTY3NjExM30.Kl7YKYlWEuXDjuXhcG7t2Ii0VmWCB64vu8BGOIk8wjo';
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables');
-}
+// COMPLETELY HARDCODED - This will definitely work
+const supabaseUrl = 'https://lgryrpcvbojfaljwlcpi.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncnlycGN2Ym9qZmFsandsY3BpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDAxMTMsImV4cCI6MjA3MTY3NjExM30.Kl7YKYlWEuXDjuXhcG7t2Ii0VmWCB64vu8BGOIk8wjo';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -36,8 +26,12 @@ async function handleTaskMove(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log(`🔍 Move API: Processing move for task ${params.id}`);
+    
     const { column_id, category_id, team_member_id } = await request.json();
     const taskId = parseInt(params.id);
+    
+    console.log(`📋 Move request: column_id=${column_id}, category_id=${category_id}, team_member_id=${team_member_id}`);
     
     if (!column_id) {
       return NextResponse.json(
@@ -60,6 +54,8 @@ async function handleTaskMove(
       console.log(`📝 Team member reference: ${team_member_id} (not stored in DB)`);
     }
 
+    console.log(`🔄 Updating task ${taskId} with data:`, updateData);
+
     const { data: updatedTask, error } = await supabase
       .from('tasks')
       .update(updateData)
@@ -67,10 +63,16 @@ async function handleTaskMove(
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Supabase error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Task moved successfully:', updatedTask);
     return NextResponse.json(updatedTask);
+    
   } catch (error) {
-    console.error('Error moving task:', error);
+    console.error('❌ Error moving task:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to move task' },
       { status: 500 }
