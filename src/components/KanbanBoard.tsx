@@ -10,7 +10,7 @@ interface KanbanBoardProps {
   loading: boolean;
   error: string | null;
   createTask: (taskData: Partial<Task>) => Promise<any>;
-  moveTask: (taskId: number, columnId: string, categoryId?: string) => Promise<void>;
+  moveTask: (taskId: string, columnId: string, categoryId?: string) => Promise<void>;
   createCategory: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
   deleteCategory: (categoryId: string) => Promise<void>;
 }
