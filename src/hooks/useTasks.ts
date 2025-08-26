@@ -257,29 +257,35 @@ export const useTasks = () => {
         // Convert taskId to number for comparisons with task.id
         const numericTaskId = parseInt(taskId, 10);
         
+        // Enhanced search: check both direct column tasks and nested category tasks
         for (const col of prevColumns) {
-          // Check direct column tasks
+          // Check direct column tasks first
           foundTask = col.tasks.find((task: Task) => task.id === numericTaskId);
           if (foundTask) {
             sourceColumnId = col.id;
+            sourceCategoryId = undefined; // Direct column task
+            console.log(`📦 Found task ${numericTaskId} in direct column tasks of "${col.id}"`);
             break;
           }
           
-          // Check category tasks
+          // Check nested category tasks
           for (const cat of col.categories) {
             foundTask = cat.tasks.find((task: Task) => task.id === numericTaskId);
             if (foundTask) {
               sourceColumnId = col.id;
               sourceCategoryId = cat.id;
+              console.log(`📦 Found task ${numericTaskId} in category "${cat.id}" of column "${col.id}"`);
               break;
             }
           }
           if (foundTask) break;
         }
         
-        // If task not found, log warning and return current state
+        // If task not found, try to fetch fresh data from API
         if (!foundTask) {
-          console.warn(`⚠️ Task ${taskId} not found in current state, skipping optimistic update`);
+          console.warn(`⚠️ Task ${taskId} not found in current state, attempting to refresh data...`);
+          // Trigger a refresh of the board data
+          fetchBoard();
           return prevColumns;
         }
         
