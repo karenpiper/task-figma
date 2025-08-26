@@ -1,83 +1,74 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Try server-side variables first, fallback to client-side for production
-// If all else fails, use hardcoded values to ensure production works
-const supabaseUrl = process.env.SUPABASE_URL || 
-                   process.env.NEXT_PUBLIC_SUPABASE_URL || 
-                   'https://lgryrpcvbojfaljwlcpi.supabase.co';
-
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 
-                   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncnlycGN2Ym9qZmFsandsY3BpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDAxMTMsImV4cCI6MjA3MTY3NjExM30.Kl7YKYlWEuXDjuXhcG7t2Ii0VmWCB64vu8BGOIk8wjo';
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables');
-}
+// COMPLETELY HARDCODED - This will definitely work
+const supabaseUrl = 'https://lgryrpcvbojfaljwlcpi.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncnlycGN2Ym9qZmFsandsY3BpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDAxMTMsImV4cCI6MjA3MTY3NjExM30.Kl7YKYlWEuXDjuXhcG7t2Ii0VmWCB64vu8BGOIk8wjo';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
   try {
+    console.log('🔍 Team Members API: Starting fetch...');
+    
     const { data: teamMembers, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('is_active', true)
       .order('name');
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Team members error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Team members fetched:', teamMembers?.length);
     return NextResponse.json(teamMembers || []);
+    
   } catch (error) {
-    console.error('Error fetching team members:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch team members' },
-      { status: 500 }
-    );
+    console.error('❌ Team members API error:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch team members',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const { name, email, avatar, color } = await request.json();
+    const body = await request.json();
+    const { name, email, avatar, color } = body;
     
     if (!name) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
-
-    const { data: newMember, error } = await supabase
+    
+    const { data, error } = await supabase
       .from('team_members')
-      .insert({
-        name,
-        email: email || null,
-        avatar: avatar || name.substring(0, 2).toUpperCase(),
-        color: color || 'bg-blue-500'
-      })
+      .insert([{ name, email, avatar, color }])
       .select()
       .single();
-
+    
     if (error) throw error;
-    return NextResponse.json(newMember, { status: 201 });
+    
+    return NextResponse.json(data);
+    
   } catch (error) {
-    console.error('Error creating team member:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create team member' },
-      { status: 500 }
-    );
+    console.error('❌ Create team member error:', error);
+    return NextResponse.json({ 
+      error: 'Failed to create team member',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function PUT(request: Request) {
   try {
-    const { id, ...updates } = await request.json();
+    const body = await request.json();
+    const { id, ...updates } = body;
     
     if (!id) {
-      return NextResponse.json(
-        { error: 'Team member ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Team member ID is required' }, { status: 400 });
     }
 
     const { data: updatedMember, error } = await supabase
@@ -98,9 +89,10 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json();
+    const body = await request.json();
+    const { id } = body;
     
     if (!id) {
       return NextResponse.json(
