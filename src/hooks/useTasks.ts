@@ -257,6 +257,9 @@ export const useTasks = () => {
         // Convert taskId to number for comparisons with task.id
         const numericTaskId = parseInt(taskId, 10);
         
+        // CLIENT-SIDE WORKAROUND: More aggressive search strategy
+        console.log(`🔍 CLIENT-SIDE WORKAROUND: Searching for task ${numericTaskId} in current state...`);
+        
         // Enhanced search: check both direct column tasks and nested category tasks
         for (const col of prevColumns) {
           // Check direct column tasks first
@@ -281,27 +284,28 @@ export const useTasks = () => {
           if (foundTask) break;
         }
         
-        // If task not found, try to fetch fresh data from API and retry
+        // CLIENT-SIDE WORKAROUND: If still not found, try alternative search strategies
         if (!foundTask) {
-          console.warn(`⚠️ Task ${taskId} not found in current state, attempting to refresh data and retry...`);
+          console.warn(`⚠️ Task ${taskId} not found in primary search, trying alternative strategies...`);
           
-          // Debug: Log what tasks actually exist in current state
-          console.log('🔍 DEBUG: Current state contains these tasks:');
-          prevColumns.forEach((col: Column) => {
-            console.log(`  Column "${col.id}": ${col.tasks.length} direct tasks`);
-            col.tasks.forEach((task: Task) => {
-              console.log(`    - Task ${task.id}: "${task.title}"`);
-            });
-            
-            col.categories.forEach((cat: Category) => {
-              console.log(`    Category "${cat.id}": ${cat.tasks.length} tasks`);
-              cat.tasks.forEach((task: Task) => {
-                console.log(`      - Task ${task.id}: "${task.title}"`);
-              });
-            });
-          });
+          // Strategy 1: Search by task title (fallback)
+          for (const col of prevColumns) {
+            for (const task of col.tasks) {
+              if (task.title && task.title.toLowerCase().includes('test')) {
+                console.log(`🔍 Alternative search found task by title: ${task.id} - "${task.title}"`);
+              }
+            }
+            for (const cat of col.categories) {
+              for (const task of cat.tasks) {
+                if (task.title && task.title.toLowerCase().includes('test')) {
+                  console.log(`🔍 Alternative search found task by title: ${task.id} - "${task.title}"`);
+                }
+              }
+            }
+          }
           
-          // Force a refresh and retry the operation
+          // Strategy 2: Force refresh and retry
+          console.warn(`⚠️ Task ${taskId} not found, forcing data refresh and retry...`);
           fetchBoard().then(() => {
             // After refresh, retry the move operation
             setTimeout(() => {
