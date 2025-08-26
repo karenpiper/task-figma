@@ -177,8 +177,8 @@ export const useTasks = () => {
         
         console.log(`👤 Moving task to team member: ${teamMember.name}`);
         
-        // For team member categories, we need to store the team_member_id
-        // Since the database doesn't have this field, we'll use the category_id as a reference
+        // For team member categories, we don't set category_id since they don't exist in the database
+        // They're just visual groupings in the UI
         response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
           method: 'POST',
           headers: {
@@ -186,7 +186,7 @@ export const useTasks = () => {
           },
           body: JSON.stringify({
             column_id: targetColumnId,
-            category_id: targetCategoryId, // Store the team member category ID
+            // Don't set category_id for team member categories
             team_member_id: teamMemberId
           }),
         });
