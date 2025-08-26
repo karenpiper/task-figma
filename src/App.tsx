@@ -31,20 +31,6 @@ export default function App() {
     tasks
   } = useTasks();
 
-  // Memoize functions to prevent unnecessary re-renders
-  const memoizedCreateTask = useCallback(createTask, [createTask]);
-  const memoizedMoveTask = useCallback(moveTask, [moveTask]);
-  const memoizedCreateCategory = useCallback(createCategory, [createCategory]);
-  const memoizedDeleteCategory = useCallback(deleteCategory, [deleteCategory]);
-  const memoizedCreateTeamMember = useCallback(createTeamMember, [createTeamMember]);
-  const memoizedUpdateTeamMember = useCallback(updateTeamMember, [updateTeamMember]);
-  const memoizedDeleteTeamMember = useCallback(deleteTeamMember, [deleteTeamMember]);
-
-  // Memoize data to prevent unnecessary re-renders
-  const memoizedColumns = useMemo(() => columns, [columns]);
-  const memoizedTeamMembers = useMemo(() => teamMembers, [teamMembers]);
-  const memoizedTasks = useMemo(() => tasks, [tasks]);
-
   const triggerCelebration = useCallback(() => {
     setShowParticles(true);
   }, []);
@@ -56,24 +42,24 @@ export default function App() {
   // Memoize the entire component props to prevent re-renders
   const sidebarProps = useMemo(() => ({
     onCelebrate: triggerCelebration,
-    teamMembers: memoizedTeamMembers,
-    createTeamMember: memoizedCreateTeamMember,
-    updateTeamMember: memoizedUpdateTeamMember,
-    deleteTeamMember: memoizedDeleteTeamMember,
-    tasks: memoizedTasks
-  }), [triggerCelebration, memoizedTeamMembers, memoizedCreateTeamMember, memoizedUpdateTeamMember, memoizedDeleteTeamMember, memoizedTasks]);
+    teamMembers: teamMembers,
+    createTeamMember: createTeamMember,
+    updateTeamMember: updateTeamMember,
+    deleteTeamMember: deleteTeamMember,
+    tasks: tasks
+  }), [triggerCelebration, teamMembers, createTeamMember, updateTeamMember, deleteTeamMember, tasks]);
 
   const kanbanBoardProps = useMemo(() => ({
     onTaskComplete: triggerCelebration,
-    columns: memoizedColumns,
-    teamMembers: memoizedTeamMembers,
-    loading,
-    error,
-    createTask: memoizedCreateTask,
-    moveTask: memoizedMoveTask,
-    createCategory: memoizedCreateCategory,
-    deleteCategory: memoizedDeleteCategory
-  }), [triggerCelebration, memoizedColumns, memoizedTeamMembers, loading, error, memoizedCreateTask, memoizedMoveTask, memoizedCreateCategory, memoizedDeleteCategory]);
+    columns: columns,
+    teamMembers: teamMembers,
+    loading: loading,
+    error: error,
+    createTask: createTask,
+    moveTask: moveTask,
+    createCategory: createCategory,
+    deleteCategory: deleteCategory
+  }), [triggerCelebration, columns, teamMembers, loading, error, createTask, moveTask, createCategory, deleteCategory]);
 
   return (
     <DndProvider backend={HTML5Backend}>

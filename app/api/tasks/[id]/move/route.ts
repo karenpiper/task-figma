@@ -39,7 +39,7 @@ async function handleTaskMove(
       );
     }
 
-    // Prepare update data
+    // Prepare update data - only update fields that exist in the database
     const updateData: any = { column_id };
     
     // Only set category_id if it's not null (for team member categories)
@@ -47,9 +47,10 @@ async function handleTaskMove(
       updateData.category_id = category_id;
     }
     
-    // Store team member reference if provided
+    // Note: team_member_id is not stored in the database
+    // It's handled client-side for visual grouping only
     if (team_member_id) {
-      updateData.team_member_id = team_member_id;
+      console.log(`📝 Team member reference: ${team_member_id} (not stored in DB)`);
     }
 
     const { data: updatedTask, error } = await supabase
