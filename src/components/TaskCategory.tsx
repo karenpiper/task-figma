@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useDrop } from 'react-dnd';
 import { Plus, MoreHorizontal, X } from 'lucide-react';
 import { TaskCard } from './TaskCard';
@@ -38,49 +38,53 @@ export function TaskCategory({
     category_id: category.id
   });
 
+  // Memoize the drop handler to prevent recreation on every render
+  const handleDrop = useCallback(async (item: any, monitor: any) => {
+    // Prevent drop if this is a nested drop (already handled by parent)
+    if (monitor.didDrop()) {
+      return;
+    }
+    
+    console.log('🎯 TaskCategory drop event:', {
+      taskId: item.id,
+      taskTitle: item.title,
+      targetCategory: category.id,
+      targetCategoryName: category.name,
+      targetColumn: category.column_id,
+      hasOnMoveTask: !!onMoveTask
+    });
+    
+    // Move task to this category if onMoveTask is provided
+    if (onMoveTask && item.id) {
+      try {
+        console.log(`🚀 Attempting to move task ${item.id} to category ${category.id} in column ${category.column_id}`);
+        await onMoveTask(item.id, category.column_id, category.id);
+        console.log(`✅ Task ${item.id} moved successfully to category ${category.id}`);
+      } catch (error) {
+        console.error('❌ Failed to move task:', error);
+      }
+    } else {
+      console.warn('⚠️ onMoveTask not provided or item.id missing:', { onMoveTask: !!onMoveTask, itemId: item.id });
+    }
+  }, [category.id, category.name, category.column_id, onMoveTask]);
+
   const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
-    drop: async (item: any, monitor) => {
-      // Prevent drop if this is a nested drop (already handled by parent)
-      if (monitor.didDrop()) {
-        return;
-      }
-      
-      console.log('🎯 TaskCategory drop event:', {
-        taskId: item.id,
-        taskTitle: item.title,
-        targetCategory: category.id,
-        targetCategoryName: category.name,
-        targetColumn: category.column_id,
-        hasOnMoveTask: !!onMoveTask
-      });
-      
-      // Move task to this category if onMoveTask is provided
-      if (onMoveTask && item.id) {
-        try {
-          console.log(`🚀 Attempting to move task ${item.id} to category ${category.id} in column ${category.column_id}`);
-          await onMoveTask(item.id, category.column_id, category.id);
-          console.log(`✅ Task ${item.id} moved successfully to category ${category.id}`);
-        } catch (error) {
-          console.error('❌ Failed to move task:', error);
-        }
-      } else {
-        console.warn('⚠️ onMoveTask not provided or item.id missing:', { onMoveTask: !!onMoveTask, itemId: item.id });
-      }
-    },
+    drop: handleDrop,
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
   });
 
   // Cast the dropRef to the correct type for React
-  const dropRefCallback = React.useCallback((node: HTMLDivElement | null) => {
+  const dropRefCallback = useCallback((node: HTMLDivElement | null) => {
     if (dropRef) {
       (dropRef as any)(node);
     }
   }, [dropRef]);
 
-  const handleCreateTask = async () => {
+  // Memoize callback functions to prevent recreation
+  const handleCreateTask = useCallback(async () => {
     if (!newTaskData.title.trim() || !onCreateTask) return;
     
     try {
@@ -90,7 +94,7 @@ export function TaskCategory({
     } catch (error) {
       console.error('Failed to create task:', error);
     }
-  };
+  }, [newTaskData, onCreateTask, columnId, category.id]);
 
   const getCategoryConfig = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
