@@ -53,6 +53,28 @@ export default function App() {
     setIsStatsCollapsed(!isStatsCollapsed);
   }, [isStatsCollapsed]);
 
+  // Memoize the entire component props to prevent re-renders
+  const sidebarProps = useMemo(() => ({
+    onCelebrate: triggerCelebration,
+    teamMembers: memoizedTeamMembers,
+    createTeamMember: memoizedCreateTeamMember,
+    updateTeamMember: memoizedUpdateTeamMember,
+    deleteTeamMember: memoizedDeleteTeamMember,
+    tasks: memoizedTasks
+  }), [triggerCelebration, memoizedTeamMembers, memoizedCreateTeamMember, memoizedUpdateTeamMember, memoizedDeleteTeamMember, memoizedTasks]);
+
+  const kanbanBoardProps = useMemo(() => ({
+    onTaskComplete: triggerCelebration,
+    columns: memoizedColumns,
+    teamMembers: memoizedTeamMembers,
+    loading,
+    error,
+    createTask: memoizedCreateTask,
+    moveTask: memoizedMoveTask,
+    createCategory: memoizedCreateCategory,
+    deleteCategory: memoizedDeleteCategory
+  }), [triggerCelebration, memoizedColumns, memoizedTeamMembers, loading, error, memoizedCreateTask, memoizedMoveTask, memoizedCreateCategory, memoizedDeleteCategory]);
+
   return (
     <DndProvider backend={HTML5Backend}>
       {/* Main container with full viewport height and overflow control */}
@@ -64,12 +86,7 @@ export default function App() {
         <div className="relative z-10 h-full backdrop-blur-sm bg-white/10 flex">
           {/* Left sidebar with celebration trigger */}
           <Sidebar 
-            onCelebrate={triggerCelebration}
-            teamMembers={memoizedTeamMembers}
-            createTeamMember={memoizedCreateTeamMember}
-            updateTeamMember={memoizedUpdateTeamMember}
-            deleteTeamMember={memoizedDeleteTeamMember}
-            tasks={memoizedTasks}
+            {...sidebarProps}
           />
           
           {/* Main content area */}
@@ -82,15 +99,7 @@ export default function App() {
               {/* Kanban board - main content area */}
               <div className="flex-1 min-w-0">
                 <KanbanBoard 
-                  onTaskComplete={triggerCelebration}
-                  columns={memoizedColumns}
-                  teamMembers={memoizedTeamMembers}
-                  loading={loading}
-                  error={error}
-                  createTask={memoizedCreateTask}
-                  moveTask={memoizedMoveTask}
-                  createCategory={memoizedCreateCategory}
-                  deleteCategory={memoizedDeleteCategory}
+                  {...kanbanBoardProps}
                 />
               </div>
               

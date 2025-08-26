@@ -397,6 +397,12 @@ export const useTasks = () => {
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
     try {
+      // Prevent deletion of auto-generated team member categories
+      if (categoryId.startsWith('follow-up_')) {
+        console.warn('⚠️ Cannot delete auto-generated team member category:', categoryId);
+        return; // Silently ignore deletion attempts for team member categories
+      }
+      
       setOperationLoading(true);
       
       const response = await fetch(`${API_BASE}/categories/${categoryId}`, {
