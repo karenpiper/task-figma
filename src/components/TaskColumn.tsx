@@ -53,7 +53,8 @@ export function TaskColumn({
         taskTitle: item.title,
         targetColumn: column.id,
         targetColumnTitle: column.title,
-        hasOnMoveTask: !!onMoveTask
+        hasOnMoveTask: !!onMoveTask,
+        hasCategories: column.categories.length > 0
       });
       
       // Handle task completion if moving to completed column
@@ -66,10 +67,21 @@ export function TaskColumn({
       if (onMoveTask && item.id) {
         try {
           console.log(`🚀 Attempting to move task ${item.id} to column ${column.id}`);
-          // For columns with categories, we'll need to determine the target category
-          // For now, drop directly into the column (category_id will be null)
-          await onMoveTask(item.id, column.id, undefined);
-          console.log(`✅ Task ${item.id} moved successfully to column ${column.id}`);
+          
+          // For columns with categories, determine the target category
+          let targetCategoryId: string | undefined = undefined;
+          
+          if (column.categories.length > 0) {
+            // Find the first available category (usually the default one)
+            const defaultCategory = column.categories.find(cat => cat.is_default) || column.categories[0];
+            if (defaultCategory) {
+              targetCategoryId = defaultCategory.id;
+              console.log(`🎯 Auto-selecting category: ${defaultCategory.name} (${defaultCategory.id})`);
+            }
+          }
+          
+          await onMoveTask(item.id, column.id, targetCategoryId);
+          console.log(`✅ Task ${item.id} moved successfully to column ${column.id}${targetCategoryId ? ` in category ${targetCategoryId}` : ''}`);
         } catch (error) {
           console.error('❌ Failed to move task:', error);
         }
