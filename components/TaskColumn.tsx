@@ -38,12 +38,25 @@ interface TaskColumnProps {
 export function TaskColumn({ column, onTaskComplete }: TaskColumnProps) {
   const [customCategories, setCustomCategories] = useState<string[]>([]);
 
-  const [{ isOver }, drop] = useDrop({
+  const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
-    drop: (item: any) => {
+    drop: async (item: any) => {
       console.log('Dropped task:', item.id, 'into column:', column.id);
+      
+      // Handle task completion if moving to completed column
       if (column.id === 'completed' && onTaskComplete) {
         onTaskComplete();
+      }
+      
+      // Move task to this column if onMoveTask is provided
+      if (onMoveTask && item.id) {
+        try {
+          // For columns with categories, we'll need to determine the target category
+          // For now, drop directly into the column (category_id will be null)
+          await onMoveTask(item.id, column.id, undefined);
+        } catch (error) {
+          console.error('Failed to move task:', error);
+        }
       }
     },
     collect: (monitor) => ({
@@ -93,7 +106,7 @@ export function TaskColumn({ column, onTaskComplete }: TaskColumnProps) {
 
   return (
     <div 
-      ref={drop}
+      ref={dropRef}
       className={`w-80 flex-shrink-0 transition-all duration-300 ${
         isOver ? 'scale-105' : ''
       }`}

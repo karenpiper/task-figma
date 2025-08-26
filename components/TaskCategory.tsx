@@ -43,11 +43,19 @@ export function TaskCategory({
 }: TaskCategoryProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const [{ isOver }, drop] = useDrop({
+  const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
-    drop: (item: any) => {
+    drop: async (item: any) => {
       console.log('Dropped task:', item.id, 'into category:', categoryName, 'in column:', columnId);
-      onDropTask?.(item.id, categoryName);
+      
+      // Move task to this category if onMoveTask is provided
+      if (onDropTask && item.id) {
+        try {
+          await onDropTask(item.id, categoryName);
+        } catch (error) {
+          console.error('Failed to move task:', error);
+        }
+      }
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -99,7 +107,7 @@ export function TaskCategory({
 
   return (
     <div 
-      ref={drop}
+      ref={dropRef}
       className={`mb-4 transition-all duration-300 ${
         isOver ? 'bg-white/40 backdrop-blur-md rounded-2xl border border-white/60' : ''
       }`}
