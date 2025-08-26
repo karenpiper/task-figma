@@ -1,7 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
-// API base URL for Vercel deployment
-const API_BASE = '/api';
+// Supabase configuration
+const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || process.env?.SUPABASE_URL;
+const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || process.env?.SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase environment variables');
+}
+
+const supabase = createClient(supabaseUrl || '', supabaseKey || '');
 
 export interface Task {
   id: number;
@@ -45,6 +53,10 @@ export interface TeamMember {
 }
 
 export const useTasks = () => {
+  console.log('🔍 useTasks hook loaded - using direct Supabase calls');
+  console.log('🔍 Supabase URL:', supabaseUrl ? 'SET' : 'NOT SET');
+  console.log('🔍 Supabase Key:', supabaseKey ? 'SET' : 'NOT SET');
+  
   const [columns, setColumns] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,12 +66,82 @@ export const useTasks = () => {
   const fetchBoard = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/board`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setColumns(data);
+      
+      // Get all columns
+      const { data: columnsData, error: columnsError } = await supabase
+        .from('columns')
+        .select('*')
+        .order('order_index');
+      
+      if (columnsError) throw columnsError;
+      
+      // Get categories and tasks for each column
+      const boardData = await Promise.all(columnsData.map(async (column) => {
+        // Only get categories for columns that should have them
+        if (column.id === 'today' || column.id === 'follow-up') {
+          const { data: categories, error: categoriesError } = await supabase
+            .from('categories')
+            .select('*')
+            .eq('column_id', column.id)
+            .order('order_index');
+          
+          if (categoriesError) throw categoriesError;
+          
+          // Get tasks for each category
+          const categoriesWithTasks = await Promise.all(categories.map(async (category) => {
+            const { data: tasks, error: tasksError } = await supabase
+              .from('tasks')
+              .select('*')
+              .eq('category_id', category.id)
+              .order('created_at', { ascending: false });
+            
+            if (tasksError) throw tasksError;
+            
+            return {
+              ...category,
+              tasks: tasks || [],
+              count: (tasks || []).length
+            };
+          }));
+          
+          // Also get tasks that don't have a category_id (direct column tasks)
+          const { data: directTasks, error: directTasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('column_id', column.id)
+            .is('category_id', null)
+            .order('created_at', { ascending: false });
+          
+          if (directTasksError) throw directTasksError;
+          
+          const allTasks = [...categoriesWithTasks.flatMap(cat => cat.tasks), ...(directTasks || [])];
+          return {
+            ...column,
+            categories: categoriesWithTasks,
+            tasks: directTasks || [],
+            count: allTasks.length
+          };
+        } else {
+          // For columns without categories, just get direct tasks
+          const { data: directTasks, error: directTasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('column_id', column.id)
+            .is('category_id', null)
+            .order('created_at', { ascending: false });
+          
+          if (directTasksError) throw directTasksError;
+          
+          return {
+            ...column,
+            categories: [],
+            tasks: directTasks || [],
+            count: (directTasks || []).length
+          };
+        }
+      }));
+      
+      setColumns(boardData);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch board');
@@ -72,12 +154,14 @@ export const useTasks = () => {
   // Fetch team members
   const fetchTeamMembers = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/team-members`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setTeamMembers(data);
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      
+      if (error) throw error;
+      setTeamMembers(data || []);
     } catch (err) {
       console.error('Error fetching team members:', err);
     }
@@ -86,257 +170,96 @@ export const useTasks = () => {
   // Create new task
   const createTask = useCallback(async (taskData: Partial<Task>) => {
     try {
-      const response = await fetch(`${API_BASE}/tasks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(taskData),
-      });
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert(taskData)
+        .select()
+        .single();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create task');
-      }
-
-      const newTask = await response.json();
+      if (error) throw error;
       
-      // Update local state
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          if (column.id === newTask.column_id) {
-            if (newTask.category_id) {
-              // Add to category
-              const updatedCategories = column.categories.map(category => {
-                if (category.id === newTask.category_id) {
-                  return {
-                    ...category,
-                    tasks: [...category.tasks, newTask],
-                    count: category.tasks.length + 1
-                  };
-                }
-                return category;
-              });
-              return { ...column, categories: updatedCategories };
-            } else {
-              // Add directly to column
-              return {
-                ...column,
-                tasks: [...column.tasks, newTask],
-                count: column.tasks.length + 1
-              };
-            }
-          }
-          return column;
-        });
-      });
-
-      return newTask;
+      // Refresh board data
+      await fetchBoard();
+      return data;
     } catch (err) {
-      console.error('Error creating task:', err);
-      throw err;
+      throw new Error(err instanceof Error ? err.message : 'Failed to create task');
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Move task to different column/category
   const moveTask = useCallback(async (taskId: number, columnId: string, categoryId?: string) => {
     try {
       console.log(`Moving task ${taskId} to column ${columnId}, category ${categoryId}`);
       
-      const response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          column_id: columnId,
-          category_id: categoryId
-        }),
-      });
+      const { data, error } = await supabase
+        .from('tasks')
+        .update({ column_id: columnId, category_id: categoryId })
+        .eq('id', taskId)
+        .select()
+        .single();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to move task');
-      }
+      if (error) throw error;
 
-      // Update local state
-      setColumns(prevColumns => {
-        let movedTask: Task | null = null;
-        let sourceColumn: Column | null = null;
-        let sourceCategory: Category | null = null;
-
-        // Find and remove task from source
-        const updatedColumns = prevColumns.map(column => {
-          if (column.id === columnId) {
-            // This is the destination column
-            return column;
-          }
-
-          // Check if task is in this column's categories
-          const updatedCategories = column.categories.map(category => {
-            const taskIndex = category.tasks.findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-              movedTask = category.tasks[taskIndex];
-              sourceColumn = column;
-              sourceCategory = category;
-              return {
-                ...category,
-                tasks: category.tasks.filter(t => t.id !== taskId),
-                count: category.tasks.length - 1
-              };
-            }
-            return category;
-          });
-
-          // Check if task is directly in this column
-          const taskIndex = column.tasks.findIndex(t => t.id === taskId);
-          if (taskIndex !== -1) {
-            movedTask = column.tasks[taskIndex];
-            sourceColumn = column;
-            return {
-              ...column,
-              tasks: column.tasks.filter(t => t.id !== taskId),
-              count: column.tasks.length - 1
-            };
-          }
-
-          return { ...column, categories: updatedCategories };
-        });
-
-        // Add task to destination
-        if (movedTask && sourceColumn) {
-          return updatedColumns.map(column => {
-            if (column.id === columnId) {
-              const updatedTask = { ...movedTask!, column_id: columnId, category_id: categoryId };
-              
-              if (categoryId) {
-                // Add to category
-                const updatedCategories = column.categories.map(category => {
-                  if (category.id === categoryId) {
-                    return {
-                      ...category,
-                      tasks: [...category.tasks, updatedTask],
-                      count: category.tasks.length + 1
-                    };
-                  }
-                  return category;
-                });
-                return {
-                  ...column,
-                  categories: updatedCategories,
-                  count: column.count + 1
-                };
-              } else {
-                // Add directly to column
-                return {
-                  ...column,
-                  tasks: [...column.tasks, updatedTask],
-                  count: column.count + 1
-                };
-              }
-            }
-            return column;
-          });
-        }
-
-        return updatedColumns;
-      });
+      // Refresh board data
+      await fetchBoard();
 
       console.log('Task moved successfully');
     } catch (err) {
       console.error('Error moving task:', err);
       throw err;
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Create new category
   const createCategory = useCallback(async (categoryData: { name: string; column_id: string; order_index?: number }) => {
     try {
-      const response = await fetch(`${API_BASE}/categories`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(categoryData),
-      });
+      const { data, error } = await supabase
+        .from('categories')
+        .insert(categoryData)
+        .select()
+        .single();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create category');
-      }
-
-      const newCategory = await response.json();
+      if (error) throw error;
       
-      // Update local state
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          if (column.id === newCategory.column_id) {
-            return {
-              ...column,
-              categories: [...column.categories, { ...newCategory, tasks: [], count: 0 }]
-            };
-          }
-          return column;
-        });
-      });
-
-      return newCategory;
+      // Refresh board data
+      await fetchBoard();
+      return data;
     } catch (err) {
       console.error('Error creating category:', err);
       throw err;
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
     try {
-      const response = await fetch(`${API_BASE}/categories`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: categoryId }),
-      });
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', categoryId);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete category');
-      }
+      if (error) throw error;
 
-      // Update local state
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          return {
-            ...column,
-            categories: column.categories.filter(cat => cat.id !== categoryId)
-          };
-        });
-      });
+      // Refresh board data
+      await fetchBoard();
     } catch (err) {
       console.error('Error deleting category:', err);
       throw err;
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Create new team member
   const createTeamMember = useCallback(async (memberData: Partial<TeamMember>) => {
     try {
-      const response = await fetch(`${API_BASE}/team-members`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(memberData),
-      });
+      const { data, error } = await supabase
+        .from('team_members')
+        .insert(memberData)
+        .select()
+        .single();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create team member');
-      }
-
-      const newMember = await response.json();
-      setTeamMembers(prev => [...prev, newMember]);
-      return newMember;
+      if (error) throw error;
+      setTeamMembers(prev => [...prev, data]);
+      return data;
     } catch (err) {
       console.error('Error creating team member:', err);
       throw err;
@@ -346,22 +269,16 @@ export const useTasks = () => {
   // Update team member
   const updateTeamMember = useCallback(async (id: number, updates: Partial<TeamMember>) => {
     try {
-      const response = await fetch(`${API_BASE}/team-members`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id, ...updates }),
-      });
+      const { data, error } = await supabase
+        .from('team_members')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update team member');
-      }
-
-      const updatedMember = await response.json();
-      setTeamMembers(prev => prev.map(member => member.id === id ? updatedMember : member));
-      return updatedMember;
+      if (error) throw error;
+      setTeamMembers(prev => prev.map(member => member.id === id ? data : member));
+      return data;
     } catch (err) {
       console.error('Error updating team member:', err);
       throw err;
@@ -371,19 +288,12 @@ export const useTasks = () => {
   // Delete team member
   const deleteTeamMember = useCallback(async (id: number) => {
     try {
-      const response = await fetch(`${API_BASE}/team-members`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      });
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', id);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete team member');
-      }
-
+      if (error) throw error;
       setTeamMembers(prev => prev.filter(member => member.id !== id));
     } catch (err) {
       console.error('Error deleting team member:', err);
