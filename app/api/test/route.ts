@@ -65,4 +65,4 @@ export async function GET() {
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
-} 
+} // FORCE DEPLOYMENT - Tue Aug 26 14:56:28 PDT 2025
