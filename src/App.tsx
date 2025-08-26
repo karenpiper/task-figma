@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Sidebar } from './components/Sidebar';
@@ -10,6 +10,25 @@ import { ParticleSystem } from './components/ParticleSystem';
 import { AmbientLighting } from './components/AmbientLighting';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTasks } from './hooks/useTasks';
+
+// Stable DndProvider wrapper to prevent React errors
+function StableDndProvider({ children }: { children: React.ReactNode }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return <div className="h-screen bg-background" />;
+  }
+
+  return (
+    <DndProvider backend={HTML5Backend}>
+      {children}
+    </DndProvider>
+  );
+}
 
 export default function App() {
   const [showParticles, setShowParticles] = useState(false);
@@ -40,7 +59,7 @@ export default function App() {
   }, [isStatsCollapsed]);
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <StableDndProvider>
       {/* Main container with full viewport height and overflow control */}
       <div className="h-screen relative overflow-hidden bg-background">
         {/* Dynamic ambient lighting layer */}
@@ -137,6 +156,6 @@ export default function App() {
           onComplete={() => setShowParticles(false)} 
         />
       </div>
-    </DndProvider>
+    </StableDndProvider>
   );
 }
