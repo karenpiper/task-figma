@@ -20,10 +20,79 @@ export async function GET() {
     
     if (columnsError) throw columnsError;
     
+    // Get team members for automatic category generation
+    const { data: teamMembers, error: teamMembersError } = await supabase
+      .from('team_members')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
+    
+    if (teamMembersError) throw teamMembersError;
+    
     // Get categories and tasks for each column
     const boardData = await Promise.all(columns.map(async (column) => {
-      // Only get categories for columns that should have them
-      if (column.id === 'today' || column.id === 'follow-up') {
+      // Special handling for follow-up column - auto-generate team member categories
+      if (column.id === 'follow-up') {
+        // Generate team member categories automatically
+        const teamMemberCategories = teamMembers.map((member, index) => ({
+          id: `follow-up_${member.id}`,
+          name: member.name,
+          column_id: column.id,
+          order_index: index,
+          is_default: false,
+          tasks: [],
+          count: 0
+        }));
+        
+        // Get existing categories (if any were manually created)
+        const { data: existingCategories, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('column_id', column.id)
+          .order('order_index');
+        
+        if (categoriesError) throw categoriesError;
+        
+        // Merge existing categories with team member categories
+        const allCategories = [...teamMemberCategories, ...(existingCategories || [])];
+        
+        // Get tasks for each category
+        const categoriesWithTasks = await Promise.all(allCategories.map(async (category) => {
+          const { data: tasks, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('category_id', category.id)
+            .order('created_at', { ascending: false });
+          
+          if (tasksError) throw tasksError;
+          
+          return {
+            ...category,
+            tasks: tasks || [],
+            count: (tasks || []).length
+          };
+        }));
+        
+        // Also get tasks that don't have a category_id (direct column tasks)
+        const { data: directTasks, error: directTasksError } = await supabase
+          .from('tasks')
+          .select('*')
+          .eq('column_id', column.id)
+          .is('category_id', null)
+          .order('created_at', { ascending: false });
+        
+        if (directTasksError) throw directTasksError;
+        
+        const allTasks = [...categoriesWithTasks.flatMap(cat => cat.tasks), ...(directTasks || [])];
+        return {
+          ...column,
+          categories: categoriesWithTasks,
+          tasks: directTasks || [],
+          count: allTasks.length
+        };
+      }
+      // Handle today column with existing categories
+      else if (column.id === 'today') {
         const { data: categories, error: categoriesError } = await supabase
           .from('categories')
           .select('*')
