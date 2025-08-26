@@ -249,38 +249,25 @@ export const useTasks = () => {
         
         console.log(`📦 Found task: "${foundTask.title}" in column "${sourceColumnId}"${sourceCategoryId ? `, category "${sourceCategoryId}"` : ''}`);
         
-        return prevColumns.map((column: Column) => {
-          // Remove task from source
-          if (column.id === sourceColumnId) {
-            if (sourceCategoryId) {
-              // Remove from category
-              const updatedCategories = column.categories.map((cat: Category) => 
-                cat.id === sourceCategoryId 
-                  ? { ...cat, tasks: cat.tasks.filter((t: Task) => t.id !== taskId), count: cat.count - 1 }
-                  : cat
-              );
-              
-              return {
-                ...column,
-                categories: updatedCategories,
-                count: column.count - 1
-              };
-            } else {
-              // Remove from column directly
-              return {
-                ...column,
-                tasks: column.tasks.filter((t: Task) => t.id !== taskId),
-                count: column.count - 1
-              };
-            }
-          }
+        // Check if this is a same-column move (source and target are the same column)
+        const isSameColumnMove = sourceColumnId === targetColumnId;
+        
+        if (isSameColumnMove) {
+          console.log(`🔄 Same-column move detected: moving within column "${sourceColumnId}"`);
           
-          // Add task to target column
-          if (column.id === targetColumnId) {
-            if (targetCategoryId) {
-              // Add to specific category
+          return prevColumns.map((column: Column) => {
+            if (column.id === sourceColumnId) {
+              // Handle same-column move by updating categories in one pass
               const updatedCategories = column.categories.map((cat: Category) => {
-                if (cat.id === targetCategoryId) {
+                if (cat.id === sourceCategoryId) {
+                  // Remove from source category
+                  return {
+                    ...cat,
+                    tasks: cat.tasks.filter((t: Task) => t.id !== taskId),
+                    count: cat.count - 1
+                  };
+                } else if (cat.id === targetCategoryId) {
+                  // Add to target category
                   return {
                     ...cat,
                     tasks: [foundTask!, ...cat.tasks],
@@ -293,20 +280,73 @@ export const useTasks = () => {
               return {
                 ...column,
                 categories: updatedCategories,
-                count: column.count + 1
-              };
-            } else {
-              // Add directly to column
-              return {
-                ...column,
-                tasks: [foundTask!, ...column.tasks],
-                count: column.count + 1
+                // Count stays the same for same-column moves
+                count: column.count
               };
             }
-          }
-          
-          return column;
-        });
+            return column;
+          });
+        } else {
+          // Handle cross-column move (original logic)
+          return prevColumns.map((column: Column) => {
+            // Remove task from source
+            if (column.id === sourceColumnId) {
+              if (sourceCategoryId) {
+                // Remove from category
+                const updatedCategories = column.categories.map((cat: Category) => 
+                  cat.id === sourceCategoryId 
+                    ? { ...cat, tasks: cat.tasks.filter((t: Task) => t.id !== taskId), count: cat.count - 1 }
+                    : cat
+                );
+                
+                return {
+                  ...column,
+                  categories: updatedCategories,
+                  count: column.count - 1
+                };
+              } else {
+                // Remove from column directly
+                return {
+                  ...column,
+                  tasks: column.tasks.filter((t: Task) => t.id !== taskId),
+                  count: column.count - 1
+                };
+              }
+            }
+            
+            // Add task to target column
+            if (column.id === targetColumnId) {
+              if (targetCategoryId) {
+                // Add to specific category
+                const updatedCategories = column.categories.map((cat: Category) => {
+                  if (cat.id === targetCategoryId) {
+                    return {
+                      ...cat,
+                      tasks: [foundTask!, ...cat.tasks],
+                      count: cat.count + 1
+                    };
+                  }
+                  return cat;
+                });
+                
+                return {
+                  ...column,
+                  categories: updatedCategories,
+                  count: column.count + 1
+                };
+              } else {
+                // Add directly to column
+                return {
+                  ...column,
+                  tasks: [foundTask!, ...column.tasks],
+                  count: column.count + 1
+                };
+              }
+            }
+            
+            return column;
+          });
+        }
       });
       
       console.log(`✅ Task ${taskId} moved successfully to column ${targetColumnId}`);
