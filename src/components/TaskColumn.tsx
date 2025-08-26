@@ -30,13 +30,7 @@ export function TaskColumn({
   onDeleteCategory,
   teamMembers = []
 }: TaskColumnProps) {
-  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
-  const [newCategoryData, setNewCategoryData] = useState({
-    name: '',
-    column_id: column.id,
-    order_index: column.categories.length
-  });
   const [newTaskData, setNewTaskData] = useState({
     title: '',
     priority: 'medium',
@@ -111,18 +105,6 @@ export function TaskColumn({
   }, [dropRef]);
 
   // Memoize callback functions to prevent recreation
-  const handleCreateCategory = useCallback(async () => {
-    if (!newCategoryData.name.trim() || !onCreateCategory) return;
-    
-    try {
-      await onCreateCategory(newCategoryData);
-      setNewCategoryData({ name: '', column_id: column.id, order_index: column.categories.length });
-      setIsCreatingCategory(false);
-    } catch (error) {
-      console.error('Failed to create category:', error);
-    }
-  }, [newCategoryData, onCreateCategory, column.id, column.categories.length]);
-
   const handleCreateTask = useCallback(async () => {
     if (!newTaskData.title.trim() || !onCreateTask) return;
     
@@ -139,6 +121,7 @@ export function TaskColumn({
   const totalTasks = useMemo(() => column.tasks.length, [column.tasks.length]);
   const isFollowUpColumn = useMemo(() => column.id === 'follow-up', [column.id]);
   const isDayColumn = useMemo(() => column.id === 'today', [column.id]);
+  // Only show categories for day columns and follow-up
   const shouldShowCategories = useMemo(() => isDayColumn || column.id === 'follow-up', [isDayColumn, column.id]);
 
   // Get column color based on column ID
@@ -158,9 +141,6 @@ export function TaskColumn({
         return 'bg-slate-400';
     }
   }, []);
-
-  // Only show "Add Category" button for the "today" column
-  const shouldShowAddCategoryButton = useMemo(() => isDayColumn, [isDayColumn]);
 
   // Allow task creation in team member categories (like follow-up_1) but not manual categories
   const shouldAllowTaskCreation = useMemo(() => {
@@ -198,10 +178,9 @@ export function TaskColumn({
                 <Button 
                   size="sm"
                   variant="ghost"
-                  className="h-8 px-3 text-slate-600 hover:text-slate-800 hover:bg-slate-100/60"
+                  className="h-8 w-8 p-0 rounded-md hover:bg-slate-100/60 text-slate-600 hover:text-slate-800"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Task
+                  <Plus className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
@@ -264,62 +243,7 @@ export function TaskColumn({
             </Dialog>
           )}
           
-          {/* Add Category button only for the "today" column */}
-          {shouldShowAddCategoryButton && (
-            <Dialog open={isCreatingCategory} onOpenChange={setIsCreatingCategory}>
-              <DialogTrigger asChild>
-                <Button 
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 px-3 text-slate-600 hover:text-slate-800 hover:bg-slate-100/60"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Category
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-lg font-semibold text-gray-900">Create New Category</DialogTitle>
-                  <p className="text-sm text-gray-600">
-                    {isDayColumn 
-                      ? 'Create a new category to organize tasks in this column.'
-                      : 'Add a new person to assign tasks to.'
-                    }
-                  </p>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="categoryName" className="text-sm font-medium text-gray-700">
-                      {isDayColumn ? 'Category Name' : 'Person Name'}
-                    </Label>
-                    <Input
-                      id="categoryName"
-                      value={newCategoryData.name}
-                      onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder={isDayColumn ? "Enter category name..." : "Enter person name..."}
-                      className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button 
-                      onClick={handleCreateCategory}
-                      disabled={!newCategoryData.name.trim()}
-                      className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                    >
-                      {isDayColumn ? 'Create Category' : 'Add Person'}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsCreatingCategory(false)}
-                      className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
+          {/* Removed Add Category button for cleaner design */}
         </div>
         
         {/* Drop zone indicator */}
@@ -330,57 +254,56 @@ export function TaskColumn({
       
       {/* Categories container */}
       <div className="p-4 min-h-[400px] max-h-[700px] overflow-y-auto">
-          {/* Check if this is a day column that should show categories */}
-          {shouldShowCategories ? (
-            <>
-              {/* Render categories for day columns */}
-              {column.categories.map((category) => (
-                <TaskCategory
-                  key={category.id}
-                  columnId={column.id}
-                  category={category}
-                  onTaskComplete={onTaskComplete}
-                  onCreateTask={onCreateTask}
-                  onMoveTask={onMoveTask}
-                  onDeleteCategory={onDeleteCategory}
-                  teamMembers={teamMembers}
-                />
-              ))}
-              
-              {/* Add category button for day columns */}
-              {column.categories.length === 0 && (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-6 h-6 text-slate-500" />
-                  </div>
-                  <h4 className="font-medium text-slate-600 mb-2">No Categories</h4>
-                  <p className="text-sm text-slate-500">Categories will appear here</p>
+        {/* Check if this is a day column that should show categories */}
+        {shouldShowCategories ? (
+          <>
+            {/* Render categories for day columns */}
+            {column.categories.map((category) => (
+              <TaskCategory
+                key={category.id}
+                columnId={column.id}
+                category={category}
+                onTaskComplete={onTaskComplete}
+                onCreateTask={onCreateTask}
+                onMoveTask={onMoveTask}
+                onDeleteCategory={onDeleteCategory}
+                teamMembers={teamMembers}
+              />
+            ))}
+            
+            {/* Add category button for day columns */}
+            {column.categories.length === 0 && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-6 h-6 text-slate-500" />
                 </div>
-              )}
-            </>
-          ) : (
-            <>
-              {/* For non-day columns, show tasks directly */}
+                <h4 className="font-medium text-slate-600 mb-2">No Categories</h4>
+                <p className="text-sm text-slate-500">Categories will appear here</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {/* For non-day columns, show tasks directly with consistent spacing */}
+            <div className="space-y-3">
               {column.tasks.map((task) => (
                 <TaskCard key={task.id} task={task} onComplete={onTaskComplete} />
               ))}
-              
-              {/* Add task button for non-day columns */}
-              {/* This dialog is now handled within the header */}
-              
-              {/* Show message if no tasks exist in non-day columns */}
-              {column.tasks.length === 0 && (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-6 h-6 text-slate-500" />
-                  </div>
-                  <h4 className="font-medium text-slate-600 mb-2">No Tasks</h4>
-                  <p className="text-sm text-slate-500">Tasks will appear here</p>
+            </div>
+            
+            {/* Show message if no tasks exist in non-day columns */}
+            {column.tasks.length === 0 && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-6 h-6 text-slate-500" />
                 </div>
-              )}
-            </>
-          )}
-        </div>
+                <h4 className="font-medium text-slate-600 mb-2">No Tasks</h4>
+                <p className="text-sm text-slate-500">Tasks will appear here</p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
