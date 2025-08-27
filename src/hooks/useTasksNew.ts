@@ -527,36 +527,37 @@ export const useTasksNew = () => {
 
       const newMember = await response.json();
       
-      // Optimistic update
+      // OPTIMISTIC UPDATE: Immediately add new team member to follow-up column
+      setColumns(prevColumns => {
+        return prevColumns.map(column => {
+          if (column.id === 'follow-up') {
+            // Create a new category for the team member
+            const newCategory: Category = {
+              id: `follow-up_${newMember.id}`,
+              name: newMember.name,
+              column_id: 'follow-up',
+              order_index: column.categories.length,
+              is_default: false,
+              tasks: [],
+              count: 0
+            };
+            
+            return {
+              ...column,
+              categories: [...column.categories, newCategory],
+              count: column.count
+            };
+          }
+          return column;
+        });
+      });
+
+      // Also update team members state
       setTeamMembers(prev => [...prev, newMember]);
 
-      // Force a database refresh by updating the team member (triggers a database transaction)
-      console.log('🔄 Forcing database refresh...');
-      try {
-        const refreshResponse = await fetch(`${API_BASE}/team-members`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: newMember.id, name: newMember.name }), // Update with same data
-        });
-        if (refreshResponse.ok) {
-          console.log('✅ Database refresh triggered');
-        }
-      } catch (refreshErr) {
-        console.log('⚠️ Database refresh failed, continuing...', refreshErr);
-      }
-
-      // Longer delay to ensure database transaction is committed
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Refresh board data to update follow-up column with new team member
-      console.log('🔄 Fetching board after team member creation...');
+      // Refresh board data to ensure consistency
+      console.log('🔄 Refreshing board data after team member creation...');
       await fetchBoard();
-      
-      // Single delayed refresh to ensure data is updated
-      setTimeout(async () => {
-        console.log('🔄 Final check - refreshing board data...');
-        await fetchBoard();
-      }, 1500);
 
       return newMember;
     } catch (err) {
@@ -564,7 +565,7 @@ export const useTasksNew = () => {
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Update team member
   const updateTeamMember = useCallback(async (id: number, updates: Partial<TeamMember>) => {
