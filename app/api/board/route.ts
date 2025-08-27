@@ -27,7 +27,9 @@ export async function GET() {
     
     // Get team members for automatic category generation
     console.log('🔄 Board API: Fetching team members...');
-    const { data: teamMembers, error: teamMembersError } = await supabase
+    
+    // First, try to get the most recent team members with a fresh query
+    let { data: teamMembers, error: teamMembersError } = await supabase
       .from('team_members')
       .select('*')
       .eq('is_active', true)
@@ -49,6 +51,25 @@ export async function GET() {
     
     if (!allTeamMembersError && allTeamMembers) {
       console.log('🔍 Board API: All team members (including inactive):', allTeamMembers?.map(m => ({ id: m.id, name: m.name, is_active: m.is_active })));
+      
+      // Check if there's a mismatch between active and all team members
+      const activeCount = teamMembers?.length || 0;
+      const totalCount = allTeamMembers?.length || 0;
+      if (activeCount !== totalCount) {
+        console.log(`⚠️ Mismatch detected: ${activeCount} active vs ${totalCount} total team members`);
+        
+        // Try to refresh the active team members query
+        const { data: refreshedTeamMembers, error: refreshError } = await supabase
+          .from('team_members')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+        
+        if (!refreshError && refreshedTeamMembers) {
+          console.log(`🔄 Refreshed query: ${refreshedTeamMembers.length} active team members`);
+          teamMembers = refreshedTeamMembers;
+        }
+      }
     }
     
     // Get categories and tasks for each column

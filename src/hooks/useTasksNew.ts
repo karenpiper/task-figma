@@ -506,8 +506,23 @@ export const useTasksNew = () => {
       // Optimistic update
       setTeamMembers(prev => [...prev, newMember]);
 
+      // Force a database refresh by updating the team member (triggers a database transaction)
+      console.log('🔄 Forcing database refresh...');
+      try {
+        const refreshResponse = await fetch(`${API_BASE}/team-members`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: newMember.id, name: newMember.name }), // Update with same data
+        });
+        if (refreshResponse.ok) {
+          console.log('✅ Database refresh triggered');
+        }
+      } catch (refreshErr) {
+        console.log('⚠️ Database refresh failed, continuing...', refreshErr);
+      }
+
       // Longer delay to ensure database transaction is committed
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Refresh board data to update follow-up column with new team member
       console.log('🔄 Fetching board after team member creation...');
@@ -517,7 +532,7 @@ export const useTasksNew = () => {
       setTimeout(async () => {
         console.log('🔄 Double-checking board data...');
         await fetchBoard();
-      }, 1000);
+      }, 2000);
 
       return newMember;
     } catch (err) {
