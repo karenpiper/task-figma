@@ -273,15 +273,10 @@ export const useTasksNew = () => {
       // Wait a bit for database transaction to commit
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      await fetchBoard(true); // Force refresh
+      // Single refresh with force refresh
+      await fetchBoard(true);
       
-      // Double-check after another delay
-      setTimeout(async () => {
-        console.log('🔄 Double-checking board data after delay...');
-        await fetchBoard(true); // Force refresh
-      }, 2000);
-      
-      console.log('🔍 DEBUG: fetchBoard completed, state should be updated');
+      console.log('🔍 DEBUG: Single refresh completed with force refresh');
 
       return newMember;
     } catch (err) {
@@ -319,7 +314,7 @@ export const useTasksNew = () => {
       // Refresh board data to update follow-up column
       await fetchBoard(true); // Force refresh
 
-      return updatedMember
+      return updatedMember;
     } catch (err) {
       throw err;
     } finally {
