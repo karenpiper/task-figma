@@ -78,6 +78,17 @@ export async function GET() {
       if (column.id === 'follow-up') {
         console.log('🔄 Processing follow-up column with', teamMembers?.length, 'team members');
         
+        // Check if teamMembers exists before processing
+        if (!teamMembers || teamMembers.length === 0) {
+          console.log('⚠️ No team members found for follow-up column');
+          return {
+            ...column,
+            categories: [],
+            tasks: [],
+            count: 0
+          };
+        }
+        
         // Generate team member categories automatically
         const teamMemberCategories = teamMembers.map((member, index) => ({
           id: `follow-up_${member.id}`,
