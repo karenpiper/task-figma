@@ -150,13 +150,12 @@ export const useTasksNew = () => {
   }, []);
 
   // Move task between columns/categories - NEW IMPLEMENTATION
-  const moveTask = useCallback(async (taskId: string, targetColumnId: string, targetCategoryId?: string) => {
+  const moveTask = useCallback(async (taskId: number, targetColumnId: string, targetCategoryId?: string) => {
     try {
       console.log('🚨 NEW CODE VERSION - useTasksNew hook loaded! 🚨');
       console.log(`🚀 Moving task ${taskId} to column ${targetColumnId}, category ${targetCategoryId || 'none'}`);
       
       // NEW IMPLEMENTATION: Local state update only
-      const numericTaskId = parseInt(taskId, 10);
       let foundTask: Task | undefined;
       let sourceColumnId: string | undefined;
       let sourceCategoryId: string | undefined;
@@ -164,7 +163,7 @@ export const useTasksNew = () => {
       // Search for the task in current state
       for (const col of columns) {
         // Check direct column tasks
-        foundTask = col.tasks.find((task: Task) => task.id === numericTaskId);
+        foundTask = col.tasks.find((task: Task) => task.id === taskId);
         if (foundTask) {
           sourceColumnId = col.id;
           sourceCategoryId = undefined;
@@ -173,7 +172,7 @@ export const useTasksNew = () => {
         
         // Check category tasks
         for (const cat of col.categories) {
-          foundTask = cat.tasks.find((task: Task) => task.id === numericTaskId);
+          foundTask = cat.tasks.find((task: Task) => task.id === taskId);
           if (foundTask) {
             sourceColumnId = col.id;
             sourceCategoryId = cat.id;
@@ -188,7 +187,7 @@ export const useTasksNew = () => {
         const followUpColumn = columns.find(col => col.id === 'follow-up');
         if (followUpColumn) {
           for (const cat of followUpColumn.categories) {
-            foundTask = cat.tasks.find((task: Task) => task.id === numericTaskId);
+            foundTask = cat.tasks.find((task: Task) => task.id === taskId);
             if (foundTask) {
               sourceColumnId = 'follow-up';
               sourceCategoryId = cat.id;
@@ -227,7 +226,7 @@ export const useTasksNew = () => {
                   console.log(`🗑️ Removing task from source category ${sourceCategoryId}`);
                   return {
                     ...cat,
-                    tasks: cat.tasks.filter((t: Task) => t.id !== numericTaskId),
+                    tasks: cat.tasks.filter((t: Task) => t.id !== taskId),
                     count: cat.count - 1
                   };
                 } else if (cat.id === targetCategoryId) {
@@ -272,11 +271,11 @@ export const useTasksNew = () => {
                 categories: column.categories.map((cat: Category) => {
                   if (cat.id === sourceCategoryId) {
                     console.log(`🗑️ Removing task from source category ${sourceCategoryId}`);
-                    return {
-                      ...cat,
-                      tasks: cat.tasks.filter((t: Task) => t.id !== numericTaskId),
-                      count: cat.count - 1
-                    };
+                                      return {
+                    ...cat,
+                    tasks: cat.tasks.filter((t: Task) => t.id !== taskId),
+                    count: cat.count - 1
+                  };
                   }
                   return cat;
                 }),
@@ -286,7 +285,7 @@ export const useTasksNew = () => {
               // Remove from direct column tasks
               return {
                 ...column,
-                tasks: column.tasks.filter((t: Task) => t.id !== numericTaskId),
+                tasks: column.tasks.filter((t: Task) => t.id !== taskId),
                 count: column.count - 1
               };
             }
