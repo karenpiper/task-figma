@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface DialogProps {
   isOpen: boolean;
@@ -8,10 +9,17 @@ interface DialogProps {
 }
 
 export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
+
+  // Use portal to render at document body level
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -19,7 +27,7 @@ export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
       />
       
       {/* Dialog Card */}
-      <div className="relative bg-white rounded-3xl shadow-xl p-6 w-full max-w-md mx-4">
+      <div className="relative bg-white rounded-3xl shadow-xl p-6 w-full max-w-md mx-4 transform transition-all duration-200 scale-100">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
@@ -35,7 +43,8 @@ export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -43,17 +52,55 @@ interface DialogInputProps {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  type?: string;
 }
 
-export function DialogInput({ placeholder, value, onChange }: DialogInputProps) {
+export function DialogInput({ placeholder, value, onChange, type = "text" }: DialogInputProps) {
   return (
     <input
-      type="text"
+      type={type}
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="w-full px-4 py-3 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400"
     />
+  );
+}
+
+interface DialogTextareaProps {
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  rows?: number;
+}
+
+export function DialogTextarea({ placeholder, value, onChange, rows = 3 }: DialogTextareaProps) {
+  return (
+    <textarea
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={rows}
+      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400 resize-none"
+    />
+  );
+}
+
+interface DialogSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  children: React.ReactNode;
+}
+
+export function DialogSelect({ value, onChange, children }: DialogSelectProps) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+    >
+      {children}
+    </select>
   );
 }
 

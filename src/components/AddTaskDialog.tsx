@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogInput, DialogButton } from './ui/dialog';
+import { Dialog, DialogInput, DialogTextarea, DialogSelect, DialogButton } from './ui/dialog';
 
 interface AddTaskDialogProps {
   isOpen: boolean;
@@ -77,11 +77,10 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, columnId, categoryId 
         {/* Task Detail */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Detail</label>
-          <textarea
+          <DialogTextarea
             placeholder="Enter task description..."
             value={detail}
-            onChange={(e) => setDetail(e.target.value)}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400 resize-none"
+            onChange={setDetail}
             rows={3}
           />
         </div>
@@ -89,16 +88,15 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, columnId, categoryId 
         {/* Priority */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-          <select
+          <DialogSelect
             value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            onChange={setPriority}
           >
             <option value="low">Low</option>
             <option value="medium">Medium</option>
             <option value="high">High</option>
             <option value="urgent">Urgent</option>
-          </select>
+          </DialogSelect>
         </div>
 
         {/* Project */}
@@ -124,22 +122,21 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, columnId, categoryId 
         {/* Due Date */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-          <input
+          <DialogInput
             type="date"
+            placeholder=""
             value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            onChange={setDueDate}
           />
         </div>
 
         {/* Notes/To Do List */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Notes / To Do List</label>
-          <textarea
+          <DialogTextarea
             placeholder="Enter notes, checklist items, or to-do items..."
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400 resize-none"
+            onChange={setNotes}
             rows={3}
           />
         </div>
