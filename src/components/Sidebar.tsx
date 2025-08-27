@@ -4,7 +4,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { TeamManagement } from './TeamManagement';
 import { OneOnOneMode } from './OneOnOneMode';
-import { TeamMember, Task } from '../hooks/useTasks';
+import { TeamMember, Task } from '../hooks/useTasksNew';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface SidebarProps {
