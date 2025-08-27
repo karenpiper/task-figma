@@ -77,9 +77,24 @@ export const useTasksNew = () => {
         console.log(`👥 Categories:`, followUpColumn.categories?.map((cat: any) => ({ id: cat.id, name: cat.name })));
       }
       
+      console.log('🔄 Setting columns state with data:', data.map((col: any) => ({
+        id: col.id,
+        categories: col.categories?.length || 0,
+        tasks: col.tasks?.length || 0
+      })));
+      
       setColumns(data);
       setError(null);
       console.log('✅ Board data updated successfully');
+      
+      // Verify state was updated
+      setTimeout(() => {
+        console.log('🔍 Current columns state after update:', columns.map((col: any) => ({
+          id: col.id,
+          categories: col.categories?.length || 0,
+          tasks: col.tasks?.length || 0
+        })));
+      }, 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch board');
       console.error('Error fetching board:', err);
