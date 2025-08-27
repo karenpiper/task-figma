@@ -59,12 +59,6 @@ export const useTasksNew = () => {
   // Fetch board data
   const fetchBoard = useCallback(async () => {
     try {
-      // Prevent multiple simultaneous calls
-      if (loading) {
-        console.log('⚠️ fetchBoard already in progress, skipping...');
-        return;
-      }
-      
       setLoading(true);
       // Add cache-busting parameter to ensure fresh data
       const timestamp = Date.now();
@@ -116,7 +110,7 @@ export const useTasksNew = () => {
     } finally {
       setLoading(false);
     }
-  }, [loading]);
+  }, []);
 
   // Fetch team members
   const fetchTeamMembers = useCallback(async () => {
@@ -558,16 +552,11 @@ export const useTasksNew = () => {
       console.log('🔄 Fetching board after team member creation...');
       await fetchBoard();
       
-      // Double-check that the new team member is in the follow-up column
+      // Single delayed refresh to ensure data is updated
       setTimeout(async () => {
-        console.log('🔄 Double-checking board data...');
-        // Only double-check if we're not already loading
-        if (!loading) {
-          await fetchBoard();
-        } else {
-          console.log('⚠️ Skipping double-check - board fetch already in progress');
-        }
-      }, 2000);
+        console.log('🔄 Final check - refreshing board data...');
+        await fetchBoard();
+      }, 1500);
 
       return newMember;
     } catch (err) {
