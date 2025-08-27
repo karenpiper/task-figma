@@ -21,7 +21,7 @@ interface TaskColumnProps {
   onCreateCategory?: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   teamMembers: TeamMember[];
-  createTeamMember: (memberData: { name: string; email?: string }) => Promise<any>;
+  createTeamMember: (memberData: { name: string; is_strategy_team: boolean }) => Promise<any>;
 }
 
 export function TaskColumn({ 
@@ -132,7 +132,7 @@ export function TaskColumn({
     }
   }, [column.id, onCreateTask]);
 
-  const handleCreatePerson = useCallback(async (personData: { name: string; email?: string }) => {
+  const handleCreatePerson = useCallback(async (personData: { name: string; is_strategy_team: boolean }) => {
     try {
       await createTeamMember(personData);
       setIsAddingPerson(false);

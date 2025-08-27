@@ -4,28 +4,28 @@ import { Dialog, DialogInput, DialogButton } from './ui/dialog';
 interface AddPersonDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (personData: { name: string; email?: string }) => void;
+  onSubmit: (personData: { name: string; is_strategy_team: boolean }) => void;
 }
 
 export function AddPersonDialog({ isOpen, onClose, onSubmit }: AddPersonDialogProps) {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [isStrategyTeam, setIsStrategyTeam] = useState(false);
 
   const handleSubmit = () => {
     if (name.trim()) {
       onSubmit({
         name: name.trim(),
-        email: email.trim() || undefined
+        is_strategy_team: isStrategyTeam
       });
       setName('');
-      setEmail('');
+      setIsStrategyTeam(false);
       onClose();
     }
   };
 
   const handleCancel = () => {
     setName('');
-    setEmail('');
+    setIsStrategyTeam(false);
     onClose();
   };
 
@@ -42,14 +42,18 @@ export function AddPersonDialog({ isOpen, onClose, onSubmit }: AddPersonDialogPr
           />
         </div>
 
-        {/* Email (Optional) */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email (Optional)</label>
-          <DialogInput
-            placeholder="Enter email address..."
-            value={email}
-            onChange={setEmail}
+        {/* Strategy Team Checkbox */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="strategy-team"
+            checked={isStrategyTeam}
+            onChange={(e) => setIsStrategyTeam(e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
+          <label htmlFor="strategy-team" className="ml-2 block text-sm text-gray-700">
+            Member of Strategy Team
+          </label>
         </div>
 
         {/* Buttons */}
