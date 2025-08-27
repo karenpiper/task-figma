@@ -152,6 +152,29 @@ export async function GET() {
       }
     }));
     
+    // Generate team member categories for follow-up column
+    const followUpColumn = boardData.columns.find(col => col.id === 'follow-up');
+    if (followUpColumn && teamMembers.length > 0) {
+      followUpColumn.categories = teamMembers.map((member, index) => ({
+        id: `follow-up_${member.id}`,
+        name: member.name,
+        column_id: 'follow-up',
+        order_index: index,
+        is_default: false,
+        tasks: tasks.filter(task => 
+          task.column_id === 'follow-up' && 
+          task.team_member_id === member.id
+        ),
+        count: tasks.filter(task => 
+          task.column_id === 'follow-up' && 
+          task.team_member_id === member.id
+        ).length
+      }));
+      
+      // Update follow-up column count to include all tasks
+      followUpColumn.count = tasks.filter(task => task.column_id === 'follow-up').length;
+    }
+
     console.log('✅ Board data assembled successfully [UPDATED VERSION]');
     return NextResponse.json(boardData);
     

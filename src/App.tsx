@@ -31,6 +31,8 @@ function StableDndProvider({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  console.log('🚨 FORCE DEPLOYMENT - NEW APP CODE VERSION LOADED! 🚨');
+  
   const [showParticles, setShowParticles] = useState(false);
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
   
