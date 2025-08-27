@@ -20,9 +20,16 @@ export function Header({ onToggleParticles, onToggleStats, isStatsCollapsed }: H
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-medium bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent">
-              Task Board
+              Karenban
             </h1>
-            <p className="text-slate-600/80 mt-1 font-medium">Focus on now and later</p>
+            <p className="text-slate-600/80 mt-1 font-medium">
+              {new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
           </div>
           
           <div className="flex items-center gap-4">
@@ -77,33 +84,7 @@ export function Header({ onToggleParticles, onToggleStats, isStatsCollapsed }: H
             />
           </div>
           
-          {/* Glass filter buttons */}
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-12 px-6 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 transition-all duration-200 text-slate-700 font-medium shadow-lg"
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              All Priority
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-12 px-6 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 transition-all duration-200 text-slate-700 font-medium shadow-lg"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              All Assignees
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-12 px-6 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 transition-all duration-200 text-slate-700 font-medium shadow-lg"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              This Week
-            </Button>
-          </div>
+
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { Badge } from './ui/badge';
+import { ArrowRight } from 'lucide-react';
 
 interface Task {
   id: number;
@@ -102,7 +103,7 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
         {/* Title */}
         <h4 className="font-medium text-slate-800 mb-3 leading-tight text-sm">{task.title}</h4>
         
-        {/* Footer with project tag and priority indicator */}
+        {/* Footer with project tag, move button, and priority indicator */}
         <div className="flex items-center justify-between">
           {task.project ? (
             <Badge 
@@ -115,8 +116,13 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
             <div className="w-16 h-5 bg-slate-100/60 rounded-md"></div>
           )}
           
-          <div className={`px-2 py-1 rounded-md text-xs font-medium ${priorityConfig.bg} ${priorityConfig.text}`}>
-            {task.priority}
+          <div className="flex items-center gap-2">
+            <button className="p-1 rounded-md hover:bg-slate-100/60 transition-colors duration-200 group">
+              <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-slate-800" />
+            </button>
+            <div className={`px-2 py-1 rounded-md text-xs font-medium ${priorityConfig.bg} ${priorityConfig.text}`}>
+              {task.priority}
+            </div>
           </div>
         </div>
       </div>

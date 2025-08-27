@@ -90,7 +90,7 @@ export default function App() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         {/* FORCE DEPLOYMENT INDICATOR */}
         <div className="bg-red-600 text-white text-center py-2 font-bold text-lg">
-          🚨 NEW CODE VERSION DEPLOYED - useTasksNew HOOK LOADED! 🚨
+          🚨 KARENBAN - NEW CODE VERSION DEPLOYED! 🚨
         </div>
         
         {/* Main container with full viewport height and overflow control */}
@@ -200,7 +200,11 @@ export default function App() {
                     <div className="space-y-6 overflow-y-auto h-full">
                       {/* Focus tracking and daily progress */}
                       <div className="glass-panel">
-                        <FocusZone />
+                        <FocusZone 
+                          totalTasks={tasks.length}
+                          completedTasks={tasks.filter(task => task.column_id === 'completed').length}
+                          pendingTasks={tasks.filter(task => task.column_id !== 'completed').length}
+                        />
                       </div>
                       
                       {/* Achievement system and gamification */}

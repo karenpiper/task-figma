@@ -3,9 +3,15 @@ import { Target, Zap, Trophy, Star, Sparkles } from 'lucide-react';
 import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
 
-export function FocusZone() {
+interface FocusZoneProps {
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+}
+
+export function FocusZone({ totalTasks, completedTasks, pendingTasks }: FocusZoneProps) {
   const [currentQuote, setCurrentQuote] = useState(0);
-  const [dailyProgress, setDailyProgress] = useState(67);
+  const [dailyProgress, setDailyProgress] = useState(totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0);
   const [streak, setStreak] = useState(12);
 
   const inspirationalQuotes = [
@@ -22,6 +28,10 @@ export function FocusZone() {
     }, 8000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    setDailyProgress(totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0);
+  }, [totalTasks, completedTasks]);
 
   return (
     <div className="relative">
@@ -123,16 +133,16 @@ export function FocusZone() {
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center p-4 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/40">
-            <div className="text-xl font-bold text-emerald-600">8</div>
+            <div className="text-xl font-bold text-emerald-600">{completedTasks}</div>
             <div className="text-xs text-slate-600 font-medium">Completed</div>
           </div>
           <div className="text-center p-4 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/40">
-            <div className="text-xl font-bold text-blue-600">4</div>
+            <div className="text-xl font-bold text-blue-600">{pendingTasks}</div>
             <div className="text-xs text-slate-600 font-medium">In Progress</div>
           </div>
           <div className="text-center p-4 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/40">
-            <div className="text-xl font-bold text-purple-600">2h</div>
-            <div className="text-xs text-slate-600 font-medium">Focus Time</div>
+            <div className="text-xl font-bold text-purple-600">{totalTasks}</div>
+            <div className="text-xs text-slate-600 font-medium">Total Tasks</div>
           </div>
         </div>
       </div>

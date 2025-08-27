@@ -184,43 +184,7 @@ export function Sidebar({
               </Badge>
             </div>
 
-            {/* By Person Section */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-white/10 backdrop-blur-sm border border-transparent hover:border-white/20 transition-all duration-200 cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
-                    <Users className="w-4 h-4 text-slate-300 group-hover:text-white transition-colors" />
-                  </div>
-                  <span className="font-medium">By Person</span>
-                </div>
-                <Badge 
-                  variant="secondary" 
-                  className="bg-white/15 text-white border border-white/20 backdrop-blur-sm font-medium"
-                >
-                  {personStats.assigned}
-                </Badge>
-              </div>
-              
-              {/* Person Filter */}
-              <div className="ml-12">
-                <Select value={selectedPerson} onValueChange={setSelectedPerson}>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                    <SelectValue placeholder="Filter by person" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                    <SelectItem value="all">All People</SelectItem>
-                    {teamMembers.map((member) => (
-                      <SelectItem key={member.id} value={member.id.toString()}>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${member.color}`}></div>
-                          {member.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+
           </div>
           
           <div>
