@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Users, Plus, Edit, Trash2, UserPlus } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Input } from './ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogInput, DialogButton } from './ui/dialog';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { TeamMember } from '../hooks/useTasksNew';
@@ -88,85 +87,68 @@ export function TeamManagement({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold text-slate-800">Team Management</h3>
-        <Dialog open={isCreatingMember} onOpenChange={setIsCreatingMember}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add Member
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-white/95 backdrop-blur-xl border border-white/40">
-            <DialogHeader>
-              <DialogTitle>Add New Team Member</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="memberName">Name *</Label>
-                <Input
-                  id="memberName"
-                  value={newMemberData.name}
-                  onChange={(e) => setNewMemberData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter full name..."
-                  className="bg-white/50 border-white/30"
-                />
-              </div>
-              <div>
-                <Label htmlFor="memberEmail">Email</Label>
-                <Input
-                  id="memberEmail"
-                  type="email"
-                  value={newMemberData.email}
-                  onChange={(e) => setNewMemberData(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="Enter email address..."
-                  className="bg-white/50 border-white/30"
-                />
-              </div>
-              <div>
-                <Label htmlFor="memberAvatar">Avatar</Label>
-                <Input
-                  id="memberAvatar"
-                  value={newMemberData.avatar}
-                  onChange={(e) => setNewMemberData(prev => ({ ...prev, avatar: e.target.value }))}
-                  placeholder="Enter initials (e.g., JD)"
-                  className="bg-white/50 border-white/30"
-                />
-              </div>
-              <div>
-                <Label htmlFor="memberColor">Color</Label>
-                <Select value={newMemberData.color} onValueChange={(value) => setNewMemberData(prev => ({ ...prev, color: value }))}>
-                  <SelectTrigger className="bg-white/50 border-white/30">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {colorOptions.map(color => (
-                      <SelectItem key={color.value} value={color.value}>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-4 h-4 rounded-full ${color.value}`}></div>
-                          {color.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  onClick={handleCreateMember}
-                  disabled={!newMemberData.name.trim()}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                >
-                  Add Member
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsCreatingMember(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
+        <Button 
+          size="sm" 
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+          onClick={() => setIsCreatingMember(true)}
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Add Member
+        </Button>
+        
+        <Dialog isOpen={isCreatingMember} onClose={() => setIsCreatingMember(false)} title="Add New Team Member">
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="memberName">Name *</Label>
+              <DialogInput
+                placeholder="Enter full name..."
+                value={newMemberData.name}
+                onChange={(value) => setNewMemberData(prev => ({ ...prev, name: value }))}
+              />
             </div>
-          </DialogContent>
+            <div>
+              <Label htmlFor="memberEmail">Email</Label>
+              <DialogInput
+                placeholder="Enter email address..."
+                value={newMemberData.email}
+                onChange={(value) => setNewMemberData(prev => ({ ...prev, email: value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="memberAvatar">Avatar</Label>
+              <DialogInput
+                placeholder="Enter initials (e.g., JD)"
+                value={newMemberData.avatar}
+                onChange={(value) => setNewMemberData(prev => ({ ...prev, avatar: value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="memberColor">Color</Label>
+              <Select value={newMemberData.color} onValueChange={(value) => setNewMemberData(prev => ({ ...prev, color: value }))}>
+                <SelectTrigger className="bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {colorOptions.map(color => (
+                    <SelectItem key={color.value} value={color.value}>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded-full ${color.value}`}></div>
+                        {color.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <DialogButton variant="primary" onClick={handleCreateMember}>
+                Add Member
+              </DialogButton>
+              <DialogButton variant="secondary" onClick={() => setIsCreatingMember(false)}>
+                Cancel
+              </DialogButton>
+            </div>
+          </div>
         </Dialog>
       </div>
 
@@ -220,47 +202,36 @@ export function TeamManagement({
 
       {/* Edit Member Dialog */}
       {editingMember && (
-        <Dialog open={!!editingMember} onOpenChange={() => setEditingMember(null)}>
-          <DialogContent className="bg-white/95 backdrop-blur-xl border border-white/40">
-            <DialogHeader>
-              <DialogTitle>Edit Team Member</DialogTitle>
-            </DialogHeader>
+        <Dialog isOpen={!!editingMember} onClose={() => setEditingMember(null)} title="Edit Team Member">
             <div className="space-y-4">
               <div>
                 <Label htmlFor="editMemberName">Name *</Label>
-                <Input
-                  id="editMemberName"
-                  value={editingMember.name}
-                  onChange={(e) => setEditingMember(prev => prev ? { ...prev, name: e.target.value } : null)}
+                <DialogInput
                   placeholder="Enter full name..."
-                  className="bg-white/50 border-white/30"
+                  value={editingMember.name}
+                  onChange={(value) => setEditingMember(prev => prev ? { ...prev, name: value } : null)}
                 />
               </div>
               <div>
                 <Label htmlFor="editMemberEmail">Email</Label>
-                <Input
-                  id="editMemberEmail"
-                  type="email"
-                  value={editingMember.email || ''}
-                  onChange={(e) => setEditingMember(prev => prev ? { ...prev, email: e.target.value } : null)}
+                <DialogInput
                   placeholder="Enter email address..."
-                  className="bg-white/50 border-white/30"
+                  value={editingMember.email || ''}
+                  onChange={(value) => setEditingMember(prev => prev ? { ...prev, email: value } : null)}
                 />
               </div>
               <div>
                 <Label htmlFor="editMemberAvatar">Avatar</Label>
-                <Input
-                  id="editMemberAvatar"
-                  value={editingMember.avatar}
-                  onChange={(e) => setEditingMember(prev => prev ? { ...prev, avatar: e.target.value } : null)}
+                <DialogInput
                   placeholder="Enter initials (e.g., JD)"
-                  className="bg-white/50 border-white/30"
+                  value={editingMember.avatar}
+                  onChange={(value) => setEditingMember(prev => prev ? { ...prev, avatar: value } : null)}
                 />
               </div>
               <div>
                 <Label htmlFor="editMemberColor">Color</Label>
                 <Select value={editingMember.color} onValueChange={(value) => setEditingMember(prev => prev ? { ...prev, color: value } : null)}>
-                  <SelectTrigger className="bg-white/50 border-white/30">
+                  <SelectTrigger className="bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -275,24 +246,15 @@ export function TeamManagement({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  onClick={handleUpdateMember}
-                  disabled={!editingMember.name.trim()}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                >
+              <div className="flex gap-3 pt-2">
+                <DialogButton variant="primary" onClick={handleUpdateMember}>
                   Update Member
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setEditingMember(null)}
-                  className="flex-1"
-                >
+                <DialogButton variant="secondary" onClick={() => setEditingMember(null)}>
                   Cancel
                 </Button>
               </div>
             </div>
-          </DialogContent>
         </Dialog>
       )}
     </div>
