@@ -54,8 +54,9 @@ export default function App() {
     tasks
   } = useTasksNew();
 
-  const triggerCelebration = useCallback(() => {
+  const triggerCelebration = useCallback((taskId: number): Promise<void> => {
     setShowParticles(true);
+    return Promise.resolve();
   }, []);
 
   const toggleStats = useCallback(() => {
