@@ -108,6 +108,7 @@ export default function App() {
                     moveTask={moveTask}
                     createCategory={createCategory}
                     deleteCategory={deleteCategory}
+                    createTeamMember={createTeamMember}
                   />
                 </div>
                 

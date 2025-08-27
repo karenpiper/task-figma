@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useDrop } from 'react-dnd';
-import { MoreHorizontal, Plus, Users } from 'lucide-react';
+import { MoreHorizontal, Plus, Users, UserPlus } from 'lucide-react';
 import { TaskCategory } from './TaskCategory';
+import { AddTaskDialog } from './AddTaskDialog';
+import { AddPersonDialog } from './AddPersonDialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Category, Column, TeamMember, Task } from '../hooks/useTasksNew';
@@ -19,6 +20,7 @@ interface TaskColumnProps {
   onCreateCategory?: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   teamMembers: TeamMember[];
+  createTeamMember: (memberData: { name: string; email?: string }) => Promise<any>;
 }
 
 export function TaskColumn({ 
@@ -28,9 +30,11 @@ export function TaskColumn({
   onMoveTask,
   onCreateCategory,
   onDeleteCategory,
-  teamMembers = []
+  teamMembers = [],
+  createTeamMember
 }: TaskColumnProps) {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [isAddingPerson, setIsAddingPerson] = useState(false);
   const [newTaskData, setNewTaskData] = useState({
     title: '',
     priority: 'medium',
@@ -105,17 +109,26 @@ export function TaskColumn({
   }, [dropRef]);
 
   // Memoize callback functions to prevent recreation
-  const handleCreateTask = useCallback(async () => {
-    if (!newTaskData.title.trim() || !onCreateTask) return;
-    
+  const handleCreateTask = useCallback(async (taskData: { title: string; priority: string; project?: string }) => {
     try {
-      await onCreateTask(newTaskData);
-      setNewTaskData({ title: '', priority: 'medium', project: '', column_id: column.id, category_id: undefined });
-      setIsCreatingTask(false);
+      await onCreateTask({
+        ...taskData,
+        column_id: column.id,
+        category_id: undefined
+      });
     } catch (error) {
       console.error('Failed to create task:', error);
     }
-  }, [newTaskData, onCreateTask, column.id]);
+  }, [column.id, onCreateTask]);
+
+  const handleCreatePerson = useCallback(async (personData: { name: string; email?: string }) => {
+    try {
+      await createTeamMember(personData);
+      setIsAddingPerson(false);
+    } catch (error) {
+      console.error('Error creating person:', error);
+    }
+  }, [createTeamMember]);
 
   // Memoize computed values
   const totalTasks = useMemo(() => column.tasks.length, [column.tasks.length]);
@@ -173,74 +186,26 @@ export function TaskColumn({
           
           {/* Add Task button for uncategorized and later columns only */}
           {!shouldShowCategories && (
-            <Dialog open={isCreatingTask} onOpenChange={setIsCreatingTask}>
-              <DialogTrigger asChild>
-                <Button 
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0 rounded-md hover:bg-slate-100/60 text-slate-600 hover:text-slate-800"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-lg font-semibold text-gray-900">Add New Task</DialogTitle>
-                  <p className="text-sm text-gray-600">Create a new task in this column.</p>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="taskTitle" className="text-sm font-medium text-gray-700">Task Title</Label>
-                    <Input
-                      id="taskTitle"
-                      value={newTaskData.title}
-                      onChange={(e) => setNewTaskData(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Enter task title..."
-                      className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="taskPriority" className="text-sm font-medium text-gray-700">Priority</Label>
-                    <Select value={newTaskData.priority} onValueChange={(value) => setNewTaskData(prev => ({ ...prev, priority: value }))}>
-                      <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="taskProject" className="text-sm font-medium text-gray-700">Project (Optional)</Label>
-                    <Input
-                      id="taskProject"
-                      value={newTaskData.project}
-                      onChange={(e) => setNewTaskData(prev => ({ ...prev, project: e.target.value }))}
-                      placeholder="Enter project name..."
-                      className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button 
-                      onClick={handleCreateTask}
-                      disabled={!newTaskData.title.trim()}
-                      className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                    >
-                      Create Task
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsCreatingTask(false)}
-                      className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button 
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 rounded-md hover:bg-slate-100/60 text-slate-600 hover:text-slate-800"
+              onClick={() => setIsCreatingTask(true)}
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          )}
+          
+          {/* Add Person button for follow-up column */}
+          {isFollowUpColumn && (
+            <Button 
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 rounded-md hover:bg-slate-100/60 text-slate-600 hover:text-slate-800"
+              onClick={() => setIsAddingPerson(true)}
+            >
+              <UserPlus className="w-4 h-4" />
+            </Button>
           )}
           
           {/* No buttons for columns with categories - tasks must be added to specific categories */}
@@ -304,6 +269,21 @@ export function TaskColumn({
           </>
         )}
       </div>
+      
+      {/* Dialogs */}
+      <AddTaskDialog
+        isOpen={isCreatingTask}
+        onClose={() => setIsCreatingTask(false)}
+        onSubmit={handleCreateTask}
+        columnId={column.id}
+        categoryId={undefined}
+      />
+      
+      <AddPersonDialog
+        isOpen={isAddingPerson}
+        onClose={() => setIsAddingPerson(false)}
+        onSubmit={handleCreatePerson}
+      />
     </div>
   );
 }
