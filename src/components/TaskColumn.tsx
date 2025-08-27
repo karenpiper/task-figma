@@ -263,7 +263,7 @@ export function TaskColumn({
             {/* For non-day columns, show tasks directly with consistent spacing */}
             <div className="space-y-3">
               {column.tasks.map((task) => (
-                <TaskCard key={task.id} task={task} onComplete={onTaskComplete} />
+                <TaskCard key={task.id} task={task} onComplete={onTaskCompleteSimple} />
               ))}
             </div>
             
