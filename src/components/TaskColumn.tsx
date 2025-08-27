@@ -14,7 +14,7 @@ import { TaskCard } from './TaskCard';
 
 interface TaskColumnProps {
   column: Column;
-  onTaskComplete?: () => void;
+  onTaskComplete?: (taskId: number) => Promise<void>;
   onCreateTask: (taskData: Partial<Task>, columnId?: string, categoryId?: string) => Promise<any>;
   onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onCreateCategory?: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
@@ -61,9 +61,9 @@ export function TaskColumn({
     });
     
     // Handle task completion if moving to completed column
-    if (column.id === 'completed' && onTaskComplete) {
+    if (column.id === 'completed' && onTaskComplete && item.id) {
       console.log('✅ Task completed, triggering celebration');
-      onTaskComplete();
+      onTaskComplete(item.id);
     }
     
     // Move task to this column if onMoveTask is provided
