@@ -215,7 +215,7 @@ export async function GET() {
     
     // Generate team member categories for follow-up column
     const followUpColumn = boardData.find(col => col.id === 'follow-up');
-    if (followUpColumn && teamMembers.length > 0) {
+    if (followUpColumn && teamMembers && teamMembers.length > 0) {
       followUpColumn.categories = teamMembers.map((member, index) => ({
         id: `follow-up_${member.id}`,
         name: member.name,
@@ -231,6 +231,10 @@ export async function GET() {
       }));
       
       // Update follow-up column count to include all tasks
+      followUpColumn.count = allTasks.length;
+    } else if (followUpColumn && (!teamMembers || teamMembers.length === 0)) {
+      console.log('⚠️ No team members available for follow-up column categories');
+      followUpColumn.categories = [];
       followUpColumn.count = allTasks.length;
     }
 
