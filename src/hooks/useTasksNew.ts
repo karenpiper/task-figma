@@ -90,6 +90,16 @@ export const useTasksNew = () => {
         }))
       });
       
+      // DEBUG: Check follow-up column data specifically
+      const followUpCol = data.find((col: any) => col.id === 'follow-up');
+      if (followUpCol) {
+        console.log('🔍 DEBUG: Follow-up column data received:', {
+          id: followUpCol.id,
+          categoriesCount: followUpCol.categories?.length || 0,
+          categories: followUpCol.categories?.map((cat: any) => ({ id: cat.id, name: cat.name }))
+        });
+      }
+      
       // Simple state update - no functional updates that could cause conflicts
       setColumns(data);
       
@@ -265,7 +275,16 @@ export const useTasksNew = () => {
         followUpCategories: columns.find(col => col.id === 'follow-up')?.categories?.length || 0
       });
       
+      // Wait a bit for database transaction to commit
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       await fetchBoard();
+      
+      // Double-check after another delay
+      setTimeout(async () => {
+        console.log('🔄 Double-checking board data after delay...');
+        await fetchBoard();
+      }, 2000);
       
       console.log('🔍 Current columns state after fetchBoard:', {
         columnsLength: columns.length,
