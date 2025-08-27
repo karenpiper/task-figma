@@ -203,58 +203,58 @@ export function TeamManagement({
       {/* Edit Member Dialog */}
       {editingMember && (
         <Dialog isOpen={!!editingMember} onClose={() => setEditingMember(null)} title="Edit Team Member">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="editMemberName">Name *</Label>
-                <DialogInput
-                  placeholder="Enter full name..."
-                  value={editingMember.name}
-                  onChange={(value) => setEditingMember(prev => prev ? { ...prev, name: value } : null)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editMemberEmail">Email</Label>
-                <DialogInput
-                  placeholder="Enter email address..."
-                  value={editingMember.email || ''}
-                  onChange={(value) => setEditingMember(prev => prev ? { ...prev, email: value } : null)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editMemberAvatar">Avatar</Label>
-                <DialogInput
-                  placeholder="Enter initials (e.g., JD)"
-                  value={editingMember.avatar}
-                  onChange={(value) => setEditingMember(prev => prev ? { ...prev, avatar: value } : null)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editMemberColor">Color</Label>
-                <Select value={editingMember.color} onValueChange={(value) => setEditingMember(prev => prev ? { ...prev, color: value } : null)}>
-                  <SelectTrigger className="bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {colorOptions.map(color => (
-                      <SelectItem key={color.value} value={color.value}>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-4 h-4 rounded-full ${color.value}`}></div>
-                          {color.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <DialogButton variant="primary" onClick={handleUpdateMember}>
-                  Update Member
-                </Button>
-                <DialogButton variant="secondary" onClick={() => setEditingMember(null)}>
-                  Cancel
-                </Button>
-              </div>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editMemberName">Name *</Label>
+              <DialogInput
+                placeholder="Enter full name..."
+                value={editingMember.name}
+                onChange={(value) => setEditingMember(prev => prev ? { ...prev, name: value } : null)}
+              />
             </div>
+            <div>
+              <Label htmlFor="editMemberEmail">Email</Label>
+              <DialogInput
+                placeholder="Enter email address..."
+                value={editingMember.email || ''}
+                onChange={(value) => setEditingMember(prev => prev ? { ...prev, email: value } : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="editMemberAvatar">Avatar</Label>
+              <DialogInput
+                placeholder="Enter initials (e.g., JD)"
+                value={editingMember.avatar}
+                onChange={(value) => setEditingMember(prev => prev ? { ...prev, avatar: value } : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="editMemberColor">Color</Label>
+              <Select value={editingMember.color} onValueChange={(value) => setEditingMember(prev => prev ? { ...prev, color: value } : null)}>
+                <SelectTrigger className="bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {colorOptions.map(color => (
+                    <SelectItem key={color.value} value={color.value}>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded-full ${color.value}`}></div>
+                        {color.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <DialogButton variant="primary" onClick={handleUpdateMember}>
+                Update Member
+              </DialogButton>
+              <DialogButton variant="secondary" onClick={() => setEditingMember(null)}>
+                Cancel
+              </DialogButton>
+            </div>
+          </div>
         </Dialog>
       )}
     </div>
