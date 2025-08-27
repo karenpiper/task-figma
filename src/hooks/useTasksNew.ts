@@ -103,17 +103,11 @@ export const useTasksNew = () => {
       // Simple state update - no functional updates that could cause conflicts
       setColumns(data);
       
-      // DEBUG: Check what happened to the state
-      setTimeout(() => {
-        console.log('🔍 DEBUG: Current columns state after setColumns:', {
-          columnsLength: columns.length,
-          columnsData: columns.map((col: any) => ({
-            id: col.id,
-            categoriesCount: col.categories?.length || 0,
-            tasksCount: col.tasks?.length || 0
-          }))
-        });
-      }, 100);
+      // DEBUG: Log the data we're setting
+      console.log('🔍 DEBUG: Setting columns state with data:', {
+        dataLength: data.length,
+        followUpColumn: data.find((col: any) => col.id === 'follow-up')?.categories?.length || 0
+      });
       
       setError(null);
       console.log('✅ Board data updated successfully');
@@ -286,10 +280,7 @@ export const useTasksNew = () => {
         await fetchBoard();
       }, 2000);
       
-      console.log('🔍 Current columns state after fetchBoard:', {
-        columnsLength: columns.length,
-        followUpCategories: columns.find(col => col.id === 'follow-up')?.categories?.length || 0
-      });
+      console.log('🔍 DEBUG: fetchBoard completed, state should be updated');
 
       return newMember;
     } catch (err) {
@@ -385,6 +376,14 @@ export const useTasksNew = () => {
     fetchBoard();
     fetchTeamMembers();
   }, []); // No dependencies - run only once
+
+  // Monitor columns state changes
+  useEffect(() => {
+    console.log(`🔍 Hook instance ${hookId} columns state changed:`, {
+      columnsLength: columns.length,
+      followUpCategories: columns.find(col => col.id === 'follow-up')?.categories?.length || 0
+    });
+  }, [columns, hookId]);
 
   return {
     columns,
