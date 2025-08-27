@@ -16,7 +16,7 @@ interface ThisWeekProps {
     priority: string; 
   }, columnId?: string, categoryId?: string) => Promise<void>;
   onMoveTask: (taskId: number, targetColumnId: string, targetCategoryId?: string) => Promise<void>;
-  onTaskComplete?: (taskId: number) => Promise<void>;
+  onTaskComplete?: () => void;
   onDeleteCategory: (categoryId: string) => Promise<void>;
   createTeamMember: (memberData: { name: string; email?: string; avatar?: string; color?: string }) => Promise<TeamMember>;
 }
@@ -342,7 +342,7 @@ export function ThisWeek({
                   teamMembers={teamMembers}
                   onCreateTask={handleCreateTask}
                   onMoveTask={handleMoveTask}
-                  onTaskComplete={onTaskComplete || (() => Promise.resolve())}
+                  onTaskComplete={onTaskComplete || (() => {})}
                   onDeleteCategory={onDeleteCategory}
                   createTeamMember={createTeamMember}
                 />

@@ -59,10 +59,15 @@ export default function App() {
     setShowParticles(true);
   }, []);
 
-  // Task completion celebration with taskId
+  // Task completion celebration with taskId (for TaskColumn)
   const handleTaskComplete = useCallback((taskId: number): Promise<void> => {
     setShowParticles(true);
     return Promise.resolve();
+  }, []);
+
+  // Task completion celebration without taskId (for TaskCard)
+  const handleTaskCompleteSimple = useCallback((): void => {
+    setShowParticles(true);
   }, []);
 
   const toggleStats = useCallback(() => {
@@ -153,6 +158,7 @@ export default function App() {
                       onMoveTask={moveTask}
                       onDeleteCategory={deleteCategory}
                       createTeamMember={createTeamMember}
+                      onTaskComplete={handleTaskCompleteSimple}
                     />
                   )}
                 </div>
