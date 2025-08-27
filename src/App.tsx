@@ -75,6 +75,12 @@ export default function App() {
     setShowParticles(true);
   }, []);
 
+  // Task completion celebration with taskId for ThisWeek (needs to be converted to Promise)
+  const handleTaskCompleteForWeek = useCallback((taskId: number): Promise<void> => {
+    setShowParticles(true);
+    return Promise.resolve();
+  }, []);
+
   const toggleStats = useCallback(() => {
     setIsStatsCollapsed(prev => !prev);
   }, []);
@@ -164,7 +170,7 @@ export default function App() {
                       onMoveTask={moveTask}
                       onDeleteCategory={deleteCategory}
                       createTeamMember={createTeamMember}
-                      onTaskComplete={handleTaskCompleteSimple}
+                      onTaskComplete={handleTaskCompleteForWeek}
                     />
                   )}
                 </div>
