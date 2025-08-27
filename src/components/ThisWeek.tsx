@@ -239,33 +239,7 @@ export function ThisWeek({
   const handleCreateTask = useCallback(async (taskData: any, columnId?: string, categoryId?: string) => {
     try {
       await onCreateTask(taskData, columnId, categoryId);
-      
-      // Refresh the data
-      const response = await fetch('/api/board');
-      if (response.ok) {
-        const data = await response.json();
-        const updatedColumns = columns.map(column => {
-          const apiColumn = data.find((col: any) => col.id === column.id);
-          if (apiColumn) {
-            return {
-              ...column,
-              tasks: apiColumn.tasks || [],
-              categories: column.categories.map(cat => {
-                const apiCategory = apiColumn.categories?.find((c: any) => c.id === cat.id);
-                return {
-                  ...cat,
-                  tasks: apiCategory?.tasks || [],
-                  count: apiCategory?.tasks?.length || 0
-                };
-              }),
-              count: (apiColumn.tasks?.length || 0) + 
-                     (apiColumn.categories?.reduce((sum: number, cat: any) => sum + (cat.tasks?.length || 0), 0) || 0)
-            };
-          }
-          return column;
-        });
-        // Don't set columns state - just use the data directly
-      }
+      // Task creation handled by parent component - no local state to update
     } catch (error) {
       console.error('Error creating task:', error);
     }
@@ -275,33 +249,7 @@ export function ThisWeek({
   const handleMoveTask = useCallback(async (taskId: number, targetColumnId: string, targetCategoryId?: string) => {
     try {
       await onMoveTask(taskId, targetColumnId, targetCategoryId);
-      
-      // Refresh the data
-      const response = await fetch('/api/board');
-      if (response.ok) {
-        const data = await response.json();
-        const updatedColumns = columns.map(column => {
-          const apiColumn = data.find((col: any) => col.id === column.id);
-          if (apiColumn) {
-            return {
-              ...column,
-              tasks: apiColumn.tasks || [],
-              categories: column.categories.map(cat => {
-                const apiCategory = apiColumn.categories?.find((c: any) => c.id === cat.id);
-                return {
-                  ...cat,
-                  tasks: apiCategory?.tasks || [],
-                  count: apiCategory?.tasks?.length || 0
-                };
-              }),
-              count: (apiColumn.tasks?.length || 0) + 
-                     (apiColumn.categories?.reduce((sum: number, cat: any) => sum + (cat.tasks?.length || 0), 0) || 0)
-            };
-          }
-          return column;
-        });
-        // Don't set columns state - just use the data directly
-      }
+      // Task movement handled by parent component - no local state to update
     } catch (error) {
       console.error('Error moving task:', error);
     }
