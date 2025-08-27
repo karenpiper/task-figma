@@ -27,29 +27,28 @@ async function handleTaskMove(
 ) {
   try {
     console.log(`🔍 Move API: Processing move for task ${params.id}`);
-    
     const { column_id, category_id, team_member_id } = await request.json();
     const taskId = parseInt(params.id);
     
     console.log(`📋 Move request: column_id=${column_id}, category_id=${category_id}, team_member_id=${team_member_id}`);
     
     if (!column_id) {
-      return NextResponse.json(
-        { error: 'Column ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Column ID is required' }, { status: 400 });
     }
 
-    // Prepare update data - only update fields that exist in the database
     const updateData: any = { column_id };
     
-    // Only set category_id if it's not null (for team member categories)
-    if (category_id !== undefined) {
+    // Check if this is a team member category (follow-up_1, follow-up_2, etc.)
+    const isTeamMemberCategory = category_id && category_id.match(/^follow-up_\d+$/);
+    
+    if (isTeamMemberCategory) {
+      console.log(`👥 Team member category detected: ${category_id} - not setting category_id in database`);
+      // For team member categories, DON'T set category_id since they don't exist in the database
+      // The task will be moved to the column but without a specific category
+    } else if (category_id !== undefined) {
       updateData.category_id = category_id;
     }
     
-    // Note: team_member_id is not stored in the database
-    // It's handled client-side for visual grouping only
     if (team_member_id) {
       console.log(`📝 Team member reference: ${team_member_id} (not stored in DB)`);
     }
