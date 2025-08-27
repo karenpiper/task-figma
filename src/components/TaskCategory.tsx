@@ -11,7 +11,7 @@ interface TaskCategoryProps {
   columnId: string;
   category: Category;
   onTaskComplete?: () => void;
-  onCreateTask: (taskData: Partial<Task>) => Promise<any>;
+  onCreateTask: (taskData: Partial<Task>, columnId?: string, categoryId?: string) => Promise<any>;
   onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   teamMembers: Array<{ id: number; name: string; avatar: string; color: string }>;
@@ -96,7 +96,7 @@ export function TaskCategory({
         due_date: taskData.dueDate, // Map dueDate to due_date for API
         column_id: columnId,
         category_id: category.id
-      });
+      }, columnId, category.id);
     } catch (error) {
       console.error('Failed to create task:', error);
     }

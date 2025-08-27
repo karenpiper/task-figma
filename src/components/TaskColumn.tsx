@@ -15,7 +15,7 @@ import { TaskCard } from './TaskCard';
 interface TaskColumnProps {
   column: Column;
   onTaskComplete?: () => void;
-  onCreateTask: (taskData: Partial<Task>) => Promise<any>;
+  onCreateTask: (taskData: Partial<Task>, columnId?: string, categoryId?: string) => Promise<any>;
   onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onCreateCategory?: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
@@ -124,7 +124,7 @@ export function TaskColumn({
         due_date: taskData.dueDate, // Map dueDate to due_date for API
         column_id: column.id,
         category_id: undefined
-      });
+      }, column.id, undefined);
     } catch (error) {
       console.error('Failed to create task:', error);
     }
