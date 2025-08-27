@@ -202,41 +202,8 @@ export async function GET() {
       }
     }));
     
-    // Get all tasks for follow-up column processing
-    const { data: allTasks, error: allTasksError } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('column_id', 'follow-up');
-    
-    if (allTasksError) {
-      console.error('❌ All tasks error:', allTasksError);
-      throw allTasksError;
-    }
-    
-    // Generate team member categories for follow-up column
-    const followUpColumn = boardData.find(col => col.id === 'follow-up');
-    if (followUpColumn && teamMembers && teamMembers.length > 0) {
-      followUpColumn.categories = teamMembers.map((member, index) => ({
-        id: `follow-up_${member.id}`,
-        name: member.name,
-        column_id: 'follow-up',
-        order_index: index,
-        is_default: false,
-        tasks: allTasks.filter(task => 
-          task.team_member_id === member.id
-        ) || [],
-        count: (allTasks.filter(task => 
-          task.team_member_id === member.id
-        ) || []).length
-      }));
-      
-      // Update follow-up column count to include all tasks
-      followUpColumn.count = allTasks.length;
-    } else if (followUpColumn && (!teamMembers || teamMembers.length === 0)) {
-      console.log('⚠️ No team members available for follow-up column categories');
-      followUpColumn.categories = [];
-      followUpColumn.count = allTasks.length;
-    }
+    // Follow-up column is already processed in the main loop above
+    // No need for duplicate processing here
 
     console.log('✅ Board data assembled successfully [UPDATED VERSION]');
     return NextResponse.json(boardData);
