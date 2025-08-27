@@ -63,13 +63,7 @@ export function KanbanBoard({
     );
   }
 
-  // Create a wrapper function that matches the expected signature
-  const handleTaskComplete = React.useCallback((taskId: number): Promise<void> => {
-    if (onTaskComplete) {
-      return onTaskComplete(taskId);
-    }
-    return Promise.resolve();
-  }, [onTaskComplete]);
+
 
   return (
     <div className="flex-1 p-8 overflow-x-auto">
@@ -81,7 +75,7 @@ export function KanbanBoard({
           <TaskColumn 
             key={column.id} 
             column={column} 
-            onTaskComplete={handleTaskComplete}
+            onTaskComplete={onTaskComplete}
             onCreateTask={createTask}
             onMoveTask={moveTask}
             onCreateCategory={createCategory}
