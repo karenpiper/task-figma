@@ -37,11 +37,14 @@ export async function GET() {
     }
     
     console.log('✅ Team members fetched:', teamMembers?.length);
+    console.log('🔍 Team members:', teamMembers?.map(m => ({ id: m.id, name: m.name })));
     
     // Get categories and tasks for each column
     const boardData = await Promise.all(columns.map(async (column) => {
       // Special handling for follow-up column - auto-generate team member categories
       if (column.id === 'follow-up') {
+        console.log('🔄 Processing follow-up column with', teamMembers?.length, 'team members');
+        
         // Generate team member categories automatically
         const teamMemberCategories = teamMembers.map((member, index) => ({
           id: `follow-up_${member.id}`,
@@ -52,6 +55,9 @@ export async function GET() {
           tasks: [],
           count: 0
         }));
+        
+        console.log('✅ Follow-up column: Generated categories:', teamMemberCategories?.length);
+        console.log('🔍 Follow-up categories:', teamMemberCategories?.map(cat => ({ id: cat.id, name: cat.name })));
         
         // Get tasks for each team member category
         const categoriesWithTasks = await Promise.all(teamMemberCategories.map(async (category) => {
