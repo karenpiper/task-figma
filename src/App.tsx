@@ -3,6 +3,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Sidebar } from './components/Sidebar';
 import { KanbanBoard } from './components/KanbanBoard';
+import { ThisWeek } from './components/ThisWeek';
 import { Header } from './components/Header';
 import { FocusZone } from './components/FocusZone';
 import { AchievementSystem } from './components/AchievementSystem';
@@ -35,6 +36,7 @@ export default function App() {
   
   const [showParticles, setShowParticles] = useState(false);
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
+  const [currentView, setCurrentView] = useState<'board' | 'week'>('board');
   
   // Lift useTasksNew hook to App level to avoid multiple instances
   const { 
@@ -94,22 +96,59 @@ export default function App() {
                 isStatsCollapsed={isStatsCollapsed}
               />
               
+              {/* Navigation Tabs */}
+              <div className="px-6 pt-4">
+                <div className="flex space-x-1 bg-white/20 backdrop-blur-sm rounded-xl p-1 border border-white/30">
+                  <button
+                    onClick={() => setCurrentView('board')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      currentView === 'board'
+                        ? 'bg-white/80 text-slate-800 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                    }`}
+                  >
+                    Main Board
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('week')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      currentView === 'week'
+                        ? 'bg-white/80 text-slate-800 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                    }`}
+                  >
+                    This Week
+                  </button>
+                </div>
+              </div>
+
               {/* Main content grid with proper spacing */}
               <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0">
-                {/* Kanban board - main content area */}
+                {/* Dynamic content based on current view */}
                 <div className="flex-1 min-w-0">
-                  <KanbanBoard 
-                    onTaskComplete={triggerCelebration}
-                    columns={columns}
-                    teamMembers={teamMembers}
-                    loading={loading}
-                    error={error}
-                    createTask={createTask}
-                    moveTask={moveTask}
-                    createCategory={createCategory}
-                    deleteCategory={deleteCategory}
-                    createTeamMember={createTeamMember}
-                  />
+                  {currentView === 'board' ? (
+                    <KanbanBoard 
+                      onTaskComplete={triggerCelebration}
+                      columns={columns}
+                      teamMembers={teamMembers}
+                      loading={loading}
+                      error={error}
+                      createTask={createTask}
+                      moveTask={moveTask}
+                      createCategory={createCategory}
+                      deleteCategory={deleteCategory}
+                      createTeamMember={createTeamMember}
+                    />
+                  ) : (
+                    <ThisWeek
+                      teamMembers={teamMembers}
+                      onCreateTask={createTask}
+                      onMoveTask={moveTask}
+                      onTaskComplete={triggerCelebration}
+                      onDeleteCategory={deleteCategory}
+                      createTeamMember={createTeamMember}
+                    />
+                  )}
                 </div>
                 
                 {/* Right sidebar with focus zone and achievements */}
