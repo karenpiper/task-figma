@@ -54,7 +54,13 @@ export default function App() {
     tasks
   } = useTasksNew();
 
-  const triggerCelebration = useCallback((taskId: number): Promise<void> => {
+  // General celebration trigger for sidebar
+  const triggerCelebration = useCallback(() => {
+    setShowParticles(true);
+  }, []);
+
+  // Task completion celebration with taskId
+  const handleTaskComplete = useCallback((taskId: number): Promise<void> => {
     setShowParticles(true);
     return Promise.resolve();
   }, []);
@@ -129,7 +135,7 @@ export default function App() {
                 <div className="flex-1 min-w-0">
                   {currentView === 'board' ? (
                     <KanbanBoard 
-                      onTaskComplete={triggerCelebration}
+                      onTaskComplete={handleTaskComplete}
                       columns={columns}
                       teamMembers={teamMembers}
                       loading={loading}
