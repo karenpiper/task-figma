@@ -9,7 +9,7 @@ import { AchievementSystem } from './components/AchievementSystem';
 import { ParticleSystem } from './components/ParticleSystem';
 import { AmbientLighting } from './components/AmbientLighting';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTasks } from './hooks/useTasks';
+import { useTasksNew } from './hooks/useTasksNew';
 
 // Stable DndProvider wrapper to prevent React errors
 function StableDndProvider({ children }: { children: React.ReactNode }) {
@@ -36,7 +36,7 @@ export default function App() {
   const [showParticles, setShowParticles] = useState(false);
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
   
-  // Lift useTasks hook to App level to avoid multiple instances
+  // Lift useTasksNew hook to App level to avoid multiple instances
   const { 
     columns, 
     teamMembers, 
@@ -50,7 +50,7 @@ export default function App() {
     updateTeamMember,
     deleteTeamMember,
     tasks
-  } = useTasks();
+  } = useTasksNew();
 
   const triggerCelebration = useCallback(() => {
     setShowParticles(true);
