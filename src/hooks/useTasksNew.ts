@@ -50,11 +50,16 @@ export interface TeamMember {
 }
 
 export const useTasksNew = () => {
+  // Generate unique ID for this hook instance
+  const hookId = useMemo(() => Math.random().toString(36).substr(2, 9), []);
+  
   const [columns, setColumns] = useState<Column[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [operationLoading, setOperationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  console.log(`🔍 Hook instance ${hookId} initialized`);
 
   // Simple, stable fetch function
   const fetchBoard = useCallback(async () => {
@@ -73,10 +78,33 @@ export const useTasksNew = () => {
       const followUpColumn = data.find((col: any) => col.id === 'follow-up');
       if (followUpColumn) {
         console.log(`🔍 Follow-up column found with ${followUpColumn.categories?.length || 0} categories`);
+        console.log(`👥 Categories:`, followUpColumn.categories?.map((cat: any) => ({ id: cat.id, name: cat.name })));
       }
+      
+      console.log('🔄 About to set columns state with data:', {
+        dataLength: data.length,
+        dataStructure: data.map((col: any) => ({
+          id: col.id,
+          categoriesCount: col.categories?.length || 0,
+          tasksCount: col.tasks?.length || 0
+        }))
+      });
       
       // Simple state update - no functional updates that could cause conflicts
       setColumns(data);
+      
+      // DEBUG: Check what happened to the state
+      setTimeout(() => {
+        console.log('🔍 DEBUG: Current columns state after setColumns:', {
+          columnsLength: columns.length,
+          columnsData: columns.map((col: any) => ({
+            id: col.id,
+            categoriesCount: col.categories?.length || 0,
+            tasksCount: col.tasks?.length || 0
+          }))
+        });
+      }, 100);
+      
       setError(null);
       console.log('✅ Board data updated successfully');
       
@@ -204,6 +232,7 @@ export const useTasksNew = () => {
   // Create team member - SIMPLIFIED APPROACH
   const createTeamMember = useCallback(async (memberData: Partial<TeamMember>) => {
     try {
+      console.log('🚀 createTeamMember called with:', memberData);
       setOperationLoading(true);
       
       const response = await fetch(`${API_BASE}/team-members`, {
@@ -219,21 +248,38 @@ export const useTasksNew = () => {
       }
 
       const newMember = await response.json();
+      console.log('✅ Team member created:', newMember);
       
       // Update team members state
-      setTeamMembers(prev => [...prev, newMember]);
+      console.log('🔄 Updating team members state...');
+      setTeamMembers(prev => {
+        const newState = [...prev, newMember];
+        console.log('👥 New team members state:', newState.length, 'members');
+        return newState;
+      });
       
       // Refresh board data to show new team member in follow-up column
       console.log('🔄 Refreshing board data after team member creation...');
+      console.log('🔍 Current columns state before fetchBoard:', {
+        columnsLength: columns.length,
+        followUpCategories: columns.find(col => col.id === 'follow-up')?.categories?.length || 0
+      });
+      
       await fetchBoard();
+      
+      console.log('🔍 Current columns state after fetchBoard:', {
+        columnsLength: columns.length,
+        followUpCategories: columns.find(col => col.id === 'follow-up')?.categories?.length || 0
+      });
 
       return newMember;
     } catch (err) {
+      console.error('❌ Error in createTeamMember:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, [fetchBoard, columns]);
 
   // Update team member
   const updateTeamMember = useCallback(async (id: number, updates: Partial<TeamMember>) => {
@@ -315,6 +361,7 @@ export const useTasksNew = () => {
 
   // Initialize data - SIMPLE, STABLE
   useEffect(() => {
+    console.log(`🔍 Hook instance ${hookId} useEffect running - initializing data`);
     console.log('🔍 useTasksNew hook initialized - using Next.js API routes');
     fetchBoard();
     fetchTeamMembers();
