@@ -16,7 +16,7 @@ interface TaskColumnProps {
   column: Column;
   onTaskComplete?: () => void;
   onCreateTask: (taskData: Partial<Task>) => Promise<any>;
-  onMoveTask?: (taskId: string, newColumnId: string, newCategoryId?: string) => Promise<void>;
+  onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onCreateCategory?: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   teamMembers: TeamMember[];
