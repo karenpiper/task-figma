@@ -14,7 +14,7 @@ interface ThisWeekProps {
     dueDate?: string; 
     notes?: string; 
     priority: string; 
-  }, columnId: string, categoryId?: string) => Promise<void>;
+  }, columnId?: string, categoryId?: string) => Promise<void>;
   onMoveTask: (taskId: number, targetColumnId: string, targetCategoryId?: string) => Promise<void>;
   onTaskComplete?: (taskId: number) => Promise<void>;
   onDeleteCategory: (categoryId: string) => Promise<void>;
@@ -237,7 +237,7 @@ export function ThisWeek({
   }, [generateWeekColumns]);
 
   // Handle task creation
-  const handleCreateTask = useCallback(async (taskData: any, columnId: string, categoryId?: string) => {
+  const handleCreateTask = useCallback(async (taskData: any, columnId?: string, categoryId?: string) => {
     try {
       await onCreateTask(taskData, columnId, categoryId);
       
