@@ -9,7 +9,7 @@ import { TeamMember } from '../hooks/useTasksNew';
 
 interface TeamManagementProps {
   teamMembers: TeamMember[];
-  onCreateMember: (memberData: { name: string; email?: string; avatar?: string; color?: string }) => Promise<TeamMember>;
+  onCreateMember: (memberData: { name: string; is_strategy_team: boolean; avatar?: string; color?: string }) => Promise<TeamMember>;
   onUpdateMember: (memberId: number, updates: Partial<TeamMember>) => Promise<TeamMember>;
   onDeleteMember: (memberId: number) => Promise<void>;
 }
@@ -24,7 +24,7 @@ export function TeamManagement({
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [newMemberData, setNewMemberData] = useState({
     name: '',
-    email: '',
+    is_strategy_team: false,
     avatar: '',
     color: 'bg-blue-500'
   });
@@ -35,11 +35,11 @@ export function TeamManagement({
     try {
       await onCreateMember({
         name: newMemberData.name,
-        email: newMemberData.email || undefined,
+        is_strategy_team: newMemberData.is_strategy_team,
         avatar: newMemberData.avatar || newMemberData.name.substring(0, 2).toUpperCase(),
         color: newMemberData.color
       });
-      setNewMemberData({ name: '', email: '', avatar: '', color: 'bg-blue-500' });
+      setNewMemberData({ name: '', is_strategy_team: false, avatar: '', color: 'bg-blue-500' });
       setIsCreatingMember(false);
     } catch (error) {
       console.error('Failed to create team member:', error);
@@ -106,13 +106,17 @@ export function TeamManagement({
                 onChange={(value) => setNewMemberData(prev => ({ ...prev, name: value }))}
               />
             </div>
-            <div>
-              <Label htmlFor="memberEmail">Email</Label>
-              <DialogInput
-                placeholder="Enter email address..."
-                value={newMemberData.email}
-                onChange={(value) => setNewMemberData(prev => ({ ...prev, email: value }))}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="strategy-team"
+                checked={newMemberData.is_strategy_team}
+                onChange={(e) => setNewMemberData(prev => ({ ...prev, is_strategy_team: e.target.checked }))}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
+              <Label htmlFor="strategy-team" className="ml-2">
+                Member of Strategy Team
+              </Label>
             </div>
             <div>
               <Label htmlFor="memberAvatar">Avatar</Label>
@@ -171,8 +175,10 @@ export function TeamManagement({
                 </div>
                 <div>
                   <h5 className="font-medium text-slate-800 text-sm">{member.name}</h5>
-                  {member.email && (
-                    <p className="text-xs text-slate-600">{member.email}</p>
+                  {member.is_strategy_team && (
+                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                      Strategy Team
+                    </Badge>
                   )}
                 </div>
               </div>

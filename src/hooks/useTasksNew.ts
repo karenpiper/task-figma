@@ -42,9 +42,9 @@ export interface Column {
 export interface TeamMember {
   id: number;
   name: string;
-  email?: string;
   avatar: string;
   color: string;
+  is_strategy_team: boolean;
   is_active: boolean;
   created_at: string;
 }
