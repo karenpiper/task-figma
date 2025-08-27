@@ -39,18 +39,21 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, email, avatar, color } = body;
     
+    console.log('🆕 Creating team member:', { name, email, avatar, color });
+    
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
     
     const { data, error } = await supabase
       .from('team_members')
-      .insert([{ name, email, avatar, color }])
+      .insert([{ name, email, avatar, color, is_active: true }])
       .select()
       .single();
     
     if (error) throw error;
     
+    console.log('✅ Team member created successfully:', data);
     return NextResponse.json(data);
     
   } catch (error) {
