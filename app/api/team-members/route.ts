@@ -92,6 +92,33 @@ export async function PUT(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, ...updates } = body;
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Team member ID is required' }, { status: 400 });
+    }
+
+    const { data: updatedMember, error } = await supabase
+      .from('team_members')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json(updatedMember);
+  } catch (error) {
+    console.error('Error patching team member:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to patch team member' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const body = await request.json();
