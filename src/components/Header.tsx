@@ -4,7 +4,13 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 
-export function Header() {
+interface HeaderProps {
+  onToggleParticles: () => void;
+  onToggleStats: () => void;
+  isStatsCollapsed: boolean;
+}
+
+export function Header({ onToggleParticles, onToggleStats, isStatsCollapsed }: HeaderProps) {
   return (
     <div className="relative border-b border-white/20 bg-white/10 backdrop-blur-xl">
       {/* Subtle gradient overlay */}
@@ -39,10 +45,22 @@ export function Header() {
             
             {/* Action buttons */}
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all duration-200">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-10 w-10 p-0 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all duration-200"
+                onClick={onToggleParticles}
+                title="Toggle particles"
+              >
                 <Bell className="w-4 h-4 text-slate-700" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all duration-200">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-10 w-10 p-0 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all duration-200"
+                onClick={onToggleStats}
+                title={isStatsCollapsed ? "Expand stats" : "Collapse stats"}
+              >
                 <Settings className="w-4 h-4 text-slate-700" />
               </Button>
             </div>
