@@ -59,6 +59,12 @@ export const useTasksNew = () => {
   // Fetch board data
   const fetchBoard = useCallback(async () => {
     try {
+      // Prevent multiple simultaneous calls
+      if (loading) {
+        console.log('⚠️ fetchBoard already in progress, skipping...');
+        return;
+      }
+      
       setLoading(true);
       // Add cache-busting parameter to ensure fresh data
       const timestamp = Date.now();
@@ -83,7 +89,16 @@ export const useTasksNew = () => {
         tasks: col.tasks?.length || 0
       })));
       
-      setColumns(data);
+      // Use functional state update to prevent race conditions
+      setColumns((prevColumns) => {
+        console.log('🔄 State update function called with:', {
+          prevColumnsLength: prevColumns.length,
+          newDataLength: data.length,
+          newDataFollowUpCategories: data.find((col: any) => col.id === 'follow-up')?.categories?.length || 0
+        });
+        return data;
+      });
+      
       setError(null);
       console.log('✅ Board data updated successfully');
       
@@ -101,7 +116,7 @@ export const useTasksNew = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loading]);
 
   // Fetch team members
   const fetchTeamMembers = useCallback(async () => {
@@ -546,7 +561,12 @@ export const useTasksNew = () => {
       // Double-check that the new team member is in the follow-up column
       setTimeout(async () => {
         console.log('🔄 Double-checking board data...');
-        await fetchBoard();
+        // Only double-check if we're not already loading
+        if (!loading) {
+          await fetchBoard();
+        } else {
+          console.log('⚠️ Skipping double-check - board fetch already in progress');
+        }
       }, 2000);
 
       return newMember;
