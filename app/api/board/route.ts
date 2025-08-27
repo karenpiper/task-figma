@@ -7,10 +7,13 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUz
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const timestamp = new Date().toISOString();
-    console.log(`🔍 Board API: Starting fetch at ${timestamp}... [UPDATED VERSION]`);
+    const url = new URL(request.url);
+    const forceRefresh = url.searchParams.get('refresh') === 'true';
+    
+    console.log(`🔍 Board API: Starting fetch at ${timestamp}... [UPDATED VERSION] - Force refresh: ${forceRefresh}`);
     
     // Get all columns
     const { data: columns, error: columnsError } = await supabase
@@ -34,6 +37,24 @@ export async function GET() {
       .select('*')
       .eq('is_active', true)
       .order('name');
+    
+    // If force refresh is requested, add a small delay to ensure database consistency
+    if (forceRefresh) {
+      console.log('🔄 Force refresh requested - waiting for database consistency...');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Re-query team members after delay
+      const { data: refreshedTeamMembers, error: refreshError } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      
+      if (!refreshError && refreshedTeamMembers) {
+        console.log(`🔄 Force refresh: ${refreshedTeamMembers.length} team members after delay`);
+        teamMembers = refreshedTeamMembers;
+      }
+    }
     
     if (teamMembersError) {
       console.error('❌ Team members error:', teamMembersError);
