@@ -148,6 +148,18 @@ export function TaskColumn({
   // Only show categories for day columns and follow-up
   const shouldShowCategories = useMemo(() => isDayColumn || column.id === 'follow-up', [isDayColumn, column.id]);
 
+  // Debug logging for follow-up column
+  if (isFollowUpColumn) {
+    console.log(`🔍 TaskColumn Debug - Follow-up column:`, {
+      columnId: column.id,
+      title: column.title,
+      categoriesCount: column.categories?.length || 0,
+      categories: column.categories?.map(cat => ({ id: cat.id, name: cat.name, tasksCount: cat.tasks?.length || 0 })),
+      shouldShowCategories,
+      totalTasks
+    });
+  }
+
   // Get column color based on column ID
   const getColumnColor = useCallback((columnId: string) => {
     switch (columnId) {
