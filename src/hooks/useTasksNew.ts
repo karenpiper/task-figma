@@ -9,7 +9,7 @@ export interface Task {
   priority: string;
   project?: string;
   column_id: string;
-  category_id?: string;
+  category_id?: string | null;
   created_at: string;
   updated_at: string;
 }
