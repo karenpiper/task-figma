@@ -60,7 +60,9 @@ export const useTasksNew = () => {
   const fetchBoard = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/board`);
+      // Add cache-busting parameter to ensure fresh data
+      const timestamp = Date.now();
+      const response = await fetch(`${API_BASE}/board?t=${timestamp}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -492,6 +494,9 @@ export const useTasksNew = () => {
       
       // Optimistic update
       setTeamMembers(prev => [...prev, newMember]);
+
+      // Small delay to ensure database transaction is committed
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Refresh board data to update follow-up column with new team member
       await fetchBoard();
