@@ -62,13 +62,14 @@ export const useTasksNew = () => {
   console.log(`🔍 Hook instance ${hookId} initialized`);
 
   // Simple, stable fetch function
-  const fetchBoard = useCallback(async () => {
+  const fetchBoard = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
       const timestamp = Date.now();
-      console.log(`🔄 Fetching board data at ${new Date().toISOString()} (timestamp: ${timestamp})`);
+      console.log(`🔄 Fetching board data at ${new Date().toISOString()} (timestamp: ${timestamp}) - Force refresh: ${forceRefresh}`);
       
-      const response = await fetch(`${API_BASE}/board?t=${timestamp}`);
+      const url = forceRefresh ? `${API_BASE}/board?refresh=true&t=${timestamp}` : `${API_BASE}/board?t=${timestamp}`;
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -272,12 +273,12 @@ export const useTasksNew = () => {
       // Wait a bit for database transaction to commit
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      await fetchBoard();
+      await fetchBoard(true); // Force refresh
       
       // Double-check after another delay
       setTimeout(async () => {
         console.log('🔄 Double-checking board data after delay...');
-        await fetchBoard();
+        await fetchBoard(true); // Force refresh
       }, 2000);
       
       console.log('🔍 DEBUG: fetchBoard completed, state should be updated');
@@ -316,9 +317,9 @@ export const useTasksNew = () => {
       ));
 
       // Refresh board data to update follow-up column
-      await fetchBoard();
+      await fetchBoard(true); // Force refresh
 
-      return updatedMember;
+      return updatedMember
     } catch (err) {
       throw err;
     } finally {
@@ -347,7 +348,7 @@ export const useTasksNew = () => {
       setTeamMembers(prev => prev.filter(member => member.id !== id));
 
       // Refresh board data to update follow-up column
-      await fetchBoard();
+      await fetchBoard(true); // Force refresh
 
       return true;
     } catch (err) {
