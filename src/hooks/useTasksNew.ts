@@ -208,8 +208,10 @@ export const useTasksNew = () => {
       
       // Update local state immediately
       setColumns((prevColumns: Column[]) => {
-        return prevColumns.map((column: Column) => {
+        console.log(`🔄 Updating columns state...`);
+        const newColumns = prevColumns.map((column: Column) => {
           if (column.id === sourceColumnId) {
+            console.log(`🗑️ Removing task from source column ${sourceColumnId}`);
             // Remove task from source
             if (sourceCategoryId) {
               // Remove from category
@@ -217,6 +219,7 @@ export const useTasksNew = () => {
                 ...column,
                 categories: column.categories.map((cat: Category) => {
                   if (cat.id === sourceCategoryId) {
+                    console.log(`🗑️ Removing task from source category ${sourceCategoryId}`);
                     return {
                       ...cat,
                       tasks: cat.tasks.filter((t: Task) => t.id !== numericTaskId),
@@ -236,6 +239,7 @@ export const useTasksNew = () => {
               };
             }
           } else if (column.id === targetColumnId) {
+            console.log(`➕ Adding task to target column ${targetColumnId}`);
             // Add task to target
             let updatedTask = { ...foundTask!, column_id: targetColumnId };
             
@@ -248,6 +252,7 @@ export const useTasksNew = () => {
                 category_id: null, // Clear category_id for follow-up column
                 team_member_id: teamMemberId // Set team_member_id instead
               };
+              console.log(`👤 Updated task team_member_id to ${teamMemberId} for follow-up column`);
             } else {
               // Handle regular categories
               updatedTask = { ...updatedTask, category_id: targetCategoryId || null };
@@ -255,6 +260,7 @@ export const useTasksNew = () => {
             
             if (targetCategoryId) {
               // Add to category
+              console.log(`➕ Adding task to target category ${targetCategoryId}`);
               return {
                 ...column,
                 categories: column.categories.map((cat: Category) => {
@@ -280,6 +286,14 @@ export const useTasksNew = () => {
           }
           return column;
         });
+        
+        console.log(`✅ New columns state:`, newColumns.map(col => ({
+          id: col.id,
+          count: col.count,
+          categories: col.categories.map(cat => ({ id: cat.id, count: cat.count }))
+        })));
+        
+        return newColumns;
       });
       
       console.log('✅ Task moved successfully in local state');
