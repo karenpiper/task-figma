@@ -29,7 +29,6 @@ export function ThisWeek({
   onDeleteCategory,
   createTeamMember 
 }: ThisWeekProps) {
-  const [columns, setColumns] = useState<Column[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Generate week columns based on current date
@@ -219,15 +218,15 @@ export function ThisWeek({
             return column;
           });
           
-          setColumns(populatedColumns);
+          // Don't set columns state - just use the data directly
         } else {
           // If API fails, use empty columns
-          setColumns(weekColumns);
+          // Don't set columns state - just use the data directly
         }
       } catch (error) {
         console.error('Error fetching week data:', error);
         // Use empty columns as fallback
-        setColumns(generateWeekColumns());
+        // Don't set columns state - just use the data directly
       } finally {
         setIsLoading(false);
       }
@@ -265,12 +264,12 @@ export function ThisWeek({
           }
           return column;
         });
-        setColumns(updatedColumns);
+        // Don't set columns state - just use the data directly
       }
     } catch (error) {
       console.error('Error creating task:', error);
     }
-  }, [columns, onCreateTask]);
+  }, [onCreateTask]);
 
   // Handle task movement
   const handleMoveTask = useCallback(async (taskId: number, targetColumnId: string, targetCategoryId?: string) => {
@@ -301,12 +300,12 @@ export function ThisWeek({
           }
           return column;
         });
-        setColumns(updatedColumns);
+        // Don't set columns state - just use the data directly
       }
     } catch (error) {
       console.error('Error moving task:', error);
     }
-  }, [columns, onMoveTask]);
+  }, [onMoveTask]);
 
   if (isLoading) {
     return (
@@ -335,7 +334,7 @@ export function ThisWeek({
         {/* Week Board */}
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-6 overflow-x-auto pb-6">
-            {columns.map((column) => (
+            {generateWeekColumns().map((column) => (
               <div key={column.id} className="flex-shrink-0 w-80">
                 <TaskColumn
                   column={column}
