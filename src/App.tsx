@@ -144,7 +144,6 @@ export default function App() {
                       teamMembers={teamMembers}
                       onCreateTask={createTask}
                       onMoveTask={moveTask}
-                      onTaskComplete={triggerCelebration}
                       onDeleteCategory={deleteCategory}
                       createTeamMember={createTeamMember}
                     />
