@@ -15,6 +15,7 @@ import { TaskCard } from './TaskCard';
 interface TaskColumnProps {
   column: Column;
   onTaskComplete?: (taskId: number) => Promise<void>;
+  onTaskCompleteSimple?: () => void;
   onCreateTask: (taskData: Partial<Task>, columnId?: string, categoryId?: string) => Promise<any>;
   onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onCreateCategory?: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
@@ -26,6 +27,7 @@ interface TaskColumnProps {
 export function TaskColumn({ 
   column, 
   onTaskComplete, 
+  onTaskCompleteSimple, 
   onCreateTask, 
   onMoveTask,
   onCreateCategory,
@@ -237,7 +239,7 @@ export function TaskColumn({
                 key={category.id}
                 columnId={column.id}
                 category={category}
-                onTaskComplete={onTaskComplete}
+                onTaskComplete={onTaskCompleteSimple}
                 onCreateTask={onCreateTask}
                 onMoveTask={onMoveTask}
                 onDeleteCategory={onDeleteCategory}

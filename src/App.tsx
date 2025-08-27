@@ -65,8 +65,13 @@ export default function App() {
     return Promise.resolve();
   }, []);
 
-  // Task completion celebration without taskId (for TaskCard)
+  // Task completion celebration without taskId (for TaskCard in ThisWeek)
   const handleTaskCompleteSimple = useCallback((): void => {
+    setShowParticles(true);
+  }, []);
+
+  // Task completion celebration without taskId (for TaskCard in TaskCategory)
+  const handleTaskCompleteSimpleCategory = useCallback((): void => {
     setShowParticles(true);
   }, []);
 
@@ -141,6 +146,7 @@ export default function App() {
                   {currentView === 'board' ? (
                     <KanbanBoard 
                       onTaskComplete={handleTaskComplete}
+                      onTaskCompleteSimple={handleTaskCompleteSimpleCategory}
                       columns={columns}
                       teamMembers={teamMembers}
                       loading={loading}

@@ -5,6 +5,7 @@ import { Column, TeamMember, Task } from '../hooks/useTasksNew';
 
 interface KanbanBoardProps {
   onTaskComplete?: (taskId: number) => Promise<void>;
+  onTaskCompleteSimple?: () => void;
   columns: Column[];
   teamMembers: TeamMember[];
   loading: boolean;
@@ -18,6 +19,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ 
   onTaskComplete, 
+  onTaskCompleteSimple, 
   columns, 
   teamMembers, 
   loading, 
@@ -76,6 +78,7 @@ export function KanbanBoard({
             key={column.id} 
             column={column} 
             onTaskComplete={onTaskComplete}
+            onTaskCompleteSimple={onTaskCompleteSimple}
             onCreateTask={createTask}
             onMoveTask={moveTask}
             onCreateCategory={createCategory}

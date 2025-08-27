@@ -10,7 +10,7 @@ import { Category, Task } from '../hooks/useTasksNew';
 interface TaskCategoryProps {
   columnId: string;
   category: Category;
-  onTaskComplete?: (taskId: number) => Promise<void>;
+  onTaskComplete?: () => void;
   onCreateTask: (taskData: Partial<Task>, columnId?: string, categoryId?: string) => Promise<any>;
   onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
