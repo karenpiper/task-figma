@@ -47,7 +47,7 @@ export function ThisWeek({
       },
       {
         id: 'today',
-        title: 'Today',
+        title: `Today - ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
         color: 'from-blue-400 to-indigo-500',
         order_index: 1,
         categories: [

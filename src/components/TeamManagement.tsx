@@ -125,10 +125,10 @@ export function TeamManagement({
             <div>
               <Label htmlFor="memberColor">Color</Label>
               <Select value={newMemberData.color} onValueChange={(value) => setNewMemberData(prev => ({ ...prev, color: value }))}>
-                <SelectTrigger className="bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                <SelectTrigger className="bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-300 rounded-lg">
                   {colorOptions.map(color => (
                     <SelectItem key={color.value} value={color.value}>
                       <div className="flex items-center gap-2">
@@ -231,10 +231,10 @@ export function TeamManagement({
             <div>
               <Label htmlFor="editMemberColor">Color</Label>
               <Select value={editingMember.color} onValueChange={(value) => setEditingMember(prev => prev ? { ...prev, color: value } : null)}>
-                <SelectTrigger className="bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                <SelectTrigger className="bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-300 rounded-lg">
                   {colorOptions.map(color => (
                     <SelectItem key={color.value} value={color.value}>
                       <div className="flex items-center gap-2">
