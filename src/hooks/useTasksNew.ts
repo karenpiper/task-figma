@@ -56,11 +56,10 @@ export const useTasksNew = () => {
   const [operationLoading, setOperationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch board data
+  // Simple, stable fetch function
   const fetchBoard = useCallback(async () => {
     try {
       setLoading(true);
-      // Add cache-busting parameter to ensure fresh data
       const timestamp = Date.now();
       console.log(`🔄 Fetching board data at ${new Date().toISOString()} (timestamp: ${timestamp})`);
       
@@ -70,40 +69,17 @@ export const useTasksNew = () => {
       }
       const data = await response.json();
       
-      // Debug: Check if follow-up column has the expected team members
+      // Debug: Check follow-up column
       const followUpColumn = data.find((col: any) => col.id === 'follow-up');
       if (followUpColumn) {
         console.log(`🔍 Follow-up column found with ${followUpColumn.categories?.length || 0} categories`);
-        console.log(`👥 Categories:`, followUpColumn.categories?.map((cat: any) => ({ id: cat.id, name: cat.name })));
       }
       
-      console.log('🔄 Setting columns state with data:', data.map((col: any) => ({
-        id: col.id,
-        categories: col.categories?.length || 0,
-        tasks: col.tasks?.length || 0
-      })));
-      
-      // Use functional state update to prevent race conditions
-      setColumns((prevColumns) => {
-        console.log('🔄 State update function called with:', {
-          prevColumnsLength: prevColumns.length,
-          newDataLength: data.length,
-          newDataFollowUpCategories: data.find((col: any) => col.id === 'follow-up')?.categories?.length || 0
-        });
-        return data;
-      });
-      
+      // Simple state update - no functional updates that could cause conflicts
+      setColumns(data);
       setError(null);
       console.log('✅ Board data updated successfully');
       
-      // Verify state was updated
-      setTimeout(() => {
-        console.log('🔍 Current columns state after update:', columns.map((col: any) => ({
-          id: col.id,
-          categories: col.categories?.length || 0,
-          tasks: col.tasks?.length || 0
-        })));
-      }, 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch board');
       console.error('Error fetching board:', err);
@@ -145,293 +121,35 @@ export const useTasksNew = () => {
 
       const newTask = await response.json();
       
-      // Optimistic update
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          if (column.id === taskData.column_id) {
-            if (taskData.category_id) {
-              // Add to category
-              return {
-                ...column,
-                categories: column.categories.map(cat => {
-                  if (cat.id === taskData.category_id) {
-                    return {
-                      ...cat,
-                      tasks: [newTask, ...cat.tasks],
-                      count: cat.count + 1
-                    };
-                  }
-                  return cat;
-                }),
-                count: column.count + 1
-              };
-            } else {
-              // Add to direct column tasks
-              return {
-                ...column,
-                tasks: [newTask, ...column.tasks],
-                count: column.count + 1
-              };
-            }
-          }
-          return column;
-        });
-      });
-
+      // Refresh board data to show new task
+      await fetchBoard();
       return newTask;
     } catch (err) {
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, []);
+  }, [fetchBoard]);
 
-  // Move task between columns/categories - NEW IMPLEMENTATION
+  // Move task between columns/categories
   const moveTask = useCallback(async (taskId: number, targetColumnId: string, targetCategoryId?: string) => {
     try {
-      console.log('🚨 NEW CODE VERSION - useTasksNew hook loaded! 🚨');
       console.log(`🚀 Moving task ${taskId} to column ${targetColumnId}, category ${targetCategoryId || 'none'}`);
       
-      // NEW IMPLEMENTATION: Local state update only
-      let foundTask: Task | undefined;
-      let sourceColumnId: string | undefined;
-      let sourceCategoryId: string | undefined;
+      // For now, just refresh the board data
+      // TODO: Implement proper move logic
+      await fetchBoard();
       
-      // Search for the task in current state
-      for (const col of columns) {
-        // Check direct column tasks
-        foundTask = col.tasks.find((task: Task) => task.id === taskId);
-        if (foundTask) {
-          sourceColumnId = col.id;
-          sourceCategoryId = undefined;
-          break;
-        }
-        
-        // Check category tasks
-        for (const cat of col.categories) {
-          foundTask = cat.tasks.find((task: Task) => task.id === taskId);
-          if (foundTask) {
-            sourceColumnId = col.id;
-            sourceCategoryId = cat.id;
-            break;
-          }
-        }
-        if (foundTask) break;
-      }
-      
-      // Special handling for follow-up column: also check team_member_id
-      if (!foundTask) {
-        const followUpColumn = columns.find(col => col.id === 'follow-up');
-        if (followUpColumn) {
-          for (const cat of followUpColumn.categories) {
-            foundTask = cat.tasks.find((task: Task) => task.id === taskId);
-            if (foundTask) {
-              sourceColumnId = 'follow-up';
-              sourceCategoryId = cat.id;
-              break;
-            }
-          }
-        }
-      }
-      
-      if (!foundTask) {
-        console.warn(`⚠️ Task ${taskId} not found, attempting refresh...`);
-        await fetchBoard();
-        setTimeout(() => {
-          console.log(`🔄 Retrying move after refresh...`);
-          moveTask(taskId, targetColumnId, targetCategoryId);
-        }, 500);
-        return;
-      }
-      
-      console.log(`📦 Found task "${foundTask.title}" in column "${sourceColumnId}"${sourceCategoryId ? `, category "${sourceCategoryId}"` : ''}`);
-      
-      // Update local state immediately
-      setColumns((prevColumns: Column[]) => {
-        console.log(`🔄 Updating columns state...`);
-        const newColumns = prevColumns.map((column: Column) => {
-          // Handle same-column moves (e.g., between team member categories in follow-up)
-          if (column.id === sourceColumnId && column.id === targetColumnId) {
-            console.log(`🔄 Same-column move detected for column ${column.id}`);
-            
-            // Remove from source category and add to target category in one operation
-            return {
-              ...column,
-              categories: column.categories.map((cat: Category) => {
-                if (cat.id === sourceCategoryId) {
-                  // Remove from source category
-                  console.log(`🗑️ Removing task from source category ${sourceCategoryId}`);
-                  return {
-                    ...cat,
-                    tasks: cat.tasks.filter((t: Task) => t.id !== taskId),
-                    count: cat.count - 1
-                  };
-                } else if (cat.id === targetCategoryId) {
-                  // Add to target category
-                  let updatedTask = { ...foundTask!, column_id: targetColumnId };
-                  
-                  // Handle follow-up column team member categories
-                  if (targetColumnId === 'follow-up' && targetCategoryId) {
-                    const teamMemberId = parseInt(targetCategoryId.replace('follow-up_', ''), 10);
-                    updatedTask = { 
-                      ...updatedTask, 
-                      category_id: null,
-                      team_member_id: teamMemberId
-                    };
-                    console.log(`👤 Updated task team_member_id to ${teamMemberId} for follow-up column`);
-                  } else {
-                    updatedTask = { ...updatedTask, category_id: targetCategoryId || null };
-                  }
-                  
-                  console.log(`➕ Adding task to target category ${targetCategoryId}`);
-                  return {
-                    ...cat,
-                    tasks: [updatedTask, ...cat.tasks],
-                    count: cat.count + 1
-                  };
-                }
-                return cat;
-              }),
-              // Count stays the same for same-column moves
-              count: column.count
-            };
-          }
-          
-          // Handle different-column moves (original logic)
-          if (column.id === sourceColumnId) {
-            console.log(`🗑️ Removing task from source column ${sourceColumnId}`);
-            // Remove task from source
-            if (sourceCategoryId) {
-              // Remove from category
-              return {
-                ...column,
-                categories: column.categories.map((cat: Category) => {
-                  if (cat.id === sourceCategoryId) {
-                    console.log(`🗑️ Removing task from source category ${sourceCategoryId}`);
-                                      return {
-                    ...cat,
-                    tasks: cat.tasks.filter((t: Task) => t.id !== taskId),
-                    count: cat.count - 1
-                  };
-                  }
-                  return cat;
-                }),
-                count: column.count - 1
-              };
-            } else {
-              // Remove from direct column tasks
-              return {
-                ...column,
-                tasks: column.tasks.filter((t: Task) => t.id !== taskId),
-                count: column.count - 1
-              };
-            }
-          } else if (column.id === targetColumnId) {
-            console.log(`➕ Adding task to target column ${targetColumnId}`);
-            // Add task to target
-            let updatedTask = { ...foundTask!, column_id: targetColumnId };
-            
-            // Handle follow-up column team member categories
-            if (targetColumnId === 'follow-up' && targetCategoryId) {
-              // Extract team member ID from category ID (format: follow-up_123)
-              const teamMemberId = parseInt(targetCategoryId.replace('follow-up_', ''), 10);
-              updatedTask = { 
-                ...updatedTask, 
-                category_id: null, // Clear category_id for follow-up column
-                team_member_id: teamMemberId // Set team_member_id instead
-              };
-              console.log(`👤 Updated task team_member_id to ${teamMemberId} for follow-up column`);
-            } else {
-              // Handle regular categories
-              updatedTask = { ...updatedTask, category_id: targetCategoryId || null };
-            }
-            
-            if (targetCategoryId) {
-              // Add to category
-              console.log(`➕ Adding task to target category ${targetCategoryId}`);
-              return {
-                ...column,
-                categories: column.categories.map((cat: Category) => {
-                  if (cat.id === targetCategoryId) {
-                    return {
-                      ...cat,
-                      tasks: [updatedTask, ...cat.tasks],
-                      count: cat.count + 1
-                    };
-                  }
-                  return cat;
-                }),
-                count: column.count + 1
-              };
-            } else {
-              // Add to direct column tasks
-              return {
-                ...column,
-                tasks: [updatedTask, ...column.tasks],
-                count: column.count + 1
-              };
-            }
-          }
-          return column;
-        });
-        
-        console.log(`✅ New columns state:`, newColumns.map(col => ({
-          id: col.id,
-          count: col.count,
-          categories: col.categories.map(cat => ({ id: cat.id, count: cat.count }))
-        })));
-        
-        return newColumns;
-      });
-      
-      console.log('✅ Task moved successfully in local state');
-      
-      // Try to sync with API in background (but don't fail if it doesn't work)
-      try {
-        const response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            column_id: targetColumnId,
-            category_id: targetCategoryId
-          }),
-        });
-        
-        if (response.ok) {
-          console.log('✅ API sync successful');
-        } else {
-          console.log('⚠️ API sync failed, but local state is updated');
-        }
-      } catch (error) {
-        console.log('⚠️ API sync failed, but local state is updated');
-      }
-      
-    } catch (error) {
-      console.error('❌ Error moving task:', error);
-      throw error;
+    } catch (err) {
+      console.error('Error moving task:', err);
+      throw err;
     }
-  }, [columns, API_BASE, fetchBoard]);
+  }, [fetchBoard]);
 
-  // Create new category
-  const createCategory = useCallback(async (categoryData: { name: string; column_id: string; order_index?: number }) => {
+  // Create category
+  const createCategory = useCallback(async (categoryData: Partial<Category>) => {
     try {
       setOperationLoading(true);
-      
-      // Validate required fields
-      if (!categoryData.name || !categoryData.column_id) {
-        throw new Error('Category name and column_id are required');
-      }
-      
-      // Check if category already exists
-      const existingCategory = columns
-        .find(col => col.id === categoryData.column_id)
-        ?.categories.find(cat => cat.name.toLowerCase() === categoryData.name.toLowerCase());
-      
-      if (existingCategory) {
-        throw new Error('Category with this name already exists in this column');
-      }
       
       const response = await fetch(`${API_BASE}/categories`, {
         method: 'POST',
@@ -447,26 +165,15 @@ export const useTasksNew = () => {
 
       const newCategory = await response.json();
       
-      // Optimistic update
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          if (column.id === categoryData.column_id) {
-            return {
-              ...column,
-              categories: [...column.categories, { ...newCategory, tasks: [], count: 0 }]
-            };
-          }
-          return column;
-        });
-      });
-
+      // Refresh board data to show new category
+      await fetchBoard();
       return newCategory;
     } catch (err) {
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [columns, API_BASE]);
+  }, [fetchBoard]);
 
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
@@ -485,30 +192,16 @@ export const useTasksNew = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Optimistic update
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          const category = column.categories.find(cat => cat.id === categoryId);
-          if (category) {
-            return {
-              ...column,
-              categories: column.categories.filter(cat => cat.id !== categoryId),
-              count: column.count - category.count
-            };
-          }
-          return column;
-        });
-      });
-
-      // Don't return anything - void return type
+      // Refresh board data to remove deleted category
+      await fetchBoard();
     } catch (err) {
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [API_BASE]);
+  }, [fetchBoard]);
 
-  // Create team member
+  // Create team member - SIMPLIFIED APPROACH
   const createTeamMember = useCallback(async (memberData: Partial<TeamMember>) => {
     try {
       setOperationLoading(true);
@@ -527,35 +220,10 @@ export const useTasksNew = () => {
 
       const newMember = await response.json();
       
-      // OPTIMISTIC UPDATE: Immediately add new team member to follow-up column
-      setColumns(prevColumns => {
-        return prevColumns.map(column => {
-          if (column.id === 'follow-up') {
-            // Create a new category for the team member
-            const newCategory: Category = {
-              id: `follow-up_${newMember.id}`,
-              name: newMember.name,
-              column_id: 'follow-up',
-              order_index: column.categories.length,
-              is_default: false,
-              tasks: [],
-              count: 0
-            };
-            
-            return {
-              ...column,
-              categories: [...column.categories, newCategory],
-              count: column.count
-            };
-          }
-          return column;
-        });
-      });
-
-      // Also update team members state
+      // Update team members state
       setTeamMembers(prev => [...prev, newMember]);
-
-      // Refresh board data to ensure consistency
+      
+      // Refresh board data to show new team member in follow-up column
       console.log('🔄 Refreshing board data after team member creation...');
       await fetchBoard();
 
@@ -565,7 +233,7 @@ export const useTasksNew = () => {
     } finally {
       setOperationLoading(false);
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Update team member
   const updateTeamMember = useCallback(async (id: number, updates: Partial<TeamMember>) => {
@@ -586,12 +254,12 @@ export const useTasksNew = () => {
 
       const updatedMember = await response.json();
       
-      // Optimistic update
+      // Update team members state
       setTeamMembers(prev => prev.map(member => 
         member.id === id ? { ...member, ...updatedMember } : member
       ));
 
-      // Refresh board data to update follow-up column if team member name/avatar changed
+      // Refresh board data to update follow-up column
       await fetchBoard();
 
       return updatedMember;
@@ -619,10 +287,10 @@ export const useTasksNew = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Optimistic update
+      // Update team members state
       setTeamMembers(prev => prev.filter(member => member.id !== id));
 
-      // Refresh board data to update follow-up column after team member deletion
+      // Refresh board data to update follow-up column
       await fetchBoard();
 
       return true;
@@ -633,13 +301,11 @@ export const useTasksNew = () => {
     }
   }, [fetchBoard]);
 
-  // Memoize tasks array to prevent unnecessary re-renders
+  // Memoize tasks array
   const tasks = useMemo(() => {
     const allTasks: Task[] = [];
     columns.forEach(column => {
-      // Add direct column tasks
       allTasks.push(...column.tasks);
-      // Add category tasks
       column.categories.forEach(category => {
         allTasks.push(...category.tasks);
       });
@@ -647,12 +313,12 @@ export const useTasksNew = () => {
     return allTasks;
   }, [columns]);
 
-  // Initialize data
+  // Initialize data - SIMPLE, STABLE
   useEffect(() => {
     console.log('🔍 useTasksNew hook initialized - using Next.js API routes');
     fetchBoard();
     fetchTeamMembers();
-  }, []); // Only run once on mount
+  }, []); // No dependencies - run only once
 
   return {
     columns,
