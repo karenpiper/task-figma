@@ -259,4 +259,4 @@ export function TeamManagement({
       )}
     </div>
   );
-} 
+} }
