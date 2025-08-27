@@ -2,12 +2,9 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useDrop } from 'react-dnd';
 import { Plus, MoreHorizontal, X } from 'lucide-react';
 import { TaskCard } from './TaskCard';
+import { AddTaskDialog } from './AddTaskDialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Input } from './ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Category, Task } from '../hooks/useTasksNew';
 
 interface TaskCategoryProps {
@@ -84,17 +81,17 @@ export function TaskCategory({
   }, [dropRef]);
 
   // Memoize callback functions to prevent recreation
-  const handleCreateTask = useCallback(async () => {
-    if (!newTaskData.title.trim() || !onCreateTask) return;
-    
+  const handleCreateTask = useCallback(async (taskData: { title: string; priority: string; project?: string }) => {
     try {
-      await onCreateTask(newTaskData);
-      setNewTaskData({ title: '', priority: 'medium', project: '', column_id: columnId, category_id: category.id });
-      setIsCreatingTask(false);
+      await onCreateTask({
+        ...taskData,
+        column_id: columnId,
+        category_id: category.id
+      });
     } catch (error) {
       console.error('Failed to create task:', error);
     }
-  }, [newTaskData, onCreateTask, columnId, category.id]);
+  }, [onCreateTask, columnId, category.id]);
 
   const getCategoryConfig = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
@@ -166,74 +163,15 @@ export function TaskCategory({
         
         <div className="flex items-center gap-1">
           {/* Add Task button for categories */}
-          <Dialog open={isCreatingTask} onOpenChange={setIsCreatingTask}>
-            <DialogTrigger asChild>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 rounded-md hover:bg-slate-100/40 text-slate-600 hover:text-slate-800"
-              >
-                <Plus className="w-3 h-3" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-white border-2 border-gray-200 shadow-2xl max-w-md mx-auto">
-              <DialogHeader>
-                <DialogTitle className="text-lg font-semibold text-gray-900">Create New Task in {category.name}</DialogTitle>
-                <p className="text-sm text-gray-600">Add a new task to this category.</p>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="title" className="text-sm font-medium text-gray-700">Task Title</Label>
-                  <Input
-                    id="title"
-                    value={newTaskData.title}
-                    onChange={(e) => setNewTaskData(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Enter task title..."
-                    className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="priority" className="text-sm font-medium text-gray-700">Priority</Label>
-                  <Select value={newTaskData.priority} onValueChange={(value) => setNewTaskData(prev => ({ ...prev, priority: value }))}>
-                    <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="project" className="text-sm font-medium text-gray-700">Project (Optional)</Label>
-                  <Input
-                    id="project"
-                    value={newTaskData.project}
-                    onChange={(e) => setNewTaskData(prev => ({ ...prev, project: e.target.value }))}
-                    placeholder="Enter project name..."
-                    className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    onClick={handleCreateTask}
-                    disabled={!newTaskData.title.trim()}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                  >
-                    Create Task
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsCreatingTask(false)}
-                    className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 w-6 p-0 rounded-md hover:bg-slate-100/40 text-slate-600 hover:text-slate-800"
+            onClick={() => setIsCreatingTask(true)}
+          >
+            <Plus className="w-3 h-3" />
+          </Button>
+
           
           {/* Delete category button (only for manual categories) */}
           {onDeleteCategory && !category.id.startsWith('follow-up_') && (
@@ -267,6 +205,15 @@ export function TaskCategory({
           ))}
         </div>
       </div>
+      
+      {/* Add Task Dialog */}
+      <AddTaskDialog
+        isOpen={isCreatingTask}
+        onClose={() => setIsCreatingTask(false)}
+        onSubmit={handleCreateTask}
+        columnId={columnId}
+        categoryId={category.id}
+      />
     </div>
   );
 } 

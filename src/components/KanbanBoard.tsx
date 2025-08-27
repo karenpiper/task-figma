@@ -13,6 +13,7 @@ interface KanbanBoardProps {
   moveTask: (taskId: string, columnId: string, categoryId?: string) => Promise<void>;
   createCategory: (categoryData: { name: string; column_id: string; order_index?: number }) => Promise<any>;
   deleteCategory: (categoryId: string) => Promise<void>;
+  createTeamMember: (memberData: { name: string; email?: string }) => Promise<any>;
 }
 
 export function KanbanBoard({ 
@@ -24,7 +25,8 @@ export function KanbanBoard({
   createTask, 
   moveTask, 
   createCategory, 
-  deleteCategory 
+  deleteCategory,
+  createTeamMember
 }: KanbanBoardProps) {
 
   if (loading) {
@@ -77,6 +79,7 @@ export function KanbanBoard({
             onCreateCategory={createCategory}
             onDeleteCategory={deleteCategory}
             teamMembers={teamMembers}
+            createTeamMember={createTeamMember}
           />
         ))}
         
