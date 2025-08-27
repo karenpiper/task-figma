@@ -65,7 +65,7 @@ export default function App() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         {/* FORCE DEPLOYMENT INDICATOR */}
         <div className="bg-red-600 text-white text-center py-2 font-bold text-lg">
-          🚨 NEW CODE VERSION DEPLOYED - DRAG & DROP SHOULD WORK NOW! 🚨
+          🚨 NEW CODE VERSION DEPLOYED - useTasksNew HOOK LOADED! 🚨
         </div>
         
         {/* Main container with full viewport height and overflow control */}
