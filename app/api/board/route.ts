@@ -9,7 +9,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
   try {
-    console.log('🔍 Board API: Starting fetch... [UPDATED VERSION]');
+    const timestamp = new Date().toISOString();
+    console.log(`🔍 Board API: Starting fetch at ${timestamp}... [UPDATED VERSION]`);
     
     // Get all columns
     const { data: columns, error: columnsError } = await supabase
@@ -25,6 +26,7 @@ export async function GET() {
     console.log('✅ Columns fetched:', columns?.length);
     
     // Get team members for automatic category generation
+    console.log('🔄 Board API: Fetching team members...');
     const { data: teamMembers, error: teamMembersError } = await supabase
       .from('team_members')
       .select('*')
@@ -36,8 +38,18 @@ export async function GET() {
       throw teamMembersError;
     }
     
-    console.log('✅ Team members fetched:', teamMembers?.length);
-    console.log('🔍 Team members:', teamMembers?.map(m => ({ id: m.id, name: m.name })));
+    console.log('✅ Board API: Team members fetched:', teamMembers?.length);
+    console.log('🔍 Board API: Team members:', teamMembers?.map(m => ({ id: m.id, name: m.name, is_active: m.is_active })));
+    
+    // Also check for any inactive team members
+    const { data: allTeamMembers, error: allTeamMembersError } = await supabase
+      .from('team_members')
+      .select('*')
+      .order('name');
+    
+    if (!allTeamMembersError && allTeamMembers) {
+      console.log('🔍 Board API: All team members (including inactive):', allTeamMembers?.map(m => ({ id: m.id, name: m.name, is_active: m.is_active })));
+    }
     
     // Get categories and tasks for each column
     const boardData = await Promise.all(columns.map(async (column) => {
