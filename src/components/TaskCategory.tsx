@@ -81,10 +81,19 @@ export function TaskCategory({
   }, [dropRef]);
 
   // Memoize callback functions to prevent recreation
-  const handleCreateTask = useCallback(async (taskData: { title: string; priority: string; project?: string }) => {
+  const handleCreateTask = useCallback(async (taskData: { 
+    title: string; 
+    detail?: string; 
+    priority: string; 
+    project?: string; 
+    client?: string; 
+    dueDate?: string; 
+    notes?: string; 
+  }) => {
     try {
       await onCreateTask({
         ...taskData,
+        due_date: taskData.dueDate, // Map dueDate to due_date for API
         column_id: columnId,
         category_id: category.id
       });

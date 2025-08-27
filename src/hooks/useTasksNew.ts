@@ -6,8 +6,12 @@ const API_BASE = '/api';
 export interface Task {
   id: number;
   title: string;
+  detail?: string;
   priority: string;
   project?: string;
+  client?: string;
+  due_date?: string;
+  notes?: string;
   column_id: string;
   category_id?: string | null;
   team_member_id?: number | null;
