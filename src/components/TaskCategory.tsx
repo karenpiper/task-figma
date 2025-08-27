@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Category, Task } from '../hooks/useTasks';
+import { Category, Task } from '../hooks/useTasksNew';
 
 interface TaskCategoryProps {
   columnId: string;

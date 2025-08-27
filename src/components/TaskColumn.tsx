@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Category, Column, TeamMember, Task } from '../hooks/useTasks';
+import { Category, Column, TeamMember, Task } from '../hooks/useTasksNew';
 import { TaskCard } from './TaskCard';
 
 interface TaskColumnProps {

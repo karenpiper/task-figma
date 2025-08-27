@@ -7,7 +7,7 @@ import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { Task, TeamMember } from '../hooks/useTasks';
+import { Task, TeamMember } from '../hooks/useTasksNew';
 
 interface OneOnOneModeProps {
   teamMembers: TeamMember[];

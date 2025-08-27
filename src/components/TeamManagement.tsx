@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { TeamMember } from '../hooks/useTasks';
+import { TeamMember } from '../hooks/useTasksNew';
 
 interface TeamManagementProps {
   teamMembers: TeamMember[];

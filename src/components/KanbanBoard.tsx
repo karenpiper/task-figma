@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { TaskColumn } from './TaskColumn';
-import { Column, TeamMember, Task } from '../hooks/useTasks';
+import { Column, TeamMember, Task } from '../hooks/useTasksNew';
 
 interface KanbanBoardProps {
   onTaskComplete?: () => void;
