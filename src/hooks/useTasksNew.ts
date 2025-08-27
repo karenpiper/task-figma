@@ -493,13 +493,16 @@ export const useTasksNew = () => {
       // Optimistic update
       setTeamMembers(prev => [...prev, newMember]);
 
+      // Refresh board data to update follow-up column with new team member
+      await fetchBoard();
+
       return newMember;
     } catch (err) {
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, []);
+  }, [fetchBoard]);
 
   // Update team member
   const updateTeamMember = useCallback(async (id: number, updates: Partial<TeamMember>) => {
@@ -525,13 +528,16 @@ export const useTasksNew = () => {
         member.id === id ? { ...member, ...updatedMember } : member
       ));
 
+      // Refresh board data to update follow-up column if team member name/avatar changed
+      await fetchBoard();
+
       return updatedMember;
     } catch (err) {
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [API_BASE]);
+  }, [fetchBoard]);
 
   // Delete team member
   const deleteTeamMember = useCallback(async (id: number) => {
@@ -553,13 +559,16 @@ export const useTasksNew = () => {
       // Optimistic update
       setTeamMembers(prev => prev.filter(member => member.id !== id));
 
+      // Refresh board data to update follow-up column after team member deletion
+      await fetchBoard();
+
       return true;
     } catch (err) {
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [API_BASE]);
+  }, [fetchBoard]);
 
   // Memoize tasks array to prevent unnecessary re-renders
   const tasks = useMemo(() => {
