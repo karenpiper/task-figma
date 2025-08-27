@@ -368,7 +368,7 @@ export const useTasksNew = () => {
         });
       });
 
-      return true;
+      // Don't return anything - void return type
     } catch (err) {
       throw err;
     } finally {
