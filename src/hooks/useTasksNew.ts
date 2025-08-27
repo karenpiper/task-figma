@@ -62,13 +62,24 @@ export const useTasksNew = () => {
       setLoading(true);
       // Add cache-busting parameter to ensure fresh data
       const timestamp = Date.now();
+      console.log(`🔄 Fetching board data at ${new Date().toISOString()} (timestamp: ${timestamp})`);
+      
       const response = await fetch(`${API_BASE}/board?t=${timestamp}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+      
+      // Debug: Check if follow-up column has the expected team members
+      const followUpColumn = data.find((col: any) => col.id === 'follow-up');
+      if (followUpColumn) {
+        console.log(`🔍 Follow-up column found with ${followUpColumn.categories?.length || 0} categories`);
+        console.log(`👥 Categories:`, followUpColumn.categories?.map((cat: any) => ({ id: cat.id, name: cat.name })));
+      }
+      
       setColumns(data);
       setError(null);
+      console.log('✅ Board data updated successfully');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch board');
       console.error('Error fetching board:', err);
@@ -495,11 +506,18 @@ export const useTasksNew = () => {
       // Optimistic update
       setTeamMembers(prev => [...prev, newMember]);
 
-      // Small delay to ensure database transaction is committed
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Longer delay to ensure database transaction is committed
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Refresh board data to update follow-up column with new team member
+      console.log('🔄 Fetching board after team member creation...');
       await fetchBoard();
+      
+      // Double-check that the new team member is in the follow-up column
+      setTimeout(async () => {
+        console.log('🔄 Double-checking board data...');
+        await fetchBoard();
+      }, 1000);
 
       return newMember;
     } catch (err) {
