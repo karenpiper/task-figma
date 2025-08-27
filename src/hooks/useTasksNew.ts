@@ -651,7 +651,7 @@ export const useTasksNew = () => {
     console.log('🔍 useTasksNew hook initialized - using Next.js API routes');
     fetchBoard();
     fetchTeamMembers();
-  }, [fetchBoard, fetchTeamMembers]);
+  }, []); // Only run once on mount
 
   return {
     columns,
