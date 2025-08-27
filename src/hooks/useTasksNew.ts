@@ -10,6 +10,7 @@ export interface Task {
   project?: string;
   column_id: string;
   category_id?: string | null;
+  team_member_id?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -178,6 +179,21 @@ export const useTasksNew = () => {
         if (foundTask) break;
       }
       
+      // Special handling for follow-up column: also check team_member_id
+      if (!foundTask) {
+        const followUpColumn = columns.find(col => col.id === 'follow-up');
+        if (followUpColumn) {
+          for (const cat of followUpColumn.categories) {
+            foundTask = cat.tasks.find((task: Task) => task.id === numericTaskId);
+            if (foundTask) {
+              sourceColumnId = 'follow-up';
+              sourceCategoryId = cat.id;
+              break;
+            }
+          }
+        }
+      }
+      
       if (!foundTask) {
         console.warn(`⚠️ Task ${taskId} not found, attempting refresh...`);
         await fetchBoard();
@@ -221,7 +237,21 @@ export const useTasksNew = () => {
             }
           } else if (column.id === targetColumnId) {
             // Add task to target
-            const updatedTask = { ...foundTask!, column_id: targetColumnId, category_id: targetCategoryId || null };
+            let updatedTask = { ...foundTask!, column_id: targetColumnId };
+            
+            // Handle follow-up column team member categories
+            if (targetColumnId === 'follow-up' && targetCategoryId) {
+              // Extract team member ID from category ID (format: follow-up_123)
+              const teamMemberId = parseInt(targetCategoryId.replace('follow-up_', ''), 10);
+              updatedTask = { 
+                ...updatedTask, 
+                category_id: null, // Clear category_id for follow-up column
+                team_member_id: teamMemberId // Set team_member_id instead
+              };
+            } else {
+              // Handle regular categories
+              updatedTask = { ...updatedTask, category_id: targetCategoryId || null };
+            }
             
             if (targetCategoryId) {
               // Add to category
