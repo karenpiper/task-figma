@@ -210,6 +210,54 @@ export const useTasksNew = () => {
       setColumns((prevColumns: Column[]) => {
         console.log(`🔄 Updating columns state...`);
         const newColumns = prevColumns.map((column: Column) => {
+          // Handle same-column moves (e.g., between team member categories in follow-up)
+          if (column.id === sourceColumnId && column.id === targetColumnId) {
+            console.log(`🔄 Same-column move detected for column ${column.id}`);
+            
+            // Remove from source category and add to target category in one operation
+            return {
+              ...column,
+              categories: column.categories.map((cat: Category) => {
+                if (cat.id === sourceCategoryId) {
+                  // Remove from source category
+                  console.log(`🗑️ Removing task from source category ${sourceCategoryId}`);
+                  return {
+                    ...cat,
+                    tasks: cat.tasks.filter((t: Task) => t.id !== numericTaskId),
+                    count: cat.count - 1
+                  };
+                } else if (cat.id === targetCategoryId) {
+                  // Add to target category
+                  let updatedTask = { ...foundTask!, column_id: targetColumnId };
+                  
+                  // Handle follow-up column team member categories
+                  if (targetColumnId === 'follow-up' && targetCategoryId) {
+                    const teamMemberId = parseInt(targetCategoryId.replace('follow-up_', ''), 10);
+                    updatedTask = { 
+                      ...updatedTask, 
+                      category_id: null,
+                      team_member_id: teamMemberId
+                    };
+                    console.log(`👤 Updated task team_member_id to ${teamMemberId} for follow-up column`);
+                  } else {
+                    updatedTask = { ...updatedTask, category_id: targetCategoryId || null };
+                  }
+                  
+                  console.log(`➕ Adding task to target category ${targetCategoryId}`);
+                  return {
+                    ...cat,
+                    tasks: [updatedTask, ...cat.tasks],
+                    count: cat.count + 1
+                  };
+                }
+                return cat;
+              }),
+              // Count stays the same for same-column moves
+              count: column.count
+            };
+          }
+          
+          // Handle different-column moves (original logic)
           if (column.id === sourceColumnId) {
             console.log(`🗑️ Removing task from source column ${sourceColumnId}`);
             // Remove task from source
