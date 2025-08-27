@@ -4,7 +4,7 @@ import { TaskColumn } from './TaskColumn';
 import { Column, TeamMember, Task } from '../hooks/useTasksNew';
 
 interface KanbanBoardProps {
-  onTaskComplete?: () => void;
+  onTaskComplete?: (taskId: number) => Promise<void>;
   columns: Column[];
   teamMembers: TeamMember[];
   loading: boolean;
@@ -63,6 +63,14 @@ export function KanbanBoard({
     );
   }
 
+  // Create a wrapper function that matches the expected signature
+  const handleTaskComplete = React.useCallback((taskId: number): Promise<void> => {
+    if (onTaskComplete) {
+      return onTaskComplete(taskId);
+    }
+    return Promise.resolve();
+  }, [onTaskComplete]);
+
   return (
     <div className="flex-1 p-8 overflow-x-auto">
       {/* Glass background overlay */}
@@ -73,7 +81,7 @@ export function KanbanBoard({
           <TaskColumn 
             key={column.id} 
             column={column} 
-            onTaskComplete={onTaskComplete}
+            onTaskComplete={handleTaskComplete}
             onCreateTask={createTask}
             onMoveTask={moveTask}
             onCreateCategory={createCategory}
