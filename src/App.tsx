@@ -38,6 +38,7 @@ export default function App() {
   
   const [showParticles, setShowParticles] = useState(false);
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentView, setCurrentView] = useState<'board' | 'week' | 'all-tasks'>('board');
   
   // Lift useTasksNew hook to App level to avoid multiple instances
@@ -87,6 +88,10 @@ export default function App() {
     setIsStatsCollapsed(prev => !prev);
   }, []);
 
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarCollapsed(prev => !prev);
+  }, []);
+
   return (
     <StableDndProvider>
       <DynamicBackground>
@@ -110,7 +115,22 @@ export default function App() {
               updateTeamMember={updateTeamMember}
               deleteTeamMember={deleteTeamMember}
               tasks={tasks}
+              isCollapsed={isSidebarCollapsed}
+              onToggleCollapse={toggleSidebar}
             />
+            
+            {/* Sidebar Collapse/Expand Toggle Button */}
+            <button
+              onClick={toggleSidebar}
+              className="absolute -right-3 top-1/2 transform -translate-y-1/2 z-20 w-6 h-6 bg-white/80 backdrop-blur-sm border border-white/40 rounded-full flex items-center justify-center shadow-lg hover:bg-white/90 transition-all duration-200 hover:scale-110"
+              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isSidebarCollapsed ? (
+                <ChevronRight className="w-4 h-4 text-slate-600" />
+              ) : (
+                <ChevronLeft className="w-4 h-4 text-slate-600" />
+              )}
+            </button>
             
             {/* Main content area */}
             <div className="flex-1 flex flex-col min-w-0">
