@@ -49,6 +49,8 @@ async function handleTaskMove(
     }
 
     console.log(`🔄 Updating task ${taskId} with data:`, updateData);
+    console.log(`🔍 Task ID type: ${typeof taskId}, value: ${taskId}`);
+    console.log(`🔍 Column ID: ${column_id}, Category ID: ${category_id}`);
 
     const { data: updatedTask, error } = await supabase
       .from('tasks')
@@ -59,6 +61,12 @@ async function handleTaskMove(
 
     if (error) {
       console.error('❌ Supabase error:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       throw error;
     }
     
