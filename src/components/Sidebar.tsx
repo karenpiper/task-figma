@@ -77,6 +77,21 @@ export function Sidebar({
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5"></div>
         </div>
         
+        {/* Collapse/Expand Toggle Button */}
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className="absolute -right-3 top-1/2 transform -translate-y-1/2 z-20 w-6 h-6 bg-white/80 backdrop-blur-sm border border-white/40 rounded-full flex items-center justify-center shadow-lg hover:bg-white/90 transition-all duration-200 hover:scale-110"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="w-4 h-4 text-slate-600" />
+            ) : (
+              <ChevronLeft className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+        )}
+        
         <div className="relative z-10 h-full flex flex-col text-white">
           {/* Header */}
           <div className={`${isCollapsed ? 'p-4' : 'p-8'} border-b border-white/10`}>
@@ -127,6 +142,21 @@ export function Sidebar({
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-800/85 to-slate-900/90 backdrop-blur-xl border-r border-white/10">
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5"></div>
       </div>
+      
+      {/* Collapse/Expand Toggle Button */}
+      {onToggleCollapse && (
+        <button
+          onClick={onToggleCollapse}
+          className="absolute -right-3 top-1/2 transform -translate-y-1/2 z-20 w-6 h-6 bg-white/80 backdrop-blur-sm border border-white/40 rounded-full flex items-center justify-center shadow-lg hover:bg-white/90 transition-all duration-200 hover:scale-110"
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="w-4 h-4 text-slate-600" />
+          ) : (
+            <ChevronLeft className="w-4 h-4 text-slate-600" />
+          )}
+        </button>
+      )}
       
       <div className="relative z-10 h-full flex flex-col text-white">
         {/* Header */}
