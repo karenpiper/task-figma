@@ -25,6 +25,28 @@ export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: Tas
   const [isQuickMoveOpen, setIsQuickMoveOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
+  // Smart positioning - check if dropdown would go off-screen
+  const getDropdownPosition = () => {
+    if (!dropdownRef.current) return { bottom: 'bottom-full', right: 'right-0' };
+    
+    const rect = dropdownRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    
+    // Check if dropdown would go off the top
+    const wouldGoOffTop = rect.top < 200; // 200px buffer
+    // Check if dropdown would go off the right
+    const wouldGoOffRight = rect.right + 192 > viewportWidth; // 192px = w-48
+    
+    return {
+      bottom: wouldGoOffTop ? 'top-full' : 'bottom-full',
+      right: wouldGoOffRight ? 'left-0' : 'right-0',
+      margin: wouldGoOffTop ? 'mt-2' : 'mb-2'
+    };
+  };
+  
+  const dropdownPosition = getDropdownPosition();
+  
   // Click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -234,41 +256,47 @@ export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: Tas
                 
                 {/* Dropdown Menu */}
                 {isQuickMoveOpen && (
-                  <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                    <div className="py-2">
-                      <div className="px-3 py-1 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Quick Move
+                  <>
+                    {/* Backdrop to ensure dropdown is above everything */}
+                    <div className="fixed inset-0 z-[9998]" onClick={() => setIsQuickMoveOpen(false)} />
+                    
+                    {/* Dropdown Menu */}
+                    <div className={`absolute ${dropdownPosition.bottom} ${dropdownPosition.right} ${dropdownPosition.margin} w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-[9999] transform -translate-y-1`}>
+                      <div className="py-2">
+                        <div className="px-3 py-1 text-xs font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                          Quick Move
+                        </div>
+                        {availableColumns
+                          .filter(col => col.id !== task.column_id)
+                          .map(column => (
+                            <div key={column.id}>
+                              <button
+                                onClick={() => handleQuickMove(column.id)}
+                                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
+                              >
+                                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                                {column.title}
+                              </button>
+                              {/* Show categories if they exist */}
+                              {column.categories && column.categories.length > 0 && (
+                                <div className="ml-4">
+                                  {column.categories.map(category => (
+                                    <button
+                                      key={category.id}
+                                      onClick={() => handleQuickMove(column.id, category.id)}
+                                      className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150"
+                                    >
+                                      <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                      {category.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
                       </div>
-                      {availableColumns
-                        .filter(col => col.id !== task.column_id)
-                        .map(column => (
-                          <div key={column.id}>
-                            <button
-                              onClick={() => handleQuickMove(column.id)}
-                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                            >
-                              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                              {column.title}
-                            </button>
-                            {/* Show categories if they exist */}
-                            {column.categories && column.categories.length > 0 && (
-                              <div className="ml-4">
-                                {column.categories.map(category => (
-                                  <button
-                                    key={category.id}
-                                    onClick={() => handleQuickMove(column.id, category.id)}
-                                    className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
-                                  >
-                                    <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                                    {category.name}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             )}
