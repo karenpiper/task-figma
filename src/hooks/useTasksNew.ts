@@ -169,15 +169,45 @@ export const useTasksNew = () => {
     try {
       console.log(`🚀 Moving task ${taskId} to column ${targetColumnId}, category ${targetCategoryId || 'none'}`);
       
-      // For now, just refresh the board data
-      // TODO: Implement proper move logic
-      await fetchBoard();
+      // Call the move API endpoint
+      const response = await fetch(`${API_BASE}/tasks/${taskId}/move`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          column_id: targetColumnId,
+          category_id: targetCategoryId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedTask = await response.json();
+      console.log('✅ Task moved successfully:', updatedTask);
+      
+      // Update local state optimistically
+      setColumns(prevColumns => 
+        prevColumns.map(column => ({
+          ...column,
+          categories: column.categories.map(category => ({
+            ...category,
+            tasks: category.tasks.map(task => 
+              task.id === taskId 
+                ? { ...task, column_id: targetColumnId, category_id: targetCategoryId }
+                : task
+            )
+          }))
+        }))
+      );
       
     } catch (err) {
       console.error('Error moving task:', err);
       throw err;
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Create category
   const createCategory = useCallback(async (categoryData: Partial<Category>) => {
