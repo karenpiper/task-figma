@@ -132,7 +132,7 @@ export function TeamManagement({
                 <SelectTrigger className="bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg z-[9999] relative">
+                <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg">
                   {colorOptions.map(color => (
                     <SelectItem key={color.value} value={color.value}>
                       <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export function TeamManagement({
                 <SelectTrigger className="bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg z-[9999] relative">
+                <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg">
                   {colorOptions.map(color => (
                     <SelectItem key={color.value} value={color.value}>
                       <div className="flex items-center gap-2">
