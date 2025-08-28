@@ -10,6 +10,7 @@ import { FocusZone } from './components/FocusZone';
 import { AchievementSystem } from './components/AchievementSystem';
 import { ParticleSystem } from './components/ParticleSystem';
 import { AmbientLighting } from './components/AmbientLighting';
+import { DynamicBackground } from './components/DynamicBackground';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTasksNew } from './hooks/useTasksNew';
 
@@ -88,14 +89,14 @@ export default function App() {
 
   return (
     <StableDndProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <DynamicBackground>
         {/* FORCE DEPLOYMENT INDICATOR */}
         <div className="bg-red-600 text-white text-center py-2 font-bold text-lg">
           🚨 KARENBAN - NEW CODE VERSION DEPLOYED! 🚨
         </div>
         
         {/* Main container with full viewport height and overflow control */}
-        <div className="h-screen relative overflow-hidden bg-background">
+        <div className="h-screen relative overflow-hidden">
           {/* Dynamic ambient lighting layer */}
           <AmbientLighting />
           
@@ -255,7 +256,7 @@ export default function App() {
             onComplete={() => setShowParticles(false)} 
           />
         </div>
-      </div>
+      </DynamicBackground>
     </StableDndProvider>
   );
 }
