@@ -223,25 +223,47 @@ export const useTasksNew = () => {
       const updatedTask = await response.json();
       console.log('✅ Task moved successfully:', updatedTask);
       
-      // Update local state optimistically
+      // Update local state optimistically - remove from old location and add to new location
       setColumns(prevColumns => 
-        prevColumns.map(column => ({
-          ...column,
-          categories: column.categories.map(category => ({
-            ...category,
-            tasks: category.tasks.map(task => 
-              task.id === taskId 
-                ? { ...task, column_id: targetColumnId, category_id: targetCategoryId }
-                : task
-            )
-          })),
-          // Also update tasks directly in the column
-          tasks: column.tasks.map(task => 
-            task.id === taskId 
-              ? { ...task, column_id: targetColumnId, category_id: targetCategoryId }
-              : task
-          )
-        }))
+        prevColumns.map(column => {
+          // Remove the task from this column's tasks and categories
+          const updatedColumn = {
+            ...column,
+            tasks: column.tasks.filter(task => task.id !== taskId),
+            categories: column.categories.map(category => ({
+              ...category,
+              tasks: category.tasks.filter(task => task.id !== taskId)
+            }))
+          };
+          
+          // If this is the target column, add the task back
+          if (column.id === targetColumnId) {
+            // Find the task in the original columns to get its full data
+            const originalTask = prevColumns.flatMap(col => 
+              col.tasks.concat(col.categories.flatMap(cat => cat.tasks))
+            ).find(task => task.id === taskId);
+            
+            if (originalTask) {
+              const updatedTask = { ...originalTask, column_id: targetColumnId, category_id: targetCategoryId };
+              updatedColumn.tasks.push(updatedTask);
+              
+              // If there's a target category, add it there too
+              if (targetCategoryId) {
+                updatedColumn.categories = updatedColumn.categories.map(category => {
+                  if (category.id === targetCategoryId) {
+                    return {
+                      ...category,
+                      tasks: [...category.tasks, updatedTask]
+                    };
+                  }
+                  return category;
+                });
+              }
+            }
+          }
+          
+          return updatedColumn;
+        })
       );
       
     } catch (err) {

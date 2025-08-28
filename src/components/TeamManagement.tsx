@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Users, Plus, Edit, Trash2, UserPlus } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -26,8 +26,27 @@ export function TeamManagement({
     name: '',
     is_strategy_team: false,
     avatar: '',
-    color: 'bg-blue-500'
+    color: 'bg-blue-500',
+    isColorOpen: false
   });
+
+  // Click outside handlers for color dropdowns
+  const newMemberColorRef = useRef<HTMLDivElement>(null);
+  const editMemberColorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (newMemberColorRef.current && !newMemberColorRef.current.contains(event.target as Node)) {
+        setNewMemberData(prev => ({ ...prev, isColorOpen: false }));
+      }
+      if (editMemberColorRef.current && !editMemberColorRef.current.contains(event.target as Node)) {
+        setEditingMember(prev => prev ? { ...prev, isColorOpen: false } : null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleCreateMember = async () => {
     if (!newMemberData.name.trim()) return;
@@ -128,21 +147,39 @@ export function TeamManagement({
             </div>
             <div>
               <Label htmlFor="memberColor">Color</Label>
-              <Select value={newMemberData.color} onValueChange={(value) => setNewMemberData(prev => ({ ...prev, color: value }))}>
-                <SelectTrigger className="bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg">
-                  {colorOptions.map(color => (
-                    <SelectItem key={color.value} value={color.value}>
-                      <div className="flex items-center gap-2">
+              <div className="relative" ref={newMemberColorRef}>
+                <button
+                  type="button"
+                  onClick={() => setNewMemberData(prev => ({ ...prev, isColorOpen: !prev.isColorOpen }))}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded-full ${newMemberData.color}`}></div>
+                    {colorOptions.find(c => c.value === newMemberData.color)?.label}
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {newMemberData.isColorOpen && (
+                  <div className="absolute z-[9999] top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {colorOptions.map(color => (
+                      <button
+                        key={color.value}
+                        type="button"
+                        onClick={() => {
+                          setNewMemberData(prev => ({ ...prev, color: color.value, isColorOpen: false }));
+                        }}
+                        className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                      >
                         <div className={`w-4 h-4 rounded-full ${color.value}`}></div>
                         {color.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex gap-3 pt-2">
               <DialogButton variant="primary" onClick={handleCreateMember}>
@@ -240,21 +277,39 @@ export function TeamManagement({
             </div>
             <div>
               <Label htmlFor="editMemberColor">Color</Label>
-              <Select value={editingMember.color} onValueChange={(value) => setEditingMember(prev => prev ? { ...prev, color: value } : null)}>
-                <SelectTrigger className="bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg">
-                  {colorOptions.map(color => (
-                    <SelectItem key={color.value} value={color.value}>
-                      <div className="flex items-center gap-2">
+              <div className="relative" ref={editMemberColorRef}>
+                <button
+                  type="button"
+                  onClick={() => setEditingMember(prev => prev ? { ...prev, isColorOpen: !prev.isColorOpen } : null)}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded-full ${editingMember.color}`}></div>
+                    {colorOptions.find(c => c.value === editingMember.color)?.label}
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {editingMember.isColorOpen && (
+                  <div className="absolute z-[9999] top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {colorOptions.map(color => (
+                      <button
+                        key={color.value}
+                        type="button"
+                        onClick={() => {
+                          setEditingMember(prev => prev ? { ...prev, color: color.value, isColorOpen: false } : null);
+                        }}
+                        className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                      >
                         <div className={`w-4 h-4 rounded-full ${color.value}`}></div>
                         {color.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex gap-3 pt-2">
               <DialogButton variant="primary" onClick={handleUpdateMember}>
