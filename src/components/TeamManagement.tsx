@@ -22,6 +22,7 @@ export function TeamManagement({
 }: TeamManagementProps) {
   const [isCreatingMember, setIsCreatingMember] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [editingMemberColorOpen, setEditingMemberColorOpen] = useState(false);
   const [newMemberData, setNewMemberData] = useState({
     name: '',
     is_strategy_team: false,
@@ -40,7 +41,7 @@ export function TeamManagement({
         setNewMemberData(prev => ({ ...prev, isColorOpen: false }));
       }
       if (editMemberColorRef.current && !editMemberColorRef.current.contains(event.target as Node)) {
-        setEditingMember(prev => prev ? { ...prev, isColorOpen: false } : null);
+        setEditingMemberColorOpen(false);
       }
     };
 
@@ -280,7 +281,7 @@ export function TeamManagement({
               <div className="relative" ref={editMemberColorRef}>
                 <button
                   type="button"
-                  onClick={() => setEditingMember(prev => prev ? { ...prev, isColorOpen: !prev.isColorOpen } : null)}
+                  onClick={() => setEditingMemberColorOpen(!editingMemberColorOpen)}
                   className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
@@ -292,14 +293,15 @@ export function TeamManagement({
                   </svg>
                 </button>
                 
-                {editingMember.isColorOpen && (
+                {editingMemberColorOpen && (
                   <div className="absolute z-[9999] top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     {colorOptions.map(color => (
                       <button
                         key={color.value}
                         type="button"
                         onClick={() => {
-                          setEditingMember(prev => prev ? { ...prev, color: color.value, isColorOpen: false } : null);
+                          setEditingMember(prev => prev ? { ...prev, color: color.value } : null);
+                          setEditingMemberColorOpen(false);
                         }}
                         className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
                       >
