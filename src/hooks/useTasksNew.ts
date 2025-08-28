@@ -265,20 +265,35 @@ export const useTasksNew = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`❌ Create category API error: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const newCategory = await response.json();
+      console.log('✅ Category created successfully:', newCategory);
       
-      // Refresh board data to show new category
-      await fetchBoard();
+      // Update local state optimistically instead of calling fetchBoard
+      setColumns(prevColumns => 
+        prevColumns.map(column => {
+          if (column.id === newCategory.column_id) {
+            return {
+              ...column,
+              categories: [...column.categories, newCategory]
+            };
+          }
+          return column;
+        })
+      );
+      
       return newCategory;
     } catch (err) {
+      console.error('❌ Error creating category:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Delete category
   const deleteCategory = useCallback(async (categoryId: string) => {
@@ -294,17 +309,28 @@ export const useTasksNew = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`❌ Delete category API error: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
-      // Refresh board data to remove deleted category
-      await fetchBoard();
+      console.log('✅ Category deleted successfully:', categoryId);
+      
+      // Update local state optimistically instead of calling fetchBoard
+      setColumns(prevColumns => 
+        prevColumns.map(column => ({
+          ...column,
+          categories: column.categories.filter(category => category.id !== categoryId)
+        }))
+      );
+      
     } catch (err) {
+      console.error('❌ Error deleting category:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Create team member - SIMPLIFIED APPROACH
   const createTeamMember = useCallback(async (memberData: Partial<TeamMember>) => {
