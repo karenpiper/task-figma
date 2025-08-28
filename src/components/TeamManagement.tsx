@@ -58,7 +58,7 @@ export function TeamManagement({
         avatar: newMemberData.avatar || newMemberData.name.substring(0, 2).toUpperCase(),
         color: newMemberData.color
       });
-      setNewMemberData({ name: '', is_strategy_team: false, avatar: '', color: 'bg-blue-500' });
+      setNewMemberData({ name: '', is_strategy_team: false, avatar: '', color: 'bg-blue-500', isColorOpen: false });
       setIsCreatingMember(false);
     } catch (error) {
       console.error('Failed to create team member:', error);
