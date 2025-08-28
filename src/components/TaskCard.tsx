@@ -9,6 +9,7 @@ interface Task {
   priority: string;
   project?: string;
   column_id: string;
+  category_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +34,76 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
       (dragRef as any)(node);
     }
   }, [dragRef]);
+
+  // Get category-based color for the top border
+  const getCategoryColor = (columnId: string, categoryId?: string | null) => {
+    // First check if it's a specific category within a column
+    if (categoryId) {
+      switch (categoryId) {
+        // Standing categories
+        case 'standing':
+        case 'follow_up_standing':
+        case 'personal_standing':
+          return 'from-emerald-400 to-emerald-500';
+        
+        // Comms categories
+        case 'comms':
+        case 'follow_up_comms':
+        case 'personal_comms':
+          return 'from-blue-400 to-blue-500';
+        
+        // Big tasks categories
+        case 'big_tasks':
+        case 'follow_up_big_tasks':
+        case 'personal_big_tasks':
+          return 'from-purple-400 to-purple-500';
+        
+        // Done categories
+        case 'done':
+        case 'follow_up_done':
+        case 'personal_done':
+        case 'completed':
+          return 'from-green-400 to-green-500';
+        
+        // Personal categories
+        case 'personal_standing':
+        case 'personal_comms':
+        case 'personal_big_tasks':
+        case 'personal_done':
+          return 'from-indigo-400 to-indigo-500';
+      }
+    }
+    
+    // Fall back to column-based colors
+    switch (columnId) {
+      case 'uncategorized':
+        return 'from-slate-400 to-slate-500';
+      
+      case 'today':
+        return 'from-orange-400 to-orange-500';
+      
+      case 'personal':
+        return 'from-indigo-400 to-indigo-500';
+      
+      case 'follow-up':
+        return 'from-pink-400 to-pink-500';
+      
+      case 'later':
+      case 'future':
+        return 'from-violet-400 to-violet-500';
+      
+      case 'completed':
+      case 'done':
+        return 'from-green-400 to-green-500';
+      
+      default:
+        // For dynamic date columns (Today + 1, Today + 2, etc.)
+        if (columnId.includes('Today +')) {
+          return 'from-amber-400 to-amber-500';
+        }
+        return 'from-slate-400 to-slate-500';
+    }
+  };
 
   const getPriorityConfig = (priority: string) => {
     switch (priority) {
@@ -68,6 +139,7 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
   };
 
   const priorityConfig = getPriorityConfig(task.priority);
+  const categoryColor = getCategoryColor(task.column_id, task.category_id);
 
   return (
     <div
@@ -90,8 +162,8 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
           : 'bg-white/60 border-white/40'
       }`}></div>
       
-      {/* Priority accent */}
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${priorityConfig.color}`}></div>
+      {/* Category-based color accent (replaces priority accent) */}
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${categoryColor}`}></div>
       
       {/* Drag indicator */}
       {isDragging && (
