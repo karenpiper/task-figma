@@ -59,7 +59,8 @@ export function TaskColumn({
       targetColumn: column.id,
       targetColumnTitle: column.title,
       hasOnMoveTask: !!onMoveTask,
-      hasCategories: column.categories.length > 0
+      hasCategories: column.categories.length > 0,
+      categories: column.categories.map(cat => ({ id: cat.id, name: cat.name }))
     });
     
     // Handle task completion if moving to completed column
@@ -77,16 +78,29 @@ export function TaskColumn({
         let targetCategoryId: string | undefined = undefined;
         
         if (column.categories.length > 0) {
-          // Find the first available category (usually the default one)
-          const defaultCategory = column.categories.find(cat => cat.is_default) || column.categories[0];
-          if (defaultCategory) {
-            targetCategoryId = defaultCategory.id;
-            console.log(`🎯 Auto-selecting category: ${defaultCategory.name} (${defaultCategory.id})`);
+          // For follow-up column, use the first category (first team member)
+          if (column.id === 'follow-up') {
+            targetCategoryId = column.categories[0]?.id;
+            console.log(`🎯 Follow-up column: Using first category: ${column.categories[0]?.name} (${targetCategoryId})`);
+          } else {
+            // Find the first available category (usually the default one)
+            const defaultCategory = column.categories.find(cat => cat.is_default) || column.categories[0];
+            if (defaultCategory) {
+              targetCategoryId = defaultCategory.id;
+              console.log(`🎯 Auto-selecting category: ${defaultCategory.name} (${defaultCategory.id})`);
+            }
           }
         }
         
-        await onMoveTask(item.id, column.id, targetCategoryId);
-        console.log(`✅ Task ${item.id} moved successfully to column ${column.id}${targetCategoryId ? ` in category ${targetCategoryId}` : ''}`);
+        if (targetCategoryId) {
+          console.log(`🎯 Final target category: ${targetCategoryId}`);
+          await onMoveTask(item.id, column.id, targetCategoryId);
+          console.log(`✅ Task ${item.id} moved successfully to column ${column.id} in category ${targetCategoryId}`);
+        } else {
+          console.log(`🎯 No target category, moving to column only`);
+          await onMoveTask(item.id, column.id);
+          console.log(`✅ Task ${item.id} moved successfully to column ${column.id}`);
+        }
       } catch (error) {
         console.error('❌ Failed to move task:', error);
       }
