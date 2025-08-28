@@ -223,8 +223,8 @@ export function TaskColumn({
             </Badge>
           </div>
           
-          {/* Add Task button for uncategorized and later columns only */}
-          {!shouldShowCategories && (
+          {/* Add Task button for uncategorized, later, and today columns */}
+          {(!shouldShowCategories || column.id === 'today') && (
             <Button 
               size="sm"
               variant="ghost"
