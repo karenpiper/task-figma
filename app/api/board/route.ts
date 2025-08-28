@@ -126,9 +126,14 @@ export async function GET(request: Request) {
         
         // Get tasks for each team member category
         const categoriesWithTasks = await Promise.all(teamMemberCategories.map(async (category) => {
+          // Extract the team member ID from the category ID (e.g., 'follow-up_1' -> 1)
+          const teamMemberId = category.id.replace('follow-up_', '');
+          
+          // Query tasks that are assigned to this team member in the follow-up column
           const { data: tasks, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
+            .eq('column_id', column.id)
             .eq('category_id', category.id)
             .order('created_at', { ascending: false });
           

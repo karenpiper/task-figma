@@ -38,15 +38,10 @@ async function handleTaskMove(
 
     const updateData: any = { column_id };
     
-    // Check if this is a team member category (follow-up_1, follow-up_2, etc.)
-    const isTeamMemberCategory = category_id && category_id.match(/^follow-up_\d+$/);
-    
-    if (isTeamMemberCategory) {
-      console.log(`👥 Team member category detected: ${category_id} - not setting category_id in database`);
-      // For team member categories, DON'T set category_id since they don't exist in the database
-      // The task will be moved to the column but without a specific category
-    } else if (category_id !== undefined) {
+    // Always set category_id if provided - this ensures tasks persist their position
+    if (category_id !== undefined) {
       updateData.category_id = category_id;
+      console.log(`📝 Setting category_id: ${category_id}`);
     }
     
     if (team_member_id) {
