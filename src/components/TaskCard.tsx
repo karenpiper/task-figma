@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDrag } from 'react-dnd';
 import { Badge } from './ui/badge';
 import { ArrowRight } from 'lucide-react';
@@ -17,9 +17,31 @@ interface Task {
 interface TaskCardProps {
   task: Task;
   onComplete?: () => void;
+  onMoveTask?: (taskId: number, targetColumnId: string, targetCategoryId?: string) => Promise<void>;
+  availableColumns?: Array<{ id: string; title: string; categories?: Array<{ id: string; name: string }> }>;
 }
 
-export function TaskCard({ task, onComplete }: TaskCardProps) {
+export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: TaskCardProps) {
+  const [isQuickMoveOpen, setIsQuickMoveOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsQuickMoveOpen(false);
+      }
+    };
+
+    if (isQuickMoveOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isQuickMoveOpen]);
+  
   const [{ isDragging }, dragRef] = useDrag({
     type: 'TASK',
     item: { id: task.id, type: 'TASK', title: task.title },
@@ -141,6 +163,17 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
   const priorityConfig = getPriorityConfig(task.priority);
   const categoryColor = getCategoryColor(task.column_id, task.category_id);
 
+  const handleQuickMove = async (targetColumnId: string, targetCategoryId?: string) => {
+    if (onMoveTask) {
+      try {
+        await onMoveTask(task.id, targetColumnId, targetCategoryId);
+        setIsQuickMoveOpen(false);
+      } catch (error) {
+        console.error('Quick move failed:', error);
+      }
+    }
+  };
+
   return (
     <div
       ref={dragRefCallback}
@@ -189,9 +222,57 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
           )}
           
           <div className="flex items-center gap-2">
-            <button className="p-1 rounded-md hover:bg-slate-100/60 transition-colors duration-200 group">
-              <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-slate-800" />
-            </button>
+            {/* Quick Move Dropdown */}
+            {onMoveTask && availableColumns && (
+              <div className="relative" ref={dropdownRef}>
+                <button 
+                  onClick={() => setIsQuickMoveOpen(!isQuickMoveOpen)}
+                  className="p-1 rounded-md hover:bg-slate-100/60 transition-colors duration-200 group"
+                >
+                  <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-slate-800" />
+                </button>
+                
+                {/* Dropdown Menu */}
+                {isQuickMoveOpen && (
+                  <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div className="py-2">
+                      <div className="px-3 py-1 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Quick Move
+                      </div>
+                      {availableColumns
+                        .filter(col => col.id !== task.column_id)
+                        .map(column => (
+                          <div key={column.id}>
+                            <button
+                              onClick={() => handleQuickMove(column.id)}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                            >
+                              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                              {column.title}
+                            </button>
+                            {/* Show categories if they exist */}
+                            {column.categories && column.categories.length > 0 && (
+                              <div className="ml-4">
+                                {column.categories.map(category => (
+                                  <button
+                                    key={category.id}
+                                    onClick={() => handleQuickMove(column.id, category.id)}
+                                    className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                                  >
+                                    <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                    {category.name}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
             <div className={`px-2 py-1 rounded-md text-xs font-medium ${priorityConfig.bg} ${priorityConfig.text}`}>
               {task.priority}
             </div>

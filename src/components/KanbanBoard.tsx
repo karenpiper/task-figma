@@ -85,6 +85,14 @@ export function KanbanBoard({
             onDeleteCategory={deleteCategory}
             teamMembers={teamMembers}
             createTeamMember={createTeamMember}
+            availableColumns={columns.map(col => ({
+              id: col.id,
+              title: col.title,
+              categories: col.categories?.map(cat => ({
+                id: cat.id,
+                name: cat.name
+              }))
+            }))}
           />
         ))}
         
