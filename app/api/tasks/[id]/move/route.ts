@@ -11,20 +11,37 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return handleTaskMove(request, { params });
+  try {
+    return await handleTaskMove(request, { params });
+  } catch (error) {
+    console.error('❌ PATCH handler error:', error);
+    return NextResponse.json(
+      { error: 'PATCH handler failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return handleTaskMove(request, { params });
+  try {
+    return await handleTaskMove(request, { params });
+  } catch (error) {
+    console.error('❌ POST handler error:', error);
+    return NextResponse.json(
+      { error: 'POST handler failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
 }
 
 async function handleTaskMove(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  console.log('🚀 handleTaskMove function called');
   try {
     console.log(`🔍 Move API: Processing move for task ${params.id}`);
     const { column_id, category_id, team_member_id } = await request.json();
