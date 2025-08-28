@@ -49,6 +49,13 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, columnId, categoryId 
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   const handleCancel = () => {
     // Reset all fields
     setTitle('');
@@ -71,6 +78,7 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, columnId, categoryId 
             placeholder="Enter task title..."
             value={title}
             onChange={setTitle}
+            onKeyDown={handleKeyDown}
           />
         </div>
 
