@@ -169,7 +169,9 @@ export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: Tas
   const handleQuickMove = async (targetColumnId: string, targetCategoryId?: string) => {
     if (onMoveTask) {
       try {
-        await onMoveTask(task.id, targetColumnId, targetCategoryId);
+        // Handle 'no-category' case for today column
+        const finalCategoryId = targetCategoryId === 'no-category' ? undefined : targetCategoryId;
+        await onMoveTask(task.id, targetColumnId, finalCategoryId);
         setIsQuickMoveOpen(false);
       } catch (error) {
         console.error('Quick move failed:', error);
@@ -258,32 +260,73 @@ export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: Tas
                             </div>
                             {availableColumns
                               .filter(col => col.id !== task.column_id)
-                              .map(column => (
-                                <div key={column.id}>
-                                  <button
-                                    onClick={() => handleQuickMove(column.id)}
-                                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
-                                  >
-                                    <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                                    {column.title}
-                                  </button>
-                                  {/* Show categories if they exist */}
-                                  {column.categories && column.categories.length > 0 && (
-                                    <div className="ml-4">
-                                      {column.categories.map(category => (
-                                        <button
-                                          key={category.id}
-                                          onClick={() => handleQuickMove(column.id, category.id)}
-                                          className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150"
-                                        >
-                                          <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                                          {category.name}
-                                        </button>
-                                      ))}
+                              .map(column => {
+                                // Special handling for 'today' column - only show 'today', not all date categories
+                                if (column.id === 'today') {
+                                  return (
+                                    <div key={column.id}>
+                                      <button
+                                        onClick={() => handleQuickMove(column.id)}
+                                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
+                                      >
+                                        <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                        Today
+                                      </button>
+                                      {/* Show "No Category" option for today */}
+                                      <button
+                                        onClick={() => handleQuickMove(column.id, 'no-category')}
+                                        className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150 ml-4"
+                                      >
+                                        <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                        No Category
+                                      </button>
+                                      {/* Show existing categories if they exist */}
+                                      {column.categories && column.categories.length > 0 && (
+                                        <div className="ml-4">
+                                          {column.categories.map(category => (
+                                            <button
+                                              key={category.id}
+                                              onClick={() => handleQuickMove(column.id, category.id)}
+                                              className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150"
+                                            >
+                                              <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                              {category.name}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
-                                </div>
-                              ))}
+                                  );
+                                }
+                                
+                                // For other columns, show normally
+                                return (
+                                  <div key={column.id}>
+                                    <button
+                                      onClick={() => handleQuickMove(column.id)}
+                                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
+                                    >
+                                      <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                                      {column.title}
+                                    </button>
+                                    {/* Show categories if they exist */}
+                                    {column.categories && column.categories.length > 0 && (
+                                      <div className="ml-4">
+                                        {column.categories.map(category => (
+                                          <button
+                                            key={category.id}
+                                            onClick={() => handleQuickMove(column.id, category.id)}
+                                            className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150"
+                                          >
+                                            <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                            {category.name}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                           </div>
                         </div>
                       </>,
