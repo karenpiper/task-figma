@@ -295,6 +295,7 @@ export function AllTasksView({
           isOpen={isCreatingTask}
           onClose={() => setIsCreatingTask(false)}
           onSubmit={handleCreateTask}
+          columnId="uncategorized"
         />
       </Dialog>
     </div>
