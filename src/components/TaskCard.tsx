@@ -272,29 +272,7 @@ export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: Tas
                                         <div className="w-2 h-2 rounded-full bg-blue-400"></div>
                                         Today
                                       </button>
-                                      {/* Show "No Category" option for today */}
-                                      <button
-                                        onClick={() => handleQuickMove(column.id, 'no-category')}
-                                        className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150 ml-4"
-                                      >
-                                        <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                                        No Category
-                                      </button>
-                                      {/* Show existing categories if they exist */}
-                                      {column.categories && column.categories.length > 0 && (
-                                        <div className="ml-4">
-                                          {column.categories.map(category => (
-                                            <button
-                                              key={category.id}
-                                              onClick={() => handleQuickMove(column.id, category.id)}
-                                              className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150"
-                                            >
-                                              <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                                              {category.name}
-                                            </button>
-                                          ))}
-                                        </div>
-                                      )}
+
                                     </div>
                                   );
                                 }
