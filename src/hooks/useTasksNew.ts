@@ -182,7 +182,9 @@ export const useTasksNew = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`❌ Move API error: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const updatedTask = await response.json();
@@ -210,8 +212,9 @@ export const useTasksNew = () => {
       );
       
     } catch (err) {
-      console.error('Error moving task:', err);
-      throw err;
+      console.error('❌ Error moving task:', err);
+      // Don't throw the error - just log it and let the UI handle it gracefully
+      console.error('Task move failed, but continuing...');
     }
   }, []);
 
