@@ -149,20 +149,53 @@ export const useTasksNew = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`❌ Create task API error: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const newTask = await response.json();
+      console.log('✅ Task created successfully:', newTask);
       
-      // Refresh board data to show new task
-      await fetchBoard();
+      // Update local state optimistically instead of calling fetchBoard
+      setColumns(prevColumns => 
+        prevColumns.map(column => {
+          if (column.id === newTask.column_id) {
+            // Add the new task to the appropriate column
+            const updatedColumn = {
+              ...column,
+              tasks: [...column.tasks, newTask]
+            };
+            
+            // If there's a category_id, also add it to the category
+            if (newTask.category_id) {
+              updatedColumn.categories = column.categories.map(category => {
+                if (category.id === newTask.category_id) {
+                  return {
+                    ...category,
+                    tasks: [...category.tasks, newTask]
+                  };
+                }
+                return category;
+              });
+            }
+            
+            return updatedColumn;
+          }
+          return column;
+        })
+      );
+      
+      // Note: tasks are embedded in columns, so no need for separate tasks state update
+      
       return newTask;
     } catch (err) {
+      console.error('❌ Error creating task:', err);
       throw err;
     } finally {
       setOperationLoading(false);
     }
-  }, [fetchBoard]);
+  }, []);
 
   // Move task between columns/categories
   const moveTask = useCallback(async (taskId: number, targetColumnId: string, targetCategoryId?: string) => {
