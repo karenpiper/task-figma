@@ -199,7 +199,13 @@ export const useTasksNew = () => {
                 ? { ...task, column_id: targetColumnId, category_id: targetCategoryId }
                 : task
             )
-          }))
+          })),
+          // Also update tasks directly in the column
+          tasks: column.tasks.map(task => 
+            task.id === taskId 
+              ? { ...task, column_id: targetColumnId, category_id: targetCategoryId }
+              : task
+          )
         }))
       );
       
