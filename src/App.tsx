@@ -4,6 +4,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Sidebar } from './components/Sidebar';
 import { KanbanBoard } from './components/KanbanBoard';
 import { ThisWeek } from './components/ThisWeek';
+import { AllTasksView } from './components/AllTasksView';
 import { Header } from './components/Header';
 import { FocusZone } from './components/FocusZone';
 import { AchievementSystem } from './components/AchievementSystem';
@@ -36,7 +37,7 @@ export default function App() {
   
   const [showParticles, setShowParticles] = useState(false);
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
-  const [currentView, setCurrentView] = useState<'board' | 'week'>('board');
+  const [currentView, setCurrentView] = useState<'board' | 'week' | 'all-tasks'>('board');
   
   // Lift useTasksNew hook to App level to avoid multiple instances
   const { 
@@ -142,6 +143,16 @@ export default function App() {
                   >
                     This Week
                   </button>
+                  <button
+                    onClick={() => setCurrentView('all-tasks')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      currentView === 'all-tasks'
+                        ? 'bg-white/80 text-slate-800 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                    }`}
+                  >
+                    All Tasks
+                  </button>
                 </div>
               </div>
 
@@ -163,7 +174,7 @@ export default function App() {
                       deleteCategory={deleteCategory}
                       createTeamMember={createTeamMember}
                     />
-                  ) : (
+                  ) : currentView === 'week' ? (
                     <ThisWeek
                       teamMembers={teamMembers}
                       onCreateTask={createTask}
@@ -171,6 +182,14 @@ export default function App() {
                       onDeleteCategory={deleteCategory}
                       createTeamMember={createTeamMember}
                       onTaskComplete={handleTaskCompleteForWeek}
+                    />
+                  ) : (
+                    <AllTasksView
+                      tasks={tasks}
+                      teamMembers={teamMembers}
+                      onCreateTask={createTask}
+                      onMoveTask={moveTask}
+                      onTaskComplete={handleTaskComplete}
                     />
                   )}
                 </div>
