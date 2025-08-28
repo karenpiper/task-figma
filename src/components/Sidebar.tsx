@@ -35,7 +35,7 @@ export function Sidebar({
     { icon: Eye, label: 'Today', active: activeView === 'main', onClick: () => setActiveView('main') },
     { icon: Calendar, label: 'My calendar', active: false, onClick: () => setActiveView('main') },
     { icon: BarChart3, label: 'Analytics', active: false, onClick: () => setActiveView('main') },
-    { icon: Users, label: 'Team', active: activeView === 'team', onClick: () => setActiveView('main') },
+    { icon: Users, label: 'Team', active: activeView === 'team', onClick: () => setActiveView('team') },
   ];
 
   // Mock data for demonstration - in real app this would come from the database
