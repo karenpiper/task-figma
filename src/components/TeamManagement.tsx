@@ -218,13 +218,17 @@ export function TeamManagement({
                 onChange={(value) => setEditingMember(prev => prev ? { ...prev, name: value } : null)}
               />
             </div>
-            <div>
-              <Label htmlFor="editMemberEmail">Email</Label>
-              <DialogInput
-                placeholder="Enter email address..."
-                value={editingMember.email || ''}
-                onChange={(value) => setEditingMember(prev => prev ? { ...prev, email: value } : null)}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="edit-strategy-team"
+                checked={editingMember.is_strategy_team}
+                onChange={(e) => setEditingMember(prev => prev ? { ...prev, is_strategy_team: e.target.checked } : null)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
+              <Label htmlFor="edit-strategy-team" className="ml-2">
+                Member of Strategy Team
+              </Label>
             </div>
             <div>
               <Label htmlFor="editMemberAvatar">Avatar</Label>
