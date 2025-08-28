@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDrag } from 'react-dnd';
 import { Badge } from './ui/badge';
 import { ArrowRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 interface Task {
   id: number;
@@ -25,27 +26,7 @@ export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: Tas
   const [isQuickMoveOpen, setIsQuickMoveOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  // Smart positioning - check if dropdown would go off-screen
-  const getDropdownPosition = () => {
-    if (!dropdownRef.current) return { bottom: 'bottom-full', right: 'right-0' };
-    
-    const rect = dropdownRef.current.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    
-    // Check if dropdown would go off the top
-    const wouldGoOffTop = rect.top < 200; // 200px buffer
-    // Check if dropdown would go off the right
-    const wouldGoOffRight = rect.right + 192 > viewportWidth; // 192px = w-48
-    
-    return {
-      bottom: wouldGoOffTop ? 'top-full' : 'bottom-full',
-      right: wouldGoOffRight ? 'left-0' : 'right-0',
-      margin: wouldGoOffTop ? 'mt-2' : 'mb-2'
-    };
-  };
-  
-  const dropdownPosition = getDropdownPosition();
+
   
   // Click outside to close dropdown
   useEffect(() => {
@@ -244,62 +225,72 @@ export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: Tas
           )}
           
           <div className="flex items-center gap-2">
-            {/* Quick Move Dropdown */}
-            {onMoveTask && availableColumns && (
-              <div className="relative" ref={dropdownRef}>
-                <button 
-                  onClick={() => setIsQuickMoveOpen(!isQuickMoveOpen)}
-                  className="p-1 rounded-md hover:bg-slate-100/60 transition-colors duration-200 group"
-                >
-                  <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-slate-800" />
-                </button>
-                
-                {/* Dropdown Menu */}
-                {isQuickMoveOpen && (
-                  <>
-                    {/* Backdrop to ensure dropdown is above everything */}
-                    <div className="fixed inset-0 z-[9998]" onClick={() => setIsQuickMoveOpen(false)} />
+                            {/* Quick Move Dropdown */}
+                {onMoveTask && availableColumns && (
+                  <div className="relative" ref={dropdownRef}>
+                    <button 
+                      onClick={() => setIsQuickMoveOpen(!isQuickMoveOpen)}
+                      className="p-1 rounded-md hover:bg-slate-100/60 transition-colors duration-200 group"
+                    >
+                      <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-slate-800" />
+                    </button>
                     
-                    {/* Dropdown Menu */}
-                    <div className={`absolute ${dropdownPosition.bottom} ${dropdownPosition.right} ${dropdownPosition.margin} w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-[9999] transform -translate-y-1`}>
-                      <div className="py-2">
-                        <div className="px-3 py-1 text-xs font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                          Quick Move
-                        </div>
-                        {availableColumns
-                          .filter(col => col.id !== task.column_id)
-                          .map(column => (
-                            <div key={column.id}>
-                              <button
-                                onClick={() => handleQuickMove(column.id)}
-                                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
-                              >
-                                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                                {column.title}
-                              </button>
-                              {/* Show categories if they exist */}
-                              {column.categories && column.categories.length > 0 && (
-                                <div className="ml-4">
-                                  {column.categories.map(category => (
-                                    <button
-                                      key={category.id}
-                                      onClick={() => handleQuickMove(column.id, category.id)}
-                                      className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150"
-                                    >
-                                      <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                                      {category.name}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
+                    {/* Portal-based Dropdown Menu */}
+                    {isQuickMoveOpen && createPortal(
+                      <>
+                        {/* Backdrop */}
+                        <div 
+                          className="fixed inset-0 z-[9998] bg-transparent" 
+                          onClick={() => setIsQuickMoveOpen(false)} 
+                        />
+                        
+                        {/* Dropdown Menu - positioned relative to button */}
+                        <div 
+                          className="fixed w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-[9999]"
+                          style={{
+                            top: dropdownRef.current ? dropdownRef.current.getBoundingClientRect().top - 200 : 0,
+                            left: dropdownRef.current ? dropdownRef.current.getBoundingClientRect().right - 192 : 0,
+                          }}
+                        >
+                          <div className="py-2">
+                            <div className="px-3 py-1 text-xs font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                              Quick Move
                             </div>
-                          ))}
-                      </div>
-                    </div>
-                  </>
+                            {availableColumns
+                              .filter(col => col.id !== task.column_id)
+                              .map(column => (
+                                <div key={column.id}>
+                                  <button
+                                    onClick={() => handleQuickMove(column.id)}
+                                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
+                                  >
+                                    <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                                    {column.title}
+                                  </button>
+                                  {/* Show categories if they exist */}
+                                  {column.categories && column.categories.length > 0 && (
+                                    <div className="ml-4">
+                                      {column.categories.map(category => (
+                                        <button
+                                          key={category.id}
+                                          onClick={() => handleQuickMove(column.id, category.id)}
+                                          className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors duration-150"
+                                        >
+                                          <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                          {category.name}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      </>,
+                      document.body
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
             
             <div className={`px-2 py-1 rounded-md text-xs font-medium ${priorityConfig.bg} ${priorityConfig.text}`}>
               {task.priority}
