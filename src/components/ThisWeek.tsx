@@ -268,20 +268,20 @@ export function ThisWeek({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="h-full overflow-hidden">
         {/* Header */}
-        <div className="max-w-7xl mx-auto mb-8">
+        <div className="px-6 pt-4 mb-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-slate-800 mb-2">This Week</h1>
-            <p className="text-lg text-slate-600">
+            <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">This Week</h1>
+            <p className="text-lg text-white/80 drop-shadow-md">
               Plan and organize your week ahead
             </p>
           </div>
         </div>
 
         {/* Week Board */}
-        <div className="max-w-7xl mx-auto">
-          <div className="flex gap-6 overflow-x-auto pb-6">
+        <div className="flex-1 overflow-x-auto px-6 pb-6">
+          <div className="flex gap-6 min-w-max">
             {generateWeekColumns().map((column) => (
               <div key={column.id} className="flex-shrink-0 w-80">
                 <TaskColumn
