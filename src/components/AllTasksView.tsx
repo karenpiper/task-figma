@@ -58,7 +58,18 @@ export function AllTasksView({
 
   const handleCreateTask = async (taskData: Partial<Task>) => {
     try {
-      await onCreateTask(taskData);
+      // Format the task data to match the API expectations
+      const formattedTaskData = {
+        ...taskData,
+        due_date: (taskData as any).dueDate, // Map dueDate to due_date
+        column_id: 'uncategorized', // Default to uncategorized column
+        priority: taskData.priority || 'medium'
+      };
+      
+      // Remove the dueDate property since we've mapped it to due_date
+      delete (formattedTaskData as any).dueDate;
+      
+      await onCreateTask(formattedTaskData);
       setIsCreatingTask(false);
     } catch (error) {
       console.error('Error creating task:', error);
