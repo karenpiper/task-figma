@@ -22,6 +22,7 @@ interface TaskColumnProps {
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   teamMembers: TeamMember[];
   createTeamMember: (memberData: { name: string; is_strategy_team: boolean }) => Promise<any>;
+  availableColumns?: Array<{ id: string; title: string; categories?: Array<{ id: string; name: string }> }>;
 }
 
 export function TaskColumn({ 
@@ -33,7 +34,8 @@ export function TaskColumn({
   onCreateCategory,
   onDeleteCategory,
   teamMembers = [],
-  createTeamMember
+  createTeamMember,
+  availableColumns
 }: TaskColumnProps) {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [isAddingPerson, setIsAddingPerson] = useState(false);
@@ -270,6 +272,7 @@ export function TaskColumn({
                 onMoveTask={onMoveTask}
                 onDeleteCategory={onDeleteCategory}
                 teamMembers={teamMembers}
+                availableColumns={availableColumns}
               />
             ))}
             
@@ -289,7 +292,13 @@ export function TaskColumn({
             {/* For non-day columns, show tasks directly with consistent spacing */}
             <div className="space-y-3">
               {column.tasks.map((task) => (
-                <TaskCard key={task.id} task={task} onComplete={onTaskCompleteSimple} />
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onComplete={onTaskCompleteSimple}
+                  onMoveTask={onMoveTask}
+                  availableColumns={availableColumns}
+                />
               ))}
             </div>
             

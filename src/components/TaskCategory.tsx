@@ -15,6 +15,7 @@ interface TaskCategoryProps {
   onMoveTask?: (taskId: number, newColumnId: string, newCategoryId?: string) => Promise<void>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   teamMembers: Array<{ id: number; name: string; avatar: string; color: string }>;
+  availableColumns?: Array<{ id: string; title: string; categories?: Array<{ id: string; name: string }> }>;
 }
 
 export function TaskCategory({ 
@@ -24,7 +25,8 @@ export function TaskCategory({
   onCreateTask, 
   onMoveTask,
   onDeleteCategory,
-  teamMembers = []
+  teamMembers = [],
+  availableColumns
 }: TaskCategoryProps) {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [newTaskData, setNewTaskData] = useState({
@@ -182,8 +184,8 @@ export function TaskCategory({
           </Button>
 
           
-          {/* Delete category button (only for manual categories) */}
-          {onDeleteCategory && !category.id.startsWith('follow-up_') && (
+          {/* Delete category button (only for manual categories, not for today column) */}
+          {onDeleteCategory && !category.id.startsWith('follow-up_') && !columnId.includes('today') && (
             <Button
               onClick={() => onDeleteCategory(category.id)}
               size="sm"
@@ -210,7 +212,13 @@ export function TaskCategory({
         {/* Tasks Container */}
         <div className="space-y-3">
           {category.tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onComplete={onTaskComplete} />
+            <TaskCard 
+              key={task.id} 
+              task={task} 
+              onComplete={onTaskComplete}
+              onMoveTask={onMoveTask}
+              availableColumns={availableColumns}
+            />
           ))}
         </div>
       </div>
