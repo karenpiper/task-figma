@@ -52,7 +52,7 @@ export function TeamManagement({
     try {
       await onUpdateMember(editingMember.id, {
         name: editingMember.name,
-        email: editingMember.email,
+        is_strategy_team: editingMember.is_strategy_team,
         avatar: editingMember.avatar,
         color: editingMember.color
       });
