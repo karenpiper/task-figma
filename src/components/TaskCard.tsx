@@ -167,15 +167,21 @@ export function TaskCard({ task, onComplete, onMoveTask, availableColumns }: Tas
   const categoryColor = getCategoryColor(task.column_id, task.category_id);
 
   const handleQuickMove = async (targetColumnId: string, targetCategoryId?: string) => {
+    console.log('🎯 Quick move triggered:', { taskId: task.id, targetColumnId, targetCategoryId, hasOnMoveTask: !!onMoveTask });
+    
     if (onMoveTask) {
       try {
         // Handle 'no-category' case for today column
         const finalCategoryId = targetCategoryId === 'no-category' ? undefined : targetCategoryId;
+        console.log('🚀 Calling onMoveTask with:', { taskId: task.id, targetColumnId, finalCategoryId });
         await onMoveTask(task.id, targetColumnId, finalCategoryId);
+        console.log('✅ Quick move completed successfully');
         setIsQuickMoveOpen(false);
       } catch (error) {
-        console.error('Quick move failed:', error);
+        console.error('❌ Quick move failed:', error);
       }
+    } else {
+      console.warn('⚠️ onMoveTask not provided to TaskCard');
     }
   };
 
