@@ -23,6 +23,13 @@ export function AddPersonDialog({ isOpen, onClose, onSubmit }: AddPersonDialogPr
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   const handleCancel = () => {
     setName('');
     setIsStrategyTeam(false);
@@ -39,6 +46,7 @@ export function AddPersonDialog({ isOpen, onClose, onSubmit }: AddPersonDialogPr
             placeholder="Enter person's name..."
             value={name}
             onChange={setName}
+            onKeyDown={handleKeyDown}
           />
         </div>
 

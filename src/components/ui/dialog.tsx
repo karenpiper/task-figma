@@ -53,15 +53,17 @@ interface DialogInputProps {
   value: string;
   onChange: (value: string) => void;
   type?: string;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
-export function DialogInput({ placeholder, value, onChange, type = "text" }: DialogInputProps) {
+export function DialogInput({ placeholder, value, onChange, type = "text", onKeyDown }: DialogInputProps) {
   return (
     <input
       type={type}
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onKeyDown={onKeyDown}
       className="w-full px-4 py-3 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400"
     />
   );
@@ -72,14 +74,16 @@ interface DialogTextareaProps {
   value: string;
   onChange: (value: string) => void;
   rows?: number;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
-export function DialogTextarea({ placeholder, value, onChange, rows = 3 }: DialogTextareaProps) {
+export function DialogTextarea({ placeholder, value, onChange, rows = 3, onKeyDown }: DialogTextareaProps) {
   return (
     <textarea
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onKeyDown={onKeyDown}
       rows={rows}
       className="w-full px-4 py-3 bg-white border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400 resize-none"
     />
