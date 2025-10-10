@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { KanbanBoard } from './components/KanbanBoard';
 import { ThisWeek } from './components/ThisWeek';
 import { AllTasksView } from './components/AllTasksView';
+import CoachPage from './components/CoachPage';
 import { Header } from './components/Header';
 import { FocusZone } from './components/FocusZone';
 import { AchievementSystem } from './components/AchievementSystem';
@@ -39,7 +40,7 @@ export default function App() {
   const [showParticles, setShowParticles] = useState(false);
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [currentView, setCurrentView] = useState<'board' | 'week' | 'all-tasks'>('board');
+  const [currentView, setCurrentView] = useState<'board' | 'week' | 'all-tasks' | 'coach'>('board');
   
   // Lift useTasksNew hook to App level to avoid multiple instances
   const { 
@@ -95,9 +96,9 @@ export default function App() {
   return (
     <StableDndProvider>
       <DynamicBackground>
-        {/* FORCE DEPLOYMENT INDICATOR */}
-        <div className="bg-red-600 text-white text-center py-2 font-bold text-lg">
-          🚨 KARENBAN - NEW CODE VERSION DEPLOYED! 🚨
+        {/* Modern Deployment Indicator */}
+        <div className="gradient-primary text-white text-center py-3 font-bold text-lg shadow-lg">
+          ✨ KARENBAN - REFRESHED DESIGN DEPLOYED! ✨
         </div>
         
         {/* Main container with full viewport height and overflow control */}
@@ -130,38 +131,48 @@ export default function App() {
                 isStatsCollapsed={isStatsCollapsed}
               />
               
-              {/* Navigation Tabs */}
+              {/* Modern Navigation Tabs */}
               <div className="px-6 pt-4">
-                <div className="flex space-x-1 bg-white/20 backdrop-blur-sm rounded-xl p-1 border border-white/30">
+                <div className="flex space-x-2 glass-panel rounded-2xl p-2">
                   <button
                     onClick={() => setCurrentView('board')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
                       currentView === 'board'
-                        ? 'bg-white/80 text-slate-800 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                        ? 'gradient-primary text-white shadow-lg'
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/20'
                     }`}
                   >
-                    Main Board
+                    📋 Main Board
                   </button>
                   <button
                     onClick={() => setCurrentView('week')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
                       currentView === 'week'
-                        ? 'bg-white/80 text-slate-800 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                        ? 'gradient-primary text-white shadow-lg'
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/20'
                     }`}
                   >
-                    This Week
+                    📅 This Week
                   </button>
                   <button
                     onClick={() => setCurrentView('all-tasks')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
                       currentView === 'all-tasks'
-                        ? 'bg-white/80 text-slate-800 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                        ? 'gradient-primary text-white shadow-lg'
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/20'
                     }`}
                   >
-                    All Tasks
+                    📝 All Tasks
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('coach')}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
+                      currentView === 'coach'
+                        ? 'gradient-primary text-white shadow-lg'
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/20'
+                    }`}
+                  >
+                    🎯 Coach
                   </button>
                 </div>
               </div>
@@ -193,6 +204,8 @@ export default function App() {
                       createTeamMember={createTeamMember}
                       onTaskComplete={handleTaskCompleteForWeek}
                     />
+                  ) : currentView === 'coach' ? (
+                    <CoachPage />
                   ) : (
                     <AllTasksView
                       tasks={tasks}
