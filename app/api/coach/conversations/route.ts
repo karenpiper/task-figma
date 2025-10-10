@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
-import { recommend, type Rubric } from "@/lib/coach/rules";
+import { recommend, type Rubric } from "../../../lib/coach/rules";
 
 // Use environment variables for Supabase configuration (matching existing pattern)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lgryrpcvbojfaljwlcpi.supabase.co';
@@ -59,10 +59,7 @@ export async function POST(req: Request) {
       // If this is a TASK recommendation, try to create it in the existing Kanban system
       if (r.kind === "TASK") {
         try {
-          // Import the existing createTask function from the tasks API
-          const { createTask } = await import("@/app/api/tasks/route");
-          
-          // Create the task in the existing Kanban system
+          // Create the task in the existing Kanban system using Supabase directly
           const taskData = {
             title: r.title,
             detail: r.body + "\n\nFrom: Coach tab",
@@ -71,17 +68,14 @@ export async function POST(req: Request) {
             category_id: 'today_big_tasks' // Default to big tasks category
           };
           
-          // We need to call the createTask function, but since it's not exported,
-          // we'll make a fetch call to the existing API
-          const baseUrl = req.headers.get('origin') || `http://${req.headers.get('host')}`;
-          const taskResponse = await fetch(`${baseUrl}/api/tasks`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(taskData)
-          });
+          // Insert directly into the tasks table
+          const { data: task, error: taskError } = await supabase
+            .from('tasks')
+            .insert([taskData])
+            .select()
+            .single();
           
-          if (taskResponse.ok) {
-            const task = await taskResponse.json();
+          if (!taskError && task) {
             externalId = task.id.toString();
           }
         } catch (error) {
