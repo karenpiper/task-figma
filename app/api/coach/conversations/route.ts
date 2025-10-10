@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
-import { recommend, type Rubric } from "../../../lib/coach/rules";
+import { recommend, type Rubric } from "../../../../lib/coach/rules";
 
 // Use environment variables for Supabase configuration (matching existing pattern)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lgryrpcvbojfaljwlcpi.supabase.co';
