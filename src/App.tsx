@@ -7,8 +7,6 @@ import { ThisWeek } from './components/ThisWeek';
 import { AllTasksView } from './components/AllTasksView';
 import CoachPage from './components/CoachPage';
 import { Header } from './components/Header';
-import { FocusZone } from './components/FocusZone';
-import { AchievementSystem } from './components/AchievementSystem';
 import { ParticleSystem } from './components/ParticleSystem';
 import { useTasksNew } from './hooks/useTasksNew';
 
@@ -58,13 +56,6 @@ export default function App() {
     return Promise.resolve();
   }, []);
 
-  // Calculate task statistics for FocusZone
-  const taskStats = useMemo(() => {
-    const totalTasks = tasks.length;
-    const completedTasks = tasks.filter(task => task.column_id === 'completed' || task.column_id === 'done').length;
-    const pendingTasks = totalTasks - completedTasks;
-    return { totalTasks, completedTasks, pendingTasks };
-  }, [tasks]);
 
   const toggleStats = useCallback(() => {
     setIsStatsCollapsed(prev => !prev);
@@ -194,15 +185,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Achievement system - absolutely positioned overlay */}
-      <AchievementSystem />
-
-      {/* Focus zone for keyboard navigation */}
-      <FocusZone 
-        totalTasks={taskStats.totalTasks}
-        completedTasks={taskStats.completedTasks}
-        pendingTasks={taskStats.pendingTasks}
-      />
 
         {/* Particle celebration system - absolutely positioned overlay */}
         <ParticleSystem 
