@@ -160,11 +160,12 @@ export default function App() {
                 />
               ) : currentView === 'week' ? (
                 <ThisWeek 
-                  tasks={tasks}
                   teamMembers={teamMembers}
                   onCreateTask={createTask}
                   onMoveTask={moveTask}
                   onTaskComplete={handleTaskCompleteForWeek}
+                  onDeleteCategory={deleteCategory}
+                  createTeamMember={createTeamMember}
                 />
               ) : currentView === 'coach' ? (
                 <CoachPage />
