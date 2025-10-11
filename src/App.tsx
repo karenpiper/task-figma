@@ -94,12 +94,9 @@ export default function App() {
 
   return (
     <StableDndProvider>
-      {/* Clean Deployment Indicator */}
       <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
         ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
       </div>
-      
-      {/* Main container with clean design */}
       <div className="h-screen bg-gray-50 flex">
             {/* Left sidebar with celebration trigger */}
             <Sidebar 
