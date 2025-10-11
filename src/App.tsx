@@ -93,11 +93,12 @@ export default function App() {
   }, []);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
-        ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
-      </div>
-      <div className="h-screen bg-gray-50 flex">
+    <>
+      <DndProvider backend={HTML5Backend}>
+        <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
+          ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
+        </div>
+        <div className="h-screen bg-gray-50 flex">
             {/* Left sidebar with celebration trigger */}
             <Sidebar 
               onCelebrate={triggerCelebration}
@@ -268,6 +269,7 @@ export default function App() {
             onComplete={() => setShowParticles(false)} 
           />
         </div>
-    </DndProvider>
+      </DndProvider>
+    </>
   );
 }
