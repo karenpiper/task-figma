@@ -62,7 +62,7 @@ export function TaskCard({
 
   return (
     <div 
-      ref={drag}
+      ref={drag as any}
       className={`bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/60 shadow-lg hover:shadow-xl hover:bg-white/90 transition-all cursor-move ${
         isDragging ? 'opacity-50 rotate-2 scale-105' : ''
       }`}
