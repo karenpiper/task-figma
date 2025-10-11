@@ -5,11 +5,11 @@ import { createClient } from '@supabase/supabase-js';
 // If all else fails, use hardcoded values to ensure production works
 const supabaseUrl = process.env.SUPABASE_URL || 
                    process.env.NEXT_PUBLIC_SUPABASE_URL || 
-                   'https://lgryrpcvbojfaljwlcpi.supabase.co';
+                   'https://xrceskhjzveexqorvutm.supabase.co';
 
 const supabaseKey = process.env.SUPABASE_ANON_KEY || 
                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncnlycGN2Ym9qZmFsandsY3BpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDAxMTMsImV4cCI6MjA3MTY3NjExM30.Kl7YKYlWEuXDjuXhcG7t2Ii0VmWCB64vu8BGOIk8wjo';
+                   'YOUR_NEW_ANON_KEY_HERE';
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
