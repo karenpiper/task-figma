@@ -68,72 +68,141 @@ export default function App() {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="h-screen" style={{ backgroundColor: '#f5f5f5' }}>
-        {/* Clean Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-3">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">Karenban</h1>
-            <button className="btn-clean-primary">
-              <span>+</span>
-              New task
-            </button>
-          </div>
+        {/* Header - Exact Match */}
+        <div className="header-reference">
+          <h1 className="header-title">Karenban</h1>
+          <button className="btn-new-task">
+            <span>+</span>
+            New task
+          </button>
         </div>
         
-        {/* Main container with clean design */}
-        <div className="flex h-full p-6 gap-6">
-        {/* Left sidebar */}
-        <Sidebar 
-          onCelebrate={triggerCelebration}
-          teamMembers={teamMembers}
-          createTeamMember={createTeamMember}
-          updateTeamMember={updateTeamMember}
-          deleteTeamMember={deleteTeamMember}
-          tasks={tasks}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={toggleSidebar}
-        />
-        
-        {/* Main content area */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Header section */}
-          <Header 
-            onToggleParticles={() => setShowParticles(!showParticles)}
-            onToggleStats={() => setIsStatsCollapsed(!isStatsCollapsed)}
-            isStatsCollapsed={isStatsCollapsed}
-          />
+        {/* Main Layout - Exact Match */}
+        <div className="flex h-full">
+          {/* Sidebar - Exact Match */}
+          <div className="sidebar-reference">
+            <div className="sidebar-logo">
+              <div className="logo-icon">K</div>
+              <div className="logo-text">Karenban</div>
+            </div>
+            
+            {/* Navigation Sections */}
+            <div className="sidebar-section">
+              <button className="section-header">
+                <span>CREATE NEW WEBSITE</span>
+                <span className="section-arrow">▶</span>
+              </button>
+              <div className="section-items">
+                <button className={`nav-item-reference ${currentView === 'board' ? 'active' : ''}`} onClick={() => setCurrentView('board')}>
+                  <div className="nav-item-left">
+                    <span>☁️</span>
+                    <span>Today</span>
+                  </div>
+                  <span className="nav-item-count">12</span>
+                </button>
+                <button className="nav-item-reference">
+                  <div className="nav-item-left">
+                    <span>📅</span>
+                    <span>Calendar</span>
+                  </div>
+                  <span className="nav-item-count">87</span>
+                </button>
+                <button className="nav-item-reference">
+                  <div className="nav-item-left">
+                    <span>👤</span>
+                    <span>View</span>
+                  </div>
+                  <span>+</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className="sidebar-section">
+              <button className="section-header">
+                <span>DESIGN NEW APP</span>
+                <span className="section-arrow">▶</span>
+              </button>
+              <div className="section-items">
+                <button className="nav-item-reference">
+                  <div className="nav-item-left">
+                    <span>☁️</span>
+                    <span>Today</span>
+                  </div>
+                  <span className="nav-item-count">5</span>
+                </button>
+                <button className="nav-item-reference">
+                  <div className="nav-item-left">
+                    <span>📅</span>
+                    <span>Calendar</span>
+                  </div>
+                  <span className="nav-item-count">198</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className="sidebar-section">
+              <button className="section-header">
+                <span>BUILD A SYSTEM</span>
+                <span className="section-arrow">▶</span>
+              </button>
+              <div className="section-items">
+                <button className="nav-item-reference">
+                  <div className="nav-item-left">
+                    <span>☁️</span>
+                    <span>Today</span>
+                  </div>
+                  <span className="nav-item-count">10</span>
+                </button>
+                <button className="nav-item-reference">
+                  <div className="nav-item-left">
+                    <span>📅</span>
+                    <span>Calendar</span>
+                  </div>
+                  <span className="nav-item-count">398</span>
+                </button>
+              </div>
+            </div>
+          </div>
           
-          {/* Clean Navigation Tabs */}
-          <div className="px-6 pt-4">
-            <div className="nav-tabs-clean">
+          {/* Main Content - Exact Match */}
+          <div className="main-content">
+            {/* Content Header */}
+            <div className="content-header">
+              <h1 className="content-title">TODAY</h1>
+              <div className="content-subtitle">
+                <span className="refresh-icon">🔄</span>
+                <span>17 tasks, updated 20 sec ago</span>
+              </div>
+            </div>
+            
+            {/* Navigation Tabs */}
+            <div className="nav-tabs-reference">
               <button
                 onClick={() => setCurrentView('board')}
-                className={`nav-tab ${currentView === 'board' ? 'nav-tab-active' : ''}`}
+                className={`nav-tab-reference ${currentView === 'board' ? 'active' : ''}`}
               >
                 📋 Board
               </button>
               <button
                 onClick={() => setCurrentView('week')}
-                className={`nav-tab ${currentView === 'week' ? 'nav-tab-active' : ''}`}
+                className={`nav-tab-reference ${currentView === 'week' ? 'active' : ''}`}
               >
                 📅 This Week
               </button>
               <button
                 onClick={() => setCurrentView('all-tasks')}
-                className={`nav-tab ${currentView === 'all-tasks' ? 'nav-tab-active' : ''}`}
+                className={`nav-tab-reference ${currentView === 'all-tasks' ? 'active' : ''}`}
               >
                 📝 All Tasks
               </button>
               <button
                 onClick={() => setCurrentView('coach')}
-                className={`nav-tab ${currentView === 'coach' ? 'nav-tab-active' : ''}`}
+                className={`nav-tab-reference ${currentView === 'coach' ? 'active' : ''}`}
               >
                 🎯 Coach
               </button>
             </div>
-          </div>
 
-          {/* Main content area with clean design */}
-          <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0">
             {/* Dynamic content based on current view */}
             <div className="flex-1 min-w-0">
               {currentView === 'board' ? (
