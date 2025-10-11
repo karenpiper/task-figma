@@ -48,7 +48,7 @@ export function TaskCard({
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-  }));
+  }), [id, title, description, status, statusColor, userIcon, time, comments, hasGradient, columnId, subCategoryId]);
   const getBadgeClass = (color: string) => {
     const colors: Record<string, string> = {
       orange: 'bg-orange-500 text-white hover:bg-orange-600',
