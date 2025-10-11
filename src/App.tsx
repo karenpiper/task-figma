@@ -67,14 +67,20 @@ export default function App() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="h-screen bg-gray-50">
-        {/* Clean Deployment Indicator */}
-        <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
-          ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
+      <div className="h-screen" style={{ backgroundColor: '#f5f5f5' }}>
+        {/* Clean Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-3">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold text-gray-900">Karenban</h1>
+            <button className="btn-clean-primary">
+              <span>+</span>
+              New task
+            </button>
+          </div>
         </div>
         
         {/* Main container with clean design */}
-        <div className="flex h-full">
+        <div className="flex h-full p-6 gap-6">
         {/* Left sidebar */}
         <Sidebar 
           onCelebrate={triggerCelebration}
@@ -98,44 +104,28 @@ export default function App() {
           
           {/* Clean Navigation Tabs */}
           <div className="px-6 pt-4">
-            <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+            <div className="nav-tabs-clean">
               <button
                 onClick={() => setCurrentView('board')}
-                className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                  currentView === 'board'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`nav-tab ${currentView === 'board' ? 'nav-tab-active' : ''}`}
               >
                 📋 Board
               </button>
               <button
                 onClick={() => setCurrentView('week')}
-                className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                  currentView === 'week'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`nav-tab ${currentView === 'week' ? 'nav-tab-active' : ''}`}
               >
                 📅 This Week
               </button>
               <button
                 onClick={() => setCurrentView('all-tasks')}
-                className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                  currentView === 'all-tasks'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`nav-tab ${currentView === 'all-tasks' ? 'nav-tab-active' : ''}`}
               >
                 📝 All Tasks
               </button>
               <button
                 onClick={() => setCurrentView('coach')}
-                className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                  currentView === 'coach'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`nav-tab ${currentView === 'coach' ? 'nav-tab-active' : ''}`}
               >
                 🎯 Coach
               </button>
@@ -143,7 +133,7 @@ export default function App() {
           </div>
 
           {/* Main content area with clean design */}
-          <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0 bg-white">
+          <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0">
             {/* Dynamic content based on current view */}
             <div className="flex-1 min-w-0">
               {currentView === 'board' ? (
