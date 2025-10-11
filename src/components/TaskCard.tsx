@@ -32,7 +32,7 @@ export function TaskCard({
 }: TaskCardProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'task',
-    item: { 
+    item: () => ({ 
       id, 
       title, 
       description, 
@@ -44,10 +44,7 @@ export function TaskCard({
       hasGradient,
       columnId,
       subCategoryId
-    },
-    begin: () => {
-      console.log('🎯 Drag started:', { id, title, columnId, subCategoryId });
-    },
+    }),
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
