@@ -56,18 +56,26 @@ export function AllTasksView({
     return groups;
   }, [filteredTasks]);
 
-  const handleCreateTask = async (taskData: Partial<Task>) => {
+  const handleCreateTask = async (taskData: {
+    title: string;
+    description: string;
+    status: string;
+    statusColor: string;
+    userIcon: string;
+    time: string;
+    comments: number;
+  }) => {
     try {
       // Format the task data to match the API expectations
       const formattedTaskData = {
-        ...taskData,
-        due_date: (taskData as any).dueDate, // Map dueDate to due_date
+        title: taskData.title,
+        description: taskData.description,
         column_id: 'uncategorized', // Default to uncategorized column
-        priority: taskData.priority || 'medium'
+        priority: taskData.status.toLowerCase(),
+        status: taskData.status,
+        estimated_time: taskData.time,
+        team_member_id: null
       };
-      
-      // Remove the dueDate property since we've mapped it to due_date
-      delete (formattedTaskData as any).dueDate;
       
       await onCreateTask(formattedTaskData);
       setIsCreatingTask(false);
@@ -305,8 +313,8 @@ export function AllTasksView({
         <AddTaskDialog
           isOpen={isCreatingTask}
           onClose={() => setIsCreatingTask(false)}
-          onSubmit={handleCreateTask}
-          columnId="uncategorized"
+          onAddTask={handleCreateTask}
+          columnTitle="Uncategorized"
         />
       </Dialog>
     </div>
