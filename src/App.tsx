@@ -56,6 +56,14 @@ export default function App() {
     return Promise.resolve();
   }, []);
 
+  // Calculate task statistics for FocusZone
+  const taskStats = useMemo(() => {
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => task.column_id === 'completed' || task.column_id === 'done').length;
+    const pendingTasks = totalTasks - completedTasks;
+    return { totalTasks, completedTasks, pendingTasks };
+  }, [tasks]);
+
   const toggleStats = useCallback(() => {
     setIsStatsCollapsed(prev => !prev);
   }, []);
@@ -187,7 +195,11 @@ export default function App() {
       <AchievementSystem />
 
       {/* Focus zone for keyboard navigation */}
-      <FocusZone />
+      <FocusZone 
+        totalTasks={taskStats.totalTasks}
+        completedTasks={taskStats.completedTasks}
+        pendingTasks={taskStats.pendingTasks}
+      />
 
       {/* Particle celebration system - absolutely positioned overlay */}
       <ParticleSystem 
