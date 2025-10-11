@@ -9,6 +9,7 @@ import { FloatingBlobs } from './components/FloatingBlobs';
 
 export default function App() {
   console.log('🎯 App component rendering');
+  console.log('🎯 About to render TaskBoard');
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative flex h-screen bg-gradient-to-br from-mgmt-beige via-white to-mgmt-pink">
@@ -65,7 +66,6 @@ export default function App() {
 
           {/* Task Board */}
           <div className="flex-1 overflow-hidden">
-            {console.log('🎯 About to render TaskBoard')}
             <TaskBoard />
           </div>
         </div>
