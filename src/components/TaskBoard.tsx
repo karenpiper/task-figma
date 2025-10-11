@@ -291,7 +291,7 @@ export function TaskBoard() {
         console.log('❌ No task found to move');
       }
       
-      console.log('🔄 Updated columns:', newColumns.map(col => ({ title: col.title, taskCount: col.taskCount })));
+      console.log('🔄 Updated columns:', newColumns.map((col: Column) => ({ title: col.title, taskCount: col.taskCount })));
       return newColumns;
     });
   };
