@@ -58,29 +58,29 @@ export function Sidebar() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 border-r border-gray-200 flex">
+    <div className="h-screen bg-mgmt-beige/50 border-r border-gray-200 flex">
       {/* Icon Navigation Column */}
-      <div className="w-16 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-16 bg-white/80 backdrop-blur-sm border-r border-gray-200 flex flex-col">
         <div className="p-3 border-b border-gray-200">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white">
+          <div className="w-10 h-10 bg-gradient-to-br from-mgmt-green to-mgmt-lime rounded-lg flex items-center justify-center text-white font-semibold shadow-sm">
             BG
           </div>
         </div>
         
         <div className="flex-1 p-3 flex flex-col gap-2">
-          <button className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200">
+          <button className="w-10 h-10 bg-mgmt-green/20 rounded-lg flex items-center justify-center text-mgmt-green hover:bg-mgmt-green/30 transition-colors">
             <LayoutGrid className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
+          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-mgmt-pink/20 transition-colors">
             <Layers className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
+          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-mgmt-purple/20 transition-colors">
             <Clock className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
+          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-mgmt-yellow/20 transition-colors">
             <BarChart3 className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
+          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-mgmt-lime/20 transition-colors">
             <Calendar className="w-5 h-5" />
           </button>
         </div>
