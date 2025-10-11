@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useDrop } from 'react-dnd';
 import { MoreHorizontal, Plus, Users } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 
 interface Task {
+  id?: string;
   title: string;
   description: string;
   status: string;
@@ -178,6 +180,104 @@ export function TaskBoard() {
     setColumns([...columns, newColumn]);
   };
 
+  const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null) => {
+    setColumns(prevColumns => {
+      const newColumns = [...prevColumns];
+      
+      // Find and remove task from source
+      const fromColumnIndex = newColumns.findIndex(col => col.title === fromColumnId);
+      if (fromColumnIndex !== -1) {
+        if (fromSubCategoryId && newColumns[fromColumnIndex].subCategories) {
+          const subCategoryIndex = newColumns[fromColumnIndex].subCategories!.findIndex(sub => sub.title === fromSubCategoryId);
+          if (subCategoryIndex !== -1) {
+            newColumns[fromColumnIndex].subCategories![subCategoryIndex].tasks = 
+              newColumns[fromColumnIndex].subCategories![subCategoryIndex].tasks.filter(task => task.id !== taskId);
+            newColumns[fromColumnIndex].subCategories![subCategoryIndex].taskCount = 
+              newColumns[fromColumnIndex].subCategories![subCategoryIndex].tasks.length;
+          }
+        } else {
+          newColumns[fromColumnIndex].tasks = newColumns[fromColumnIndex].tasks.filter(task => task.id !== taskId);
+        }
+        newColumns[fromColumnIndex].taskCount = newColumns[fromColumnIndex].tasks.length + 
+          (newColumns[fromColumnIndex].subCategories?.reduce((sum, sub) => sum + sub.taskCount, 0) || 0);
+      }
+      
+      // Find and add task to destination
+      const toColumnIndex = newColumns.findIndex(col => col.title === toColumnId);
+      if (toColumnIndex !== -1) {
+        const taskToMove = { id: taskId } as Task; // We'll find the actual task data
+        
+        // Find the actual task data from the source
+        const sourceColumn = prevColumns.find(col => col.title === fromColumnId);
+        if (sourceColumn) {
+          if (fromSubCategoryId && sourceColumn.subCategories) {
+            const sourceSubCategory = sourceColumn.subCategories.find(sub => sub.title === fromSubCategoryId);
+            if (sourceSubCategory) {
+              const actualTask = sourceSubCategory.tasks.find(task => task.id === taskId);
+              if (actualTask) {
+                taskToMove.id = actualTask.id;
+                taskToMove.title = actualTask.title;
+                taskToMove.description = actualTask.description;
+                taskToMove.status = actualTask.status;
+                taskToMove.statusColor = actualTask.statusColor;
+                taskToMove.userIcon = actualTask.userIcon;
+                taskToMove.time = actualTask.time;
+                taskToMove.comments = actualTask.comments;
+                taskToMove.hasGradient = actualTask.hasGradient;
+              }
+            }
+          } else {
+            const actualTask = sourceColumn.tasks.find(task => task.id === taskId);
+            if (actualTask) {
+              Object.assign(taskToMove, actualTask);
+            }
+          }
+        }
+        
+        if (toSubCategoryId && newColumns[toColumnIndex].subCategories) {
+          const subCategoryIndex = newColumns[toColumnIndex].subCategories!.findIndex(sub => sub.title === toSubCategoryId);
+          if (subCategoryIndex !== -1) {
+            newColumns[toColumnIndex].subCategories![subCategoryIndex].tasks.push(taskToMove);
+            newColumns[toColumnIndex].subCategories![subCategoryIndex].taskCount = 
+              newColumns[toColumnIndex].subCategories![subCategoryIndex].tasks.length;
+          }
+        } else {
+          newColumns[toColumnIndex].tasks.push(taskToMove);
+        }
+        newColumns[toColumnIndex].taskCount = newColumns[toColumnIndex].tasks.length + 
+          (newColumns[toColumnIndex].subCategories?.reduce((sum, sub) => sum + sub.taskCount, 0) || 0);
+      }
+      
+      return newColumns;
+    });
+  };
+
+  // DropZone component for columns and subcategories
+  const DropZone = ({ columnId, subCategoryId, children }: { columnId: string; subCategoryId?: string; children: React.ReactNode }) => {
+    const [{ isOver }, drop] = useDrop(() => ({
+      accept: 'task',
+      drop: (item: any) => {
+        if (item.columnId !== columnId || item.subCategoryId !== subCategoryId) {
+          moveTask(item.id, item.columnId, item.subCategoryId, columnId, subCategoryId || null);
+        }
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+      }),
+    }));
+
+    return (
+      <div 
+        ref={drop}
+        className={`min-h-[100px] transition-colors ${
+          isOver ? 'bg-blue-50 border-2 border-blue-300 border-dashed rounded-lg' : ''
+        }`}
+      >
+        {children}
+      </div>
+    );
+  };
+
   return (
     <div className="flex-1 overflow-x-auto">
       <div className="p-8">
@@ -207,52 +307,67 @@ export function TaskBoard() {
                 </div>
               </div>
               
-              <div className="space-y-3">
-                {column.subCategories ? (
-                  // Render sub-categories for Today column
-                  column.subCategories.map((subCategory, subIndex) => (
-                    <div key={subIndex} className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-sm font-medium text-gray-700">
-                          {subCategory.title} ({subCategory.taskCount})
-                        </h3>
+              <DropZone columnId={column.title}>
+                <div className="space-y-3">
+                  {column.subCategories ? (
+                    // Render sub-categories for Today column
+                    column.subCategories.map((subCategory, subIndex) => (
+                      <div key={subIndex} className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-sm font-medium text-gray-700">
+                            {subCategory.title} ({subCategory.taskCount})
+                          </h3>
+                          <button className="text-gray-400 hover:text-gray-600">
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <DropZone columnId={column.title} subCategoryId={subCategory.title}>
+                          <div className="space-y-2">
+                            {subCategory.tasks.map((task, taskIndex) => (
+                              <TaskCard 
+                                key={taskIndex} 
+                                {...task} 
+                                id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
+                                columnId={column.title}
+                                subCategoryId={subCategory.title}
+                              />
+                            ))}
+                          </div>
+                        </DropZone>
+                      </div>
+                    ))
+                  ) : column.title === 'Follow-Up' ? (
+                    // Render team members for Follow-Up column
+                    teamMembers.map((member, memberIndex) => (
+                      <div key={memberIndex} className="flex items-center justify-between p-2 bg-white/80 rounded-lg border border-white/60">
+                        <span className="text-sm text-gray-700">{member.name} {member.taskCount}</span>
                         <button className="text-gray-400 hover:text-gray-600">
                           <Plus className="w-4 h-4" />
                         </button>
                       </div>
-                      <div className="space-y-2">
-                        {subCategory.tasks.map((task, taskIndex) => (
-                          <TaskCard key={taskIndex} {...task} />
-                        ))}
+                    ))
+                  ) : column.tasks.length > 0 ? (
+                    // Render regular tasks
+                    column.tasks.map((task, taskIndex) => (
+                      <TaskCard 
+                        key={taskIndex} 
+                        {...task} 
+                        id={task.id || `task-${index}-${taskIndex}`}
+                        columnId={column.title}
+                      />
+                    ))
+                  ) : (
+                    // Empty state
+                    <div className="flex items-center justify-center p-8 bg-white/80 rounded-lg border border-white/60 text-center">
+                      <div>
+                        <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2"></div>
+                        <p className="text-sm text-gray-500">No Tasks</p>
+                        <p className="text-xs text-gray-400">Tasks will appear here</p>
                       </div>
                     </div>
-                  ))
-                ) : column.title === 'Follow-Up' ? (
-                  // Render team members for Follow-Up column
-                  teamMembers.map((member, memberIndex) => (
-                    <div key={memberIndex} className="flex items-center justify-between p-2 bg-white/80 rounded-lg border border-white/60">
-                      <span className="text-sm text-gray-700">{member.name} {member.taskCount}</span>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))
-                ) : column.tasks.length > 0 ? (
-                  // Render regular tasks
-                  column.tasks.map((task, taskIndex) => (
-                    <TaskCard key={taskIndex} {...task} />
-                  ))
-                ) : (
-                  // Empty state
-                  <div className="flex items-center justify-center p-8 bg-white/80 rounded-lg border border-white/60 text-center">
-                    <div>
-                      <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2"></div>
-                      <p className="text-sm text-gray-500">No Tasks</p>
-                      <p className="text-xs text-gray-400">Tasks will appear here</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </DropZone>
             </div>
           ))}
           
