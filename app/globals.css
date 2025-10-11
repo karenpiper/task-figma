@@ -68,6 +68,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global Scale - Scale everything down to 75% */
+html {
+  transform: scale(0.75);
+  transform-origin: top left;
+  width: 133.33%; /* Compensate for the scale to maintain full width */
+  height: 133.33%; /* Compensate for the scale to maintain full height */
+}
+
 /* Utility Classes */
 .line-clamp-2 {
   -webkit-line-clamp: 2;
