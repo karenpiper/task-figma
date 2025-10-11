@@ -468,7 +468,9 @@ export function TaskBoard() {
       <div className="h-full overflow-x-auto overflow-y-auto">
         <div className="p-8 h-full">
           <div className="flex gap-6 min-w-max h-full">
-          {columns.map((column, index) => (
+            {columns.map((column, index) => {
+              console.log(`🔍 Column ${column.title}: ${column.tasks.length} tasks, subCategories: ${column.subCategories ? column.subCategories.length : 0}`);
+              return (
             <div key={index} className="w-80 flex-shrink-0 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <div>
@@ -614,7 +616,8 @@ export function TaskBoard() {
                   )}
                 </div>
             </div>
-          ))}
+              );
+            })}
           
                   {/* Add Column Button */}
                   <div className="w-80 flex-shrink-0">
