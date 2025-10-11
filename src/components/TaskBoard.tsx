@@ -1,5 +1,5 @@
-import React from 'react';
-import { MoreHorizontal } from 'lucide-react';
+import React, { useState } from 'react';
+import { MoreHorizontal, Plus, Users } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 
 interface Task {
@@ -13,177 +13,170 @@ interface Task {
   hasGradient?: boolean;
 }
 
+interface SubCategory {
+  title: string;
+  taskCount: number;
+  tasks: Task[];
+}
+
 interface Column {
   title: string;
   taskCount: number;
   hours: number;
   tasks: Task[];
+  subCategories?: SubCategory[];
+  showAddPerson?: boolean;
 }
 
 export function TaskBoard() {
-  const columns: Column[] = [
+  const [columns, setColumns] = useState<Column[]>([
     {
       title: 'Uncategorized',
-      taskCount: 3,
-      hours: 2,
-      tasks: [
-        {
-          title: 'Review project requirements',
-          description: 'Go through the project brief and identify key deliverables and deadlines...',
-          status: 'TO DO',
-          statusColor: 'gray',
-          userIcon: 'Normal',
-          time: '30 min',
-          comments: 1,
-        },
-        {
-          title: 'Set up development environment',
-          description: 'Install necessary tools and configure the workspace for the project...',
-          status: 'TO DO',
-          statusColor: 'gray',
-          userIcon: 'High',
-          time: '45 min',
-          comments: 2,
-        },
-        {
-          title: 'Create project timeline',
-          description: 'Break down the project into phases and create a realistic timeline...',
-          status: 'TO DO',
-          statusColor: 'gray',
-          userIcon: 'Urgent',
-          time: '60 min',
-          comments: 0,
-        },
-      ],
+      taskCount: 0,
+      hours: 0,
+      tasks: [],
     },
     {
       title: 'Today',
-      taskCount: 4,
-      hours: 3,
-      tasks: [
+      taskCount: 1,
+      hours: 1,
+      tasks: [],
+      subCategories: [
         {
-          title: 'Complete user research',
-          description: 'Conduct interviews with target users to understand their needs and pain points...',
-          status: 'PROGRESS',
-          statusColor: 'orange',
-          userIcon: 'High',
-          time: '90 min',
-          comments: 3,
+          title: 'STANDING',
+          taskCount: 1,
+          tasks: [
+            {
+              title: 'Web Summit deck',
+              description: 'Prepare presentation for Web Summit conference',
+              status: 'MEDIUM',
+              statusColor: 'orange',
+              userIcon: 'Normal',
+              time: '60 min',
+              comments: 0,
+            },
+          ],
         },
         {
-          title: 'Design wireframes',
-          description: 'Create low-fidelity wireframes for the main user flows...',
-          status: 'PROGRESS',
-          statusColor: 'orange',
-          userIcon: 'Urgent',
-          time: '120 min',
-          comments: 1,
+          title: 'COMMS',
+          taskCount: 0,
+          tasks: [],
         },
         {
-          title: 'Review competitor analysis',
-          description: 'Analyze similar products in the market and identify opportunities...',
-          status: 'DONE',
-          statusColor: 'teal',
-          userIcon: 'Normal',
-          time: '60 min',
-          comments: 2,
+          title: 'BIG TASKS',
+          taskCount: 0,
+          tasks: [],
         },
         {
-          title: 'Update project documentation',
-          description: 'Document findings and decisions made during the research phase...',
-          status: 'DONE',
-          statusColor: 'teal',
-          userIcon: 'High',
-          time: '30 min',
-          comments: 1,
+          title: 'DONE',
+          taskCount: 0,
+          tasks: [],
         },
       ],
     },
     {
       title: 'Personal',
-      taskCount: 2,
+      taskCount: 1,
       hours: 1,
       tasks: [
         {
-          title: 'Update personal portfolio',
-          description: 'Add recent projects and update skills section on personal website...',
-          status: 'TO DO',
-          statusColor: 'gray',
-          userIcon: 'Normal',
-          time: '45 min',
-          comments: 0,
-        },
-        {
-          title: 'Learn new design tool',
-          description: 'Complete online course for the latest design software features...',
-          status: 'PROGRESS',
+          title: 'Web Summit deck',
+          description: 'Prepare presentation for Web Summit conference',
+          status: 'MEDIUM',
           statusColor: 'orange',
-          userIcon: 'High',
+          userIcon: 'Normal',
           time: '60 min',
-          comments: 1,
+          comments: 0,
         },
       ],
     },
     {
       title: 'Follow-Up',
-      taskCount: 3,
+      taskCount: 8,
       hours: 2,
-      tasks: [
-        {
-          title: 'Follow up with client feedback',
-          description: 'Send revised mockups to client and schedule feedback session...',
-          status: 'REVIEW',
-          statusColor: 'purple',
-          userIcon: 'Urgent',
-          time: '30 min',
-          comments: 4,
-        },
-        {
-          title: 'Check in with team members',
-          description: 'Schedule one-on-one meetings with team members to discuss progress...',
-          status: 'REVIEW',
-          statusColor: 'purple',
-          userIcon: 'High',
-          time: '45 min',
-          comments: 2,
-        },
-        {
-          title: 'Review budget allocation',
-          description: 'Analyze current spending and adjust budget for remaining phases...',
-          status: 'DONE',
-          statusColor: 'teal',
-          userIcon: 'Normal',
-          time: '30 min',
-          comments: 1,
-        },
-      ],
+      tasks: [],
+      showAddPerson: true,
     },
     {
       title: 'Later',
-      taskCount: 2,
-      hours: 1,
+      taskCount: 0,
+      hours: 0,
+      tasks: [],
+    },
+    {
+      title: 'Completed',
+      taskCount: 14,
+      hours: 8,
       tasks: [
         {
-          title: 'Plan team building activity',
-          description: 'Research and organize a team building event for next quarter...',
-          status: 'TO DO',
-          statusColor: 'gray',
+          title: 'Fill out device contract',
+          description: 'Complete device contract paperwork',
+          status: 'MEDIUM',
+          statusColor: 'teal',
           userIcon: 'Normal',
-          time: '60 min',
+          time: '30 min',
           comments: 0,
         },
         {
-          title: 'Update company handbook',
-          description: 'Review and update internal documentation and processes...',
-          status: 'TO DO',
-          statusColor: 'gray',
-          userIcon: 'High',
-          time: '90 min',
-          comments: 1,
+          title: 'yes',
+          description: 'Task completed',
+          status: 'MEDIUM',
+          statusColor: 'teal',
+          userIcon: 'Normal',
+          time: '15 min',
+          comments: 0,
+        },
+        {
+          title: 'complete',
+          description: 'Task completed',
+          status: 'MEDIUM',
+          statusColor: 'teal',
+          userIcon: 'Normal',
+          time: '20 min',
+          comments: 0,
+        },
+        {
+          title: 'christine',
+          description: 'Follow up with Christine',
+          status: 'MEDIUM',
+          statusColor: 'teal',
+          userIcon: 'Normal',
+          time: '25 min',
+          comments: 0,
+        },
+        {
+          title: 'test',
+          description: 'Test task',
+          status: 'MEDIUM',
+          statusColor: 'teal',
+          userIcon: 'Normal',
+          time: '10 min',
+          comments: 0,
         },
       ],
     },
+  ]);
+
+  const teamMembers = [
+    { name: 'Adam', taskCount: 0 },
+    { name: 'Brent', taskCount: 0 },
+    { name: 'Christine', taskCount: 0 },
+    { name: 'David', taskCount: 0 },
+    { name: 'Emma', taskCount: 0 },
+    { name: 'Frank', taskCount: 0 },
+    { name: 'Grace', taskCount: 0 },
+    { name: 'Henry', taskCount: 0 },
   ];
+
+  const addNewColumn = () => {
+    const newColumn: Column = {
+      title: 'New Column',
+      taskCount: 0,
+      hours: 0,
+      tasks: [],
+    };
+    setColumns([...columns, newColumn]);
+  };
 
   return (
     <div className="flex-1 overflow-x-auto">
@@ -198,18 +191,81 @@ export function TaskBoard() {
                     {column.taskCount} tasks, {column.hours} hours
                   </p>
                 </div>
-                <button className="text-gray-400 hover:text-gray-600">
-                  <MoreHorizontal className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {column.showAddPerson ? (
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <Users className="w-5 h-5" />
+                    </button>
+                  ) : (
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  )}
+                  <button className="text-gray-400 hover:text-gray-600">
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               
               <div className="space-y-3">
-                {column.tasks.map((task, taskIndex) => (
-                  <TaskCard key={taskIndex} {...task} />
-                ))}
+                {column.subCategories ? (
+                  // Render sub-categories for Today column
+                  column.subCategories.map((subCategory, subIndex) => (
+                    <div key={subIndex} className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-medium text-gray-700">
+                          {subCategory.title} ({subCategory.taskCount})
+                        </h3>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        {subCategory.tasks.map((task, taskIndex) => (
+                          <TaskCard key={taskIndex} {...task} />
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : column.title === 'Follow-Up' ? (
+                  // Render team members for Follow-Up column
+                  teamMembers.map((member, memberIndex) => (
+                    <div key={memberIndex} className="flex items-center justify-between p-2 bg-white/80 rounded-lg border border-white/60">
+                      <span className="text-sm text-gray-700">{member.name} {member.taskCount}</span>
+                      <button className="text-gray-400 hover:text-gray-600">
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                ) : column.tasks.length > 0 ? (
+                  // Render regular tasks
+                  column.tasks.map((task, taskIndex) => (
+                    <TaskCard key={taskIndex} {...task} />
+                  ))
+                ) : (
+                  // Empty state
+                  <div className="flex items-center justify-center p-8 bg-white/80 rounded-lg border border-white/60 text-center">
+                    <div>
+                      <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2"></div>
+                      <p className="text-sm text-gray-500">No Tasks</p>
+                      <p className="text-xs text-gray-400">Tasks will appear here</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
+          
+          {/* Add Column Button */}
+          <div className="w-80 flex-shrink-0">
+            <div className="flex items-center justify-center h-32 bg-white/80 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors cursor-pointer" onClick={addNewColumn}>
+              <div className="text-center">
+                <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm font-medium text-gray-600">Add Column</p>
+                <p className="text-xs text-gray-400">Create a new task column</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
