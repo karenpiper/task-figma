@@ -354,22 +354,24 @@ export function TaskBoard() {
             
             if (subCategoryIndex !== -1) {
               const targetTasks = toColumn.subCategories[subCategoryIndex].tasks;
+              console.log('🔍 Target tasks length:', targetTasks.length, 'Insert index:', insertIndex);
               if (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= targetTasks.length) {
                 targetTasks.splice(insertIndex, 0, taskToMove);
-                console.log('✅ Task inserted at specific position in subcategory');
+                console.log('✅ Task inserted at specific position in subcategory:', insertIndex);
               } else {
                 targetTasks.push(taskToMove);
-                console.log('✅ Task added to end of subcategory');
+                console.log('✅ Task added to end of subcategory (fallback)');
               }
               toColumn.subCategories[subCategoryIndex].taskCount = targetTasks.length;
             }
           } else {
+            console.log('🔍 Target column tasks length:', toColumn.tasks.length, 'Insert index:', insertIndex);
             if (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= toColumn.tasks.length) {
               toColumn.tasks.splice(insertIndex, 0, taskToMove);
-              console.log('✅ Task inserted at specific position in column');
+              console.log('✅ Task inserted at specific position in column:', insertIndex);
             } else {
               toColumn.tasks.push(taskToMove);
-              console.log('✅ Task added to end of column');
+              console.log('✅ Task added to end of column (fallback)');
             }
           }
           
@@ -386,12 +388,12 @@ export function TaskBoard() {
     });
   };
 
-  // DropZone component for columns and subcategories
+  // DropZone component for columns and subcategories (fallback for empty areas)
   const DropZone = ({ columnId, subCategoryId, children }: { columnId: string; subCategoryId?: string; children: React.ReactNode }) => {
     const [{ isOver }, drop] = useDrop(() => ({
       accept: 'task',
       drop: (item: any) => {
-        console.log('🎯 DROP TRIGGERED:', { 
+        console.log('🎯 MAIN DROP ZONE TRIGGERED (fallback):', { 
           itemId: item.id, 
           itemColumnId: item.columnId, 
           itemSubCategoryId: item.subCategoryId,
@@ -401,7 +403,7 @@ export function TaskBoard() {
         
         // Only move if it's actually a different location
         if (item.columnId !== columnId || item.subCategoryId !== subCategoryId) {
-          console.log('✅ MOVING TASK');
+          console.log('✅ MOVING TASK TO END (fallback)');
           moveTask(item.id, item.columnId, item.subCategoryId, columnId, subCategoryId || null);
         } else {
           console.log('❌ SAME LOCATION');
@@ -438,13 +440,9 @@ export function TaskBoard() {
           insertIndex
         });
         
-        // Only move if it's actually a different location
-        if (item.columnId !== columnId || item.subCategoryId !== subCategoryId) {
-          console.log('✅ MOVING TASK TO SPECIFIC POSITION');
-          moveTask(item.id, item.columnId, item.subCategoryId, columnId, subCategoryId || null, insertIndex);
-        } else {
-          console.log('❌ SAME LOCATION');
-        }
+        // Always move to the specific position, even if same column
+        console.log('✅ MOVING TASK TO SPECIFIC POSITION:', insertIndex);
+        moveTask(item.id, item.columnId, item.subCategoryId, columnId, subCategoryId || null, insertIndex);
       },
       collect: (monitor) => ({
         isOver: monitor.isOver(),
@@ -454,11 +452,12 @@ export function TaskBoard() {
     return (
       <div 
         ref={drop as any}
-        className={`h-2 mx-2 rounded transition-all duration-200 ${
+        className={`h-3 mx-2 rounded transition-all duration-200 ${
           isOver 
             ? 'bg-mgmt-green/60 border-2 border-mgmt-green border-dashed' 
             : 'bg-transparent hover:bg-mgmt-green/20'
         }`}
+        style={{ minHeight: '12px' }}
       />
     );
   };
