@@ -213,60 +213,68 @@ export function TaskBoard() {
   };
 
   const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null) => {
-    setColumns(prevColumns => {
-      const newColumns = JSON.parse(JSON.stringify(prevColumns)); // Deep clone
-      
-      // Find the actual task data from the source first
-      let taskToMove: Task | null = null;
-      const sourceColumn = newColumns.find((col: Column) => col.title === fromColumnId);
-      
-      if (sourceColumn) {
-        if (fromSubCategoryId && sourceColumn.subCategories) {
-          const sourceSubCategory = sourceColumn.subCategories.find((sub: SubCategory) => sub.title === fromSubCategoryId);
-          if (sourceSubCategory) {
-            const taskIndex = sourceSubCategory.tasks.findIndex((task: Task) => task.id === taskId);
+    // Use setTimeout to defer the state update and prevent blocking UI
+    setTimeout(() => {
+      setColumns(prevColumns => {
+        const newColumns = [...prevColumns]; // Shallow clone first
+        
+        // Find the actual task data from the source first
+        let taskToMove: Task | null = null;
+        const sourceColumnIndex = newColumns.findIndex((col: Column) => col.title === fromColumnId);
+        
+        if (sourceColumnIndex !== -1) {
+          const sourceColumn = newColumns[sourceColumnIndex];
+          
+          if (fromSubCategoryId && sourceColumn.subCategories) {
+            const sourceSubCategoryIndex = sourceColumn.subCategories.findIndex((sub: SubCategory) => sub.title === fromSubCategoryId);
+            if (sourceSubCategoryIndex !== -1) {
+              const sourceSubCategory = sourceColumn.subCategories[sourceSubCategoryIndex];
+              const taskIndex = sourceSubCategory.tasks.findIndex((task: Task) => task.id === taskId);
+              if (taskIndex !== -1) {
+                taskToMove = { ...sourceSubCategory.tasks[taskIndex] }; // Shallow clone task
+                sourceSubCategory.tasks.splice(taskIndex, 1);
+                sourceSubCategory.taskCount = sourceSubCategory.tasks.length;
+              }
+            }
+          } else {
+            const taskIndex = sourceColumn.tasks.findIndex((task: Task) => task.id === taskId);
             if (taskIndex !== -1) {
-              taskToMove = sourceSubCategory.tasks[taskIndex];
-              sourceSubCategory.tasks.splice(taskIndex, 1);
-              sourceSubCategory.taskCount = sourceSubCategory.tasks.length;
+              taskToMove = { ...sourceColumn.tasks[taskIndex] }; // Shallow clone task
+              sourceColumn.tasks.splice(taskIndex, 1);
             }
           }
-        } else {
-          const taskIndex = sourceColumn.tasks.findIndex((task: Task) => task.id === taskId);
-          if (taskIndex !== -1) {
-            taskToMove = sourceColumn.tasks[taskIndex];
-            sourceColumn.tasks.splice(taskIndex, 1);
+          
+          // Update source column task count
+          sourceColumn.taskCount = sourceColumn.tasks.length + 
+            (sourceColumn.subCategories?.reduce((sum: number, sub: SubCategory) => sum + sub.taskCount, 0) || 0);
+        }
+        
+        // Add task to destination
+        if (taskToMove) {
+          const toColumnIndex = newColumns.findIndex((col: Column) => col.title === toColumnId);
+          if (toColumnIndex !== -1) {
+            const toColumn = newColumns[toColumnIndex];
+            
+            if (toSubCategoryId && toColumn.subCategories) {
+              const subCategoryIndex = toColumn.subCategories.findIndex((sub: SubCategory) => sub.title === toSubCategoryId);
+              if (subCategoryIndex !== -1) {
+                toColumn.subCategories[subCategoryIndex].tasks.push(taskToMove);
+                toColumn.subCategories[subCategoryIndex].taskCount = 
+                  toColumn.subCategories[subCategoryIndex].tasks.length;
+              }
+            } else {
+              toColumn.tasks.push(taskToMove);
+            }
+            
+            // Update destination column task count
+            toColumn.taskCount = toColumn.tasks.length + 
+              (toColumn.subCategories?.reduce((sum: number, sub: SubCategory) => sum + sub.taskCount, 0) || 0);
           }
         }
         
-        // Update source column task count
-        sourceColumn.taskCount = sourceColumn.tasks.length + 
-          (sourceColumn.subCategories?.reduce((sum: number, sub: SubCategory) => sum + sub.taskCount, 0) || 0);
-      }
-      
-      // Add task to destination
-      if (taskToMove) {
-        const toColumnIndex = newColumns.findIndex((col: Column) => col.title === toColumnId);
-        if (toColumnIndex !== -1) {
-          if (toSubCategoryId && newColumns[toColumnIndex].subCategories) {
-            const subCategoryIndex = newColumns[toColumnIndex].subCategories!.findIndex((sub: SubCategory) => sub.title === toSubCategoryId);
-            if (subCategoryIndex !== -1) {
-              newColumns[toColumnIndex].subCategories![subCategoryIndex].tasks.push(taskToMove);
-              newColumns[toColumnIndex].subCategories![subCategoryIndex].taskCount = 
-                newColumns[toColumnIndex].subCategories![subCategoryIndex].tasks.length;
-            }
-          } else {
-            newColumns[toColumnIndex].tasks.push(taskToMove);
-          }
-          
-          // Update destination column task count
-          newColumns[toColumnIndex].taskCount = newColumns[toColumnIndex].tasks.length + 
-            (newColumns[toColumnIndex].subCategories?.reduce((sum: number, sub: SubCategory) => sum + sub.taskCount, 0) || 0);
-        }
-      }
-      
-      return newColumns;
-    });
+        return newColumns;
+      });
+    }, 0);
   };
 
   // DropZone component for columns and subcategories
@@ -274,6 +282,7 @@ export function TaskBoard() {
     const [{ isOver }, drop] = useDrop(() => ({
       accept: 'task',
       drop: (item: any) => {
+        // Only move if it's actually a different location
         if (item.columnId !== columnId || item.subCategoryId !== subCategoryId) {
           moveTask(item.id, item.columnId, item.subCategoryId, columnId, subCategoryId || null);
         }
@@ -281,7 +290,7 @@ export function TaskBoard() {
       collect: (monitor) => ({
         isOver: monitor.isOver(),
       }),
-    }));
+    }), [columnId, subCategoryId, moveTask]);
 
     return (
       <div 
