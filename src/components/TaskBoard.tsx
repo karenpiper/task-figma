@@ -240,7 +240,7 @@ export function TaskBoard() {
               taskToMove = sourceSubCategory.tasks[taskIndex];
               sourceSubCategory.tasks.splice(taskIndex, 1);
               sourceSubCategory.taskCount = sourceSubCategory.tasks.length;
-              console.log('✅ Task removed from subcategory:', taskToMove.title);
+              console.log('✅ Task removed from subcategory:', taskToMove?.title);
             }
           }
         } else {
@@ -250,7 +250,7 @@ export function TaskBoard() {
           if (taskIndex !== -1) {
             taskToMove = sourceColumn.tasks[taskIndex];
             sourceColumn.tasks.splice(taskIndex, 1);
-            console.log('✅ Task removed from column:', taskToMove.title);
+            console.log('✅ Task removed from column:', taskToMove?.title);
           }
         }
         
@@ -261,7 +261,7 @@ export function TaskBoard() {
       
       // Add task to destination
       if (taskToMove) {
-        console.log('🎯 Adding task to destination:', taskToMove.title);
+        console.log('🎯 Adding task to destination:', taskToMove?.title);
         const toColumnIndex = newColumns.findIndex((col: Column) => col.title === toColumnId);
         console.log('🔍 Destination column index:', toColumnIndex);
         
