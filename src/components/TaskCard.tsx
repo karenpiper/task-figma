@@ -1,8 +1,10 @@
 import React from 'react';
+import { useDrag } from 'react-dnd';
 import { User, Clock, MessageCircle } from 'lucide-react';
 import { Badge } from './ui/badge';
 
 interface TaskCardProps {
+  id?: string;
   title: string;
   description: string;
   status: string;
@@ -11,9 +13,12 @@ interface TaskCardProps {
   time: string;
   comments: number;
   hasGradient?: boolean;
+  columnId?: string;
+  subCategoryId?: string;
 }
 
 export function TaskCard({ 
+  id = 'task-' + Math.random().toString(36).substr(2, 9),
   title, 
   description, 
   status, 
@@ -21,8 +26,29 @@ export function TaskCard({
   userIcon, 
   time, 
   comments,
-  hasGradient 
+  hasGradient,
+  columnId,
+  subCategoryId
 }: TaskCardProps) {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: 'task',
+    item: { 
+      id, 
+      title, 
+      description, 
+      status, 
+      statusColor, 
+      userIcon, 
+      time, 
+      comments, 
+      hasGradient,
+      columnId,
+      subCategoryId
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
   const getBadgeClass = (color: string) => {
     const colors: Record<string, string> = {
       orange: 'bg-orange-500 text-white hover:bg-orange-600',
@@ -35,7 +61,12 @@ export function TaskCard({
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/60 shadow-lg hover:shadow-xl hover:bg-white/90 transition-all cursor-pointer">
+    <div 
+      ref={drag}
+      className={`bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/60 shadow-lg hover:shadow-xl hover:bg-white/90 transition-all cursor-move ${
+        isDragging ? 'opacity-50 rotate-2 scale-105' : ''
+      }`}
+    >
       {hasGradient && (
         <div className="w-full h-32 rounded-lg mb-3 bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300" />
       )}
