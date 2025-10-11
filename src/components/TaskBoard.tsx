@@ -344,8 +344,26 @@ export function TaskBoard() {
             <div key={index} className="w-80 flex-shrink-0 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <div>
-                  <h2 className="text-gray-900">{column.title}</h2>
-                  <p className="text-xs text-gray-500">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`w-3 h-3 rounded-full ${
+                      column.title === 'Uncategorized' ? 'bg-mgmt-beige' :
+                      column.title === 'Today' ? 'bg-mgmt-green' :
+                      column.title === 'Personal' ? 'bg-mgmt-purple' :
+                      column.title === 'Follow-Up' ? 'bg-mgmt-yellow' :
+                      column.title === 'Later' ? 'bg-mgmt-pink' :
+                      column.title === 'Completed' ? 'bg-mgmt-lime' : 'bg-mgmt-beige'
+                    }`}></div>
+                    <h2 className="text-gray-900 font-semibold">{column.title}</h2>
+                    <span className="text-sm">{
+                      column.title === 'Uncategorized' ? '📋' :
+                      column.title === 'Today' ? '⚡' :
+                      column.title === 'Personal' ? '👤' :
+                      column.title === 'Follow-Up' ? '👥' :
+                      column.title === 'Later' ? '⏰' :
+                      column.title === 'Completed' ? '✅' : '📋'
+                    }</span>
+                  </div>
+                  <p className="text-sm text-gray-500">
                     {column.taskCount} tasks, {column.hours} hours
                   </p>
                 </div>
@@ -404,31 +422,31 @@ export function TaskBoard() {
                                 columnId={column.title}
                               />
                             ))
-                  ) : (
-                    // Empty state
-                    <div className="flex items-center justify-center p-8 bg-white/80 rounded-lg border border-white/60 text-center">
-                      <div>
-                        <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2"></div>
-                        <p className="text-sm text-gray-500">No Tasks</p>
-                        <p className="text-xs text-gray-400">Tasks will appear here</p>
-                      </div>
-                    </div>
-                  )}
+                          ) : (
+                            // Empty state
+                            <div className="flex items-center justify-center p-8 bg-mgmt-beige/30 rounded-lg border border-mgmt-beige/50 text-center">
+                              <div>
+                                <div className="w-8 h-8 bg-mgmt-pink/30 rounded-full mx-auto mb-2"></div>
+                                <p className="text-sm text-gray-600">No Tasks</p>
+                                <p className="text-xs text-gray-500">Tasks will appear here</p>
+                              </div>
+                            </div>
+                          )}
                 </div>
               </DropZone>
             </div>
           ))}
           
-          {/* Add Column Button */}
-          <div className="w-80 flex-shrink-0">
-            <div className="flex items-center justify-center h-32 bg-white/80 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors cursor-pointer" onClick={addNewColumn}>
-              <div className="text-center">
-                <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-600">Add Column</p>
-                <p className="text-xs text-gray-400">Create a new task column</p>
-              </div>
-            </div>
-          </div>
+                  {/* Add Column Button */}
+                  <div className="w-80 flex-shrink-0">
+                    <div className="flex items-center justify-center h-32 bg-mgmt-pink/20 rounded-lg border-2 border-dashed border-mgmt-pink/40 hover:border-mgmt-pink/60 hover:bg-mgmt-pink/30 transition-all cursor-pointer" onClick={addNewColumn}>
+                      <div className="text-center">
+                        <Plus className="w-8 h-8 text-mgmt-pink mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-700">Add Column</p>
+                        <p className="text-xs text-gray-500">Create a new task column</p>
+                      </div>
+                    </div>
+                  </div>
         </div>
       </div>
     </div>
