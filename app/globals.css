@@ -501,5 +501,4 @@ body {
   .scrollbar-clean::-webkit-scrollbar-thumb:hover {
     background: var(--muted-foreground);
   }
-}
 } 
