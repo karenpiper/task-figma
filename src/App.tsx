@@ -66,7 +66,14 @@ export default function App() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-blue-50">
+      <div className="h-screen bg-gray-50">
+        {/* Clean Deployment Indicator */}
+        <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
+          ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
+        </div>
+        
+        {/* Main container with clean design */}
+        <div className="flex h-full">
         {/* Left sidebar */}
         <Sidebar 
           onCelebrate={triggerCelebration}
@@ -88,15 +95,15 @@ export default function App() {
             isStatsCollapsed={isStatsCollapsed}
           />
           
-          {/* Beautiful Navigation Tabs */}
+          {/* Clean Navigation Tabs */}
           <div className="px-6 pt-4">
-            <div className="flex space-x-1 bg-white/50 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-white/60">
+            <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
               <button
                 onClick={() => setCurrentView('board')}
                 className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                   currentView === 'board'
-                    ? 'bg-gray-900 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 📋 Board
@@ -105,8 +112,8 @@ export default function App() {
                 onClick={() => setCurrentView('week')}
                 className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                   currentView === 'week'
-                    ? 'bg-gray-900 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 📅 This Week
@@ -115,8 +122,8 @@ export default function App() {
                 onClick={() => setCurrentView('all-tasks')}
                 className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                   currentView === 'all-tasks'
-                    ? 'bg-gray-900 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 📝 All Tasks
@@ -125,8 +132,8 @@ export default function App() {
                 onClick={() => setCurrentView('coach')}
                 className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                   currentView === 'coach'
-                    ? 'bg-gray-900 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 🎯 Coach
@@ -134,8 +141,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Main content area with beautiful design */}
-          <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0">
+          {/* Main content area with clean design */}
+          <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0 bg-white">
             {/* Dynamic content based on current view */}
             <div className="flex-1 min-w-0">
               {currentView === 'board' ? (
@@ -175,6 +182,7 @@ export default function App() {
             </div>
           </div>
         </div>
+      </div>
 
         {/* Particle celebration system - absolutely positioned overlay */}
         <ParticleSystem 

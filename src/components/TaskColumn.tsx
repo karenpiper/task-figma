@@ -208,43 +208,38 @@ export function TaskColumn({
         isOver ? 'scale-105' : 'scale-100'
       }`}
     >
-      {/* Column Header */}
+      {/* Column Header - Beautiful Site Recreation Style */}
       <div className={`mb-6 p-4 rounded-2xl backdrop-blur-sm border transition-all duration-200 ${
         isOver 
-          ? 'bg-white/40 border-blue-300/60 shadow-lg' 
-          : 'bg-white/20 border-white/30'
+          ? 'bg-white/90 border-blue-300/60 shadow-lg' 
+          : 'bg-white/80 border-white/60'
       }`}>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${getColumnColor(column.id)}`}></div>
-            <h3 className="text-lg font-semibold text-slate-800">{column.title}</h3>
-            <Badge variant="secondary" className="text-xs">
-              {column.count}
-            </Badge>
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">{column.title}</h3>
+            <p className="text-xs text-gray-500">
+              {column.count} tasks, {Math.floor(column.count * 0.8)} hours
+            </p>
           </div>
           
           {/* Add Task button for uncategorized, later, and today columns */}
           {(!shouldShowCategories || column.id === 'today') && (
-            <Button 
-              size="sm"
-              variant="ghost"
-              className="h-8 w-8 p-0 rounded-md hover:bg-slate-100/60 text-slate-600 hover:text-slate-800"
+            <button 
+              className="text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => setIsCreatingTask(true)}
             >
-              <Plus className="w-4 h-4" />
-            </Button>
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
           )}
           
           {/* Add Person button for follow-up column */}
           {isFollowUpColumn && (
-            <Button 
-              size="sm"
-              variant="ghost"
-              className="h-8 w-8 p-0 rounded-md hover:bg-slate-100/60 text-slate-600 hover:text-slate-800"
+            <button 
+              className="text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => setIsAddingPerson(true)}
             >
-              <UserPlus className="w-4 h-4" />
-            </Button>
+              <UserPlus className="w-5 h-5" />
+            </button>
           )}
           
           {/* No buttons for columns with categories - tasks must be added to specific categories */}
