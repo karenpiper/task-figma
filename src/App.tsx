@@ -241,12 +241,11 @@ export default function App() {
         </div>
       </div>
 
-
-        {/* Particle celebration system - absolutely positioned overlay */}
-        <ParticleSystem 
-          trigger={showParticles} 
-          onComplete={() => setShowParticles(false)} 
-        />
+      {/* Particle celebration system - absolutely positioned overlay */}
+      <ParticleSystem 
+        trigger={showParticles} 
+        onComplete={() => setShowParticles(false)} 
+      />
     </div>
   );
 }
