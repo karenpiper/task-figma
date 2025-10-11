@@ -32,6 +32,7 @@ interface Column {
 }
 
 export function TaskBoard() {
+  console.log('🎯 TaskBoard component rendering');
   const [isAddTaskDialogOpen, setIsAddTaskDialogOpen] = useState(false);
   const [addTaskContext, setAddTaskContext] = useState<{
     columnTitle: string;
@@ -215,6 +216,7 @@ export function TaskBoard() {
     },
   ]);
 
+  console.log('🔍 Columns data:', columns.map(col => ({ title: col.title, taskCount: col.tasks.length, hasSubCategories: !!col.subCategories })));
 
   const addNewColumn = () => {
     const newColumn: Column = {
