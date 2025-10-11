@@ -58,42 +58,42 @@ export function Sidebar() {
   };
 
   return (
-    <div className="h-screen sidebar-modern flex">
+    <div className="h-screen bg-gray-50 border-r border-gray-200 flex">
       {/* Icon Navigation Column */}
-      <div className="sidebar-icon-column flex flex-col">
+      <div className="w-16 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-3 border-b border-gray-200">
-          <div className="w-10 h-10 gradient-brand rounded-lg flex items-center justify-center text-white">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white">
             BG
           </div>
         </div>
         
         <div className="flex-1 p-3 flex flex-col gap-2">
-          <button className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-all">
+          <button className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200">
             <LayoutGrid className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-all">
+          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
             <Layers className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-all">
+          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
             <Clock className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-all">
+          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
             <BarChart3 className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-all">
+          <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
             <Calendar className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Full Navigation Column */}
-      <div className="sidebar-nav-column flex flex-col">
+      <div className="w-56 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200 flex items-center gap-3">
           <div className="flex-1">
-            <h2 className="text-gray-900 font-medium">Brook Greens</h2>
+            <h2 className="text-gray-900">Brook Greens</h2>
           </div>
-          <button className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button className="text-gray-400 hover:text-gray-600">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
             </svg>
@@ -106,7 +106,7 @@ export function Sidebar() {
             <div key={index} className="mb-6">
               <button
                 onClick={() => toggleSection(index)}
-                className="flex items-center gap-2 text-xs text-gray-500 uppercase mb-2 w-full hover:text-gray-700 transition-colors"
+                className="flex items-center gap-2 text-xs text-gray-500 uppercase mb-2 w-full hover:text-gray-700"
               >
                 <span className="flex-1 text-left">{section.title}</span>
                 <ChevronDown
@@ -118,7 +118,7 @@ export function Sidebar() {
                   {section.items.map((item, itemIndex) => (
                     <div
                       key={itemIndex}
-                      className="nav-item group"
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 cursor-pointer group"
                     >
                       <span className={item.color || 'text-gray-600'}>{item.icon}</span>
                       <span className="flex-1 text-sm text-gray-700">{item.label}</span>
@@ -126,7 +126,7 @@ export function Sidebar() {
                         <span className="text-xs text-gray-500">{item.count}</span>
                       )}
                       {item.label === 'View' && (
-                        <Plus className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Plus className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100" />
                       )}
                     </div>
                   ))}
