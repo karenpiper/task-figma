@@ -67,14 +67,14 @@ export default function App() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="h-screen">
-        {/* Modern Glass Deployment Indicator */}
-        <div className="glass-panel-strong text-center py-3 font-semibold text-sm text-modern-bold">
-          ✨ KARENBAN - MODERN GLASS DESIGN ✨
+      <div className="h-screen bg-gray-50">
+        {/* Clean Deployment Indicator */}
+        <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
+          ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
         </div>
         
-        {/* Main container with glass design */}
-        <div className="flex h-full p-4 gap-4">
+        {/* Main container with clean design */}
+        <div className="flex h-full">
         {/* Left sidebar */}
         <Sidebar 
           onCelebrate={triggerCelebration}
@@ -96,40 +96,56 @@ export default function App() {
             isStatsCollapsed={isStatsCollapsed}
           />
           
-          {/* Modern Glass Navigation Tabs */}
+          {/* Clean Navigation Tabs */}
           <div className="px-6 pt-4">
-            <div className="nav-glass flex space-x-1">
+            <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
               <button
                 onClick={() => setCurrentView('board')}
-                className={`nav-item ${currentView === 'board' ? 'nav-item-active' : ''}`}
+                className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                  currentView === 'board'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
               >
                 📋 Board
               </button>
               <button
                 onClick={() => setCurrentView('week')}
-                className={`nav-item ${currentView === 'week' ? 'nav-item-active' : ''}`}
+                className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                  currentView === 'week'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
               >
                 📅 This Week
               </button>
               <button
                 onClick={() => setCurrentView('all-tasks')}
-                className={`nav-item ${currentView === 'all-tasks' ? 'nav-item-active' : ''}`}
+                className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                  currentView === 'all-tasks'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
               >
                 📝 All Tasks
               </button>
               <button
                 onClick={() => setCurrentView('coach')}
-                className={`nav-item ${currentView === 'coach' ? 'nav-item-active' : ''}`}
+                className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                  currentView === 'coach'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
               >
                 🎯 Coach
               </button>
             </div>
           </div>
 
-          {/* Main content area with glass design */}
-          <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0">
+          {/* Main content area with clean design */}
+          <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0 bg-white">
             {/* Dynamic content based on current view */}
-            <div className="flex-1 min-w-0 glass-panel p-6">
+            <div className="flex-1 min-w-0">
               {currentView === 'board' ? (
                 <KanbanBoard 
                   onTaskComplete={handleTaskComplete}
