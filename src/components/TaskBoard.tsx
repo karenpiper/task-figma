@@ -49,6 +49,7 @@ export function TaskBoard() {
           taskCount: 1,
           tasks: [
             {
+              id: 'task-standing-1',
               title: 'Web Summit deck',
               description: 'Prepare presentation for Web Summit conference',
               status: 'MEDIUM',
@@ -82,6 +83,7 @@ export function TaskBoard() {
       hours: 1,
       tasks: [
         {
+          id: 'task-personal-1',
           title: 'Web Summit deck',
           description: 'Prepare presentation for Web Summit conference',
           status: 'MEDIUM',
@@ -379,29 +381,29 @@ export function TaskBoard() {
                         </div>
                         <DropZone columnId={column.title} subCategoryId={subCategory.title}>
                           <div className="space-y-2">
-                            {subCategory.tasks.map((task, taskIndex) => (
-                              <TaskCard 
-                                key={taskIndex} 
-                                {...task} 
-                                id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
-                                columnId={column.title}
-                                subCategoryId={subCategory.title}
-                              />
-                            ))}
+                                    {subCategory.tasks.map((task, taskIndex) => (
+                                      <TaskCard 
+                                        key={task.id || `task-${index}-${subIndex}-${taskIndex}`}
+                                        {...task} 
+                                        id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
+                                        columnId={column.title}
+                                        subCategoryId={subCategory.title}
+                                      />
+                                    ))}
                           </div>
                         </DropZone>
                       </div>
                     ))
                   ) : column.tasks.length > 0 ? (
                     // Render regular tasks
-                    column.tasks.map((task, taskIndex) => (
-                      <TaskCard 
-                        key={taskIndex} 
-                        {...task} 
-                        id={task.id || `task-${index}-${taskIndex}`}
-                        columnId={column.title}
-                      />
-                    ))
+                            column.tasks.map((task, taskIndex) => (
+                              <TaskCard 
+                                key={task.id || `task-${index}-${taskIndex}`}
+                                {...task} 
+                                id={task.id || `task-${index}-${taskIndex}`}
+                                columnId={column.title}
+                              />
+                            ))
                   ) : (
                     // Empty state
                     <div className="flex items-center justify-center p-8 bg-white/80 rounded-lg border border-white/60 text-center">
