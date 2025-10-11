@@ -49,13 +49,11 @@ body {
   padding: 0;
 }
 
-/* Global Scale - Scale everything down to 75% */
+/* Remove global scale to fix dead space issues */
 html {
-  transform: scale(0.75);
-  transform-origin: top left;
-  width: 133.33%; /* Compensate for the scale to maintain full width */
-  height: 133.33vh; /* Compensate for the scale to maintain full height */
-  min-height: 133.33vh; /* Ensure minimum full height */
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
 }
 
 /* Typography Hierarchy */
