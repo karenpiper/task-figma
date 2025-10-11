@@ -45,6 +45,9 @@ export function TaskCard({
       columnId,
       subCategoryId
     },
+    begin: () => {
+      console.log('🎯 Drag started:', { id, title, columnId, subCategoryId });
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
