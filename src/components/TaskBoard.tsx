@@ -516,8 +516,7 @@ export function TaskBoard() {
                 </div>
               </div>
               
-              <DropZone columnId={column.title}>
-                <div className="space-y-3 flex-1 min-h-[200px]">
+                        <div className="space-y-3 flex-1 min-h-[200px]">
                   {column.subCategories ? (
                     // Render sub-categories for Today column
                     column.subCategories.map((subCategory, subIndex) => (
@@ -533,40 +532,40 @@ export function TaskBoard() {
                             <Plus className="w-4 h-4" />
                           </button>
                         </div>
-                        <DropZone columnId={column.title} subCategoryId={subCategory.title}>
-                          <div className="space-y-2 min-h-[80px]">
-                            {subCategory.tasks.length > 0 ? (
-                              <>
-                                {/* Drop zone at the top */}
-                                <DropZoneBetween 
-                                  columnId={column.title} 
-                                  subCategoryId={subCategory.title} 
-                                  insertIndex={0} 
-                                />
-                                {subCategory.tasks.map((task, taskIndex) => (
-                                  <React.Fragment key={task.id || `task-${index}-${subIndex}-${taskIndex}`}>
-                                    <TaskCard 
-                                      {...task} 
-                                      id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
-                                      columnId={column.title}
-                                      subCategoryId={subCategory.title}
-                                    />
-                                    {/* Drop zone after each task */}
-                                    <DropZoneBetween 
-                                      columnId={column.title} 
-                                      subCategoryId={subCategory.title} 
-                                      insertIndex={taskIndex + 1} 
-                                    />
-                                  </React.Fragment>
-                                ))}
-                              </>
-                            ) : (
+                        <div className="space-y-2 min-h-[80px]">
+                          {subCategory.tasks.length > 0 ? (
+                            <>
+                              {/* Drop zone at the top */}
+                              <DropZoneBetween 
+                                columnId={column.title} 
+                                subCategoryId={subCategory.title} 
+                                insertIndex={0} 
+                              />
+                              {subCategory.tasks.map((task, taskIndex) => (
+                                <React.Fragment key={task.id || `task-${index}-${subIndex}-${taskIndex}`}>
+                                  <TaskCard 
+                                    {...task} 
+                                    id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
+                                    columnId={column.title}
+                                    subCategoryId={subCategory.title}
+                                  />
+                                  {/* Drop zone after each task */}
+                                  <DropZoneBetween 
+                                    columnId={column.title} 
+                                    subCategoryId={subCategory.title} 
+                                    insertIndex={taskIndex + 1} 
+                                  />
+                                </React.Fragment>
+                              ))}
+                            </>
+                          ) : (
+                            <DropZone columnId={column.title} subCategoryId={subCategory.title}>
                               <div className="flex items-center justify-center h-16 text-gray-400 text-sm">
                                 Drop tasks here
                               </div>
-                            )}
-                          </div>
-                        </DropZone>
+                            </DropZone>
+                          )}
+                        </div>
                       </div>
                     ))
                   ) : column.tasks.length > 0 ? (
@@ -593,17 +592,18 @@ export function TaskBoard() {
                       ))}
                     </>
                   ) : (
-                            // Empty state
-                            <div className="flex items-center justify-center p-8 bg-mgmt-beige/30 rounded-lg border border-mgmt-beige/50 text-center">
-                              <div>
-                                <div className="w-8 h-8 bg-mgmt-pink/30 rounded-full mx-auto mb-2"></div>
-                                <p className="text-sm text-gray-600">No Tasks</p>
-                                <p className="text-xs text-gray-500">Tasks will appear here</p>
-                              </div>
-                            </div>
-                          )}
+                    // Empty state
+                    <DropZone columnId={column.title}>
+                      <div className="flex items-center justify-center p-8 bg-mgmt-beige/30 rounded-lg border border-mgmt-beige/50 text-center">
+                        <div>
+                          <div className="w-8 h-8 bg-mgmt-pink/30 rounded-full mx-auto mb-2"></div>
+                          <p className="text-sm text-gray-600">No Tasks</p>
+                          <p className="text-xs text-gray-500">Tasks will appear here</p>
+                        </div>
+                      </div>
+                    </DropZone>
+                  )}
                 </div>
-              </DropZone>
             </div>
           ))}
           
