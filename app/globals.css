@@ -77,8 +77,8 @@ html {
   transform: scale(0.75);
   transform-origin: top left;
   width: 133.33%; /* Compensate for the scale to maintain full width */
-  height: 100vh; /* Use viewport height instead of percentage */
-  min-height: 100vh; /* Ensure minimum full height */
+  height: 133.33vh; /* Compensate for the scale to maintain full height */
+  min-height: 133.33vh; /* Ensure minimum full height */
 }
 
 /* Utility Classes */
@@ -340,4 +340,4 @@ html {
   .task-board {
     padding: 1rem;
   }
-}
+} 
