@@ -213,8 +213,6 @@ export function TaskBoard() {
   };
 
   const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null) => {
-    console.log('🎯 moveTask called:', { taskId, fromColumnId, fromSubCategoryId, toColumnId, toSubCategoryId });
-    
     setColumns(prevColumns => {
       const newColumns = [...prevColumns]; // Shallow clone first
       
@@ -222,35 +220,28 @@ export function TaskBoard() {
       let taskToMove: Task | null = null;
       const sourceColumnIndex = newColumns.findIndex((col: Column) => col.title === fromColumnId);
       
-      console.log('🔍 Source column index:', sourceColumnIndex);
-      
       if (sourceColumnIndex !== -1) {
         const sourceColumn = newColumns[sourceColumnIndex];
         
         if (fromSubCategoryId && sourceColumn.subCategories) {
           const sourceSubCategoryIndex = sourceColumn.subCategories.findIndex((sub: SubCategory) => sub.title === fromSubCategoryId);
-          console.log('🔍 Source subcategory index:', sourceSubCategoryIndex);
           
           if (sourceSubCategoryIndex !== -1) {
             const sourceSubCategory = sourceColumn.subCategories[sourceSubCategoryIndex];
             const taskIndex = sourceSubCategory.tasks.findIndex((task: Task) => task.id === taskId);
-            console.log('🔍 Task index in subcategory:', taskIndex);
             
             if (taskIndex !== -1) {
               taskToMove = { ...sourceSubCategory.tasks[taskIndex] }; // Shallow clone task
               sourceSubCategory.tasks.splice(taskIndex, 1);
               sourceSubCategory.taskCount = sourceSubCategory.tasks.length;
-              console.log('✅ Task removed from subcategory');
             }
           }
         } else {
           const taskIndex = sourceColumn.tasks.findIndex((task: Task) => task.id === taskId);
-          console.log('🔍 Task index in column:', taskIndex);
           
           if (taskIndex !== -1) {
             taskToMove = { ...sourceColumn.tasks[taskIndex] }; // Shallow clone task
             sourceColumn.tasks.splice(taskIndex, 1);
-            console.log('✅ Task removed from column');
           }
         }
         
@@ -261,34 +252,27 @@ export function TaskBoard() {
       
       // Add task to destination
       if (taskToMove) {
-        console.log('🎯 Adding task to destination:', taskToMove.title);
         const toColumnIndex = newColumns.findIndex((col: Column) => col.title === toColumnId);
-        console.log('🔍 Destination column index:', toColumnIndex);
         
         if (toColumnIndex !== -1) {
           const toColumn = newColumns[toColumnIndex];
           
           if (toSubCategoryId && toColumn.subCategories) {
             const subCategoryIndex = toColumn.subCategories.findIndex((sub: SubCategory) => sub.title === toSubCategoryId);
-            console.log('🔍 Destination subcategory index:', subCategoryIndex);
             
             if (subCategoryIndex !== -1) {
               toColumn.subCategories[subCategoryIndex].tasks.push(taskToMove);
               toColumn.subCategories[subCategoryIndex].taskCount = 
                 toColumn.subCategories[subCategoryIndex].tasks.length;
-              console.log('✅ Task added to subcategory');
             }
           } else {
             toColumn.tasks.push(taskToMove);
-            console.log('✅ Task added to column');
           }
           
           // Update destination column task count
           toColumn.taskCount = toColumn.tasks.length + 
             (toColumn.subCategories?.reduce((sum: number, sub: SubCategory) => sum + sub.taskCount, 0) || 0);
         }
-      } else {
-        console.log('❌ No task found to move');
       }
       
       return newColumns;
@@ -300,20 +284,9 @@ export function TaskBoard() {
     const [{ isOver }, drop] = useDrop(() => ({
       accept: 'task',
       drop: (item: any) => {
-        console.log('🎯 Drop triggered:', { 
-          itemId: item.id, 
-          itemColumnId: item.columnId, 
-          itemSubCategoryId: item.subCategoryId,
-          targetColumnId: columnId, 
-          targetSubCategoryId: subCategoryId 
-        });
-        
         // Only move if it's actually a different location
         if (item.columnId !== columnId || item.subCategoryId !== subCategoryId) {
-          console.log('✅ Moving task to different location');
           moveTask(item.id, item.columnId, item.subCategoryId, columnId, subCategoryId || null);
-        } else {
-          console.log('❌ Same location, not moving');
         }
       },
       collect: (monitor) => ({
