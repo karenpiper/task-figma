@@ -40,8 +40,9 @@ export default function App() {
   }, []);
 
   // Task completion celebration with taskId
-  const handleTaskComplete = useCallback((taskId: number): void => {
+  const handleTaskComplete = useCallback((taskId: number): Promise<void> => {
     setShowParticles(true);
+    return Promise.resolve();
   }, []);
 
   // Task completion celebration without taskId (for TaskCard in TaskCategory)
