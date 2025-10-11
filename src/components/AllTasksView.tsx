@@ -69,12 +69,9 @@ export function AllTasksView({
       // Format the task data to match the API expectations
       const formattedTaskData = {
         title: taskData.title,
-        description: taskData.description,
+        detail: taskData.description,
         column_id: 'uncategorized', // Default to uncategorized column
-        priority: taskData.status.toLowerCase(),
-        status: taskData.status,
-        estimated_time: taskData.time,
-        team_member_id: null
+        priority: taskData.status.toLowerCase()
       };
       
       await onCreateTask(formattedTaskData);

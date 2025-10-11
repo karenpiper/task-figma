@@ -95,13 +95,10 @@ export function TaskCategory({
     try {
       await onCreateTask({
         title: taskData.title,
-        description: taskData.description,
+        detail: taskData.description,
         priority: taskData.status.toLowerCase(),
-        status: taskData.status,
-        estimated_time: taskData.time,
         column_id: columnId,
-        category_id: category.id,
-        team_member_id: null
+        category_id: category.id
       }, columnId, category.id);
     } catch (error) {
       console.error('Failed to create task:', error);
