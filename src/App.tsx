@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Sidebar } from './components/Sidebar';
 import { KanbanBoard } from './components/KanbanBoard';
 import { ThisWeek } from './components/ThisWeek';
@@ -73,14 +75,15 @@ export default function App() {
   }, []);
 
   return (
-    <div className="h-screen bg-gray-50">
-      {/* Clean Deployment Indicator */}
-      <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
-        ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
-      </div>
-      
-      {/* Main container with clean design */}
-      <div className="flex h-full">
+    <DndProvider backend={HTML5Backend}>
+      <div className="h-screen bg-gray-50">
+        {/* Clean Deployment Indicator */}
+        <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
+          ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
+        </div>
+        
+        {/* Main container with clean design */}
+        <div className="flex h-full">
         {/* Left sidebar */}
         <Sidebar 
           onCelebrate={triggerCelebration}
@@ -201,11 +204,12 @@ export default function App() {
         pendingTasks={taskStats.pendingTasks}
       />
 
-      {/* Particle celebration system - absolutely positioned overlay */}
-      <ParticleSystem 
-        trigger={showParticles} 
-        onComplete={() => setShowParticles(false)} 
-      />
-    </div>
+        {/* Particle celebration system - absolutely positioned overlay */}
+        <ParticleSystem 
+          trigger={showParticles} 
+          onComplete={() => setShowParticles(false)} 
+        />
+      </div>
+    </DndProvider>
   );
 }
