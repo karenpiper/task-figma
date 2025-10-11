@@ -93,7 +93,7 @@ export default function App() {
   }, []);
 
   return (
-    <StableDndProvider>
+    <DndProvider backend={HTML5Backend}>
       <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
         ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
       </div>
@@ -268,6 +268,6 @@ export default function App() {
             onComplete={() => setShowParticles(false)} 
           />
         </div>
-    </StableDndProvider>
+    </DndProvider>
   );
 }
