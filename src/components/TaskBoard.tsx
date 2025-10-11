@@ -284,9 +284,20 @@ export function TaskBoard() {
     const [{ isOver }, drop] = useDrop(() => ({
       accept: 'task',
       drop: (item: any) => {
+        console.log('🎯 DROP TRIGGERED:', { 
+          itemId: item.id, 
+          itemColumnId: item.columnId, 
+          itemSubCategoryId: item.subCategoryId,
+          targetColumnId: columnId, 
+          targetSubCategoryId: subCategoryId 
+        });
+        
         // Only move if it's actually a different location
         if (item.columnId !== columnId || item.subCategoryId !== subCategoryId) {
+          console.log('✅ MOVING TASK');
           moveTask(item.id, item.columnId, item.subCategoryId, columnId, subCategoryId || null);
+        } else {
+          console.log('❌ SAME LOCATION');
         }
       },
       collect: (monitor) => ({

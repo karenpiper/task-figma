@@ -32,19 +32,22 @@ export function TaskCard({
 }: TaskCardProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'task',
-    item: () => ({ 
-      id, 
-      title, 
-      description, 
-      status, 
-      statusColor, 
-      userIcon, 
-      time, 
-      comments, 
-      hasGradient,
-      columnId,
-      subCategoryId
-    }),
+    item: () => {
+      console.log('🎯 DRAG STARTED:', { id, title, columnId, subCategoryId });
+      return { 
+        id, 
+        title, 
+        description, 
+        status, 
+        statusColor, 
+        userIcon, 
+        time, 
+        comments, 
+        hasGradient,
+        columnId,
+        subCategoryId
+      };
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -63,6 +66,7 @@ export function TaskCard({
   return (
     <div 
       ref={drag as any}
+      onClick={() => console.log('🖱️ TASK CARD CLICKED:', { id, title })}
       className={`bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/60 shadow-lg hover:shadow-xl hover:bg-white/90 transition-all cursor-move ${
         isDragging ? 'opacity-50 rotate-2 scale-105' : ''
       }`}
