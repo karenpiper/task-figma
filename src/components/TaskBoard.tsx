@@ -32,6 +32,8 @@ interface Column {
 }
 
 export function TaskBoard() {
+  console.log('🎯 TaskBoard component rendered');
+  
   const [isAddTaskDialogOpen, setIsAddTaskDialogOpen] = useState(false);
   const [addTaskContext, setAddTaskContext] = useState<{
     columnTitle: string;
@@ -446,14 +448,20 @@ export function TaskBoard() {
                   {column.showAddPerson ? (
                     <button 
                       className="text-gray-400 hover:text-mgmt-yellow transition-colors"
-                      onClick={() => openAddTaskDialog(column.title)}
+                      onClick={() => {
+                        console.log('🔥 USERS BUTTON CLICKED!', column.title);
+                        openAddTaskDialog(column.title);
+                      }}
                     >
                       <Users className="w-5 h-5" />
                     </button>
                   ) : (
                     <button 
                       className="text-gray-400 hover:text-mgmt-green transition-colors"
-                      onClick={() => openAddTaskDialog(column.title)}
+                      onClick={() => {
+                        console.log('🔥 PLUS BUTTON CLICKED!', column.title);
+                        openAddTaskDialog(column.title);
+                      }}
                     >
                       <Plus className="w-5 h-5" />
                     </button>
@@ -476,7 +484,10 @@ export function TaskBoard() {
                           </h3>
                           <button 
                             className="text-gray-400 hover:text-mgmt-green transition-colors"
-                            onClick={() => openAddTaskDialog(column.title, subCategory.title)}
+                            onClick={() => {
+                              console.log('🔥 SUBCATEGORY PLUS BUTTON CLICKED!', column.title, subCategory.title);
+                              openAddTaskDialog(column.title, subCategory.title);
+                            }}
                           >
                             <Plus className="w-4 h-4" />
                           </button>
