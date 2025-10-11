@@ -292,8 +292,8 @@ export function TaskBoard() {
     setIsAddTaskDialogOpen(true);
   };
 
-  const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null) => {
-    console.log('🎯 moveTask called:', { taskId, fromColumnId, fromSubCategoryId, toColumnId, toSubCategoryId });
+  const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null, insertIndex?: number) => {
+    console.log('🎯 moveTask called:', { taskId, fromColumnId, fromSubCategoryId, toColumnId, toSubCategoryId, insertIndex });
     
     setColumns(prevColumns => {
       const newColumns = JSON.parse(JSON.stringify(prevColumns)); // Deep clone to ensure proper updates
@@ -353,14 +353,24 @@ export function TaskBoard() {
             console.log('🔍 Destination subcategory index:', subCategoryIndex);
             
             if (subCategoryIndex !== -1) {
-              toColumn.subCategories[subCategoryIndex].tasks.push(taskToMove);
-              toColumn.subCategories[subCategoryIndex].taskCount = 
-                toColumn.subCategories[subCategoryIndex].tasks.length;
-              console.log('✅ Task added to subcategory');
+              const targetTasks = toColumn.subCategories[subCategoryIndex].tasks;
+              if (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= targetTasks.length) {
+                targetTasks.splice(insertIndex, 0, taskToMove);
+                console.log('✅ Task inserted at specific position in subcategory');
+              } else {
+                targetTasks.push(taskToMove);
+                console.log('✅ Task added to end of subcategory');
+              }
+              toColumn.subCategories[subCategoryIndex].taskCount = targetTasks.length;
             }
           } else {
-            toColumn.tasks.push(taskToMove);
-            console.log('✅ Task added to column');
+            if (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= toColumn.tasks.length) {
+              toColumn.tasks.splice(insertIndex, 0, taskToMove);
+              console.log('✅ Task inserted at specific position in column');
+            } else {
+              toColumn.tasks.push(taskToMove);
+              console.log('✅ Task added to end of column');
+            }
           }
           
           // Update destination column task count
@@ -411,6 +421,45 @@ export function TaskBoard() {
       >
         {children}
       </div>
+    );
+  };
+
+  // DropZoneBetween component for inserting between tasks
+  const DropZoneBetween = ({ columnId, subCategoryId, insertIndex }: { columnId: string; subCategoryId?: string; insertIndex: number }) => {
+    const [{ isOver }, drop] = useDrop(() => ({
+      accept: 'task',
+      drop: (item: any) => {
+        console.log('🎯 DROP BETWEEN TRIGGERED:', { 
+          itemId: item.id, 
+          itemColumnId: item.columnId, 
+          itemSubCategoryId: item.subCategoryId,
+          targetColumnId: columnId, 
+          targetSubCategoryId: subCategoryId,
+          insertIndex
+        });
+        
+        // Only move if it's actually a different location
+        if (item.columnId !== columnId || item.subCategoryId !== subCategoryId) {
+          console.log('✅ MOVING TASK TO SPECIFIC POSITION');
+          moveTask(item.id, item.columnId, item.subCategoryId, columnId, subCategoryId || null, insertIndex);
+        } else {
+          console.log('❌ SAME LOCATION');
+        }
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+      }),
+    }), [columnId, subCategoryId, insertIndex]);
+
+    return (
+      <div 
+        ref={drop as any}
+        className={`h-2 mx-2 rounded transition-all duration-200 ${
+          isOver 
+            ? 'bg-mgmt-green/60 border-2 border-mgmt-green border-dashed' 
+            : 'bg-transparent hover:bg-mgmt-green/20'
+        }`}
+      />
     );
   };
 
@@ -488,15 +537,30 @@ export function TaskBoard() {
                         <DropZone columnId={column.title} subCategoryId={subCategory.title}>
                           <div className="space-y-2 min-h-[80px]">
                             {subCategory.tasks.length > 0 ? (
-                              subCategory.tasks.map((task, taskIndex) => (
-                                <TaskCard 
-                                  key={task.id || `task-${index}-${subIndex}-${taskIndex}`}
-                                  {...task} 
-                                  id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
-                                  columnId={column.title}
-                                  subCategoryId={subCategory.title}
+                              <>
+                                {/* Drop zone at the top */}
+                                <DropZoneBetween 
+                                  columnId={column.title} 
+                                  subCategoryId={subCategory.title} 
+                                  insertIndex={0} 
                                 />
-                              ))
+                                {subCategory.tasks.map((task, taskIndex) => (
+                                  <React.Fragment key={task.id || `task-${index}-${subIndex}-${taskIndex}`}>
+                                    <TaskCard 
+                                      {...task} 
+                                      id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
+                                      columnId={column.title}
+                                      subCategoryId={subCategory.title}
+                                    />
+                                    {/* Drop zone after each task */}
+                                    <DropZoneBetween 
+                                      columnId={column.title} 
+                                      subCategoryId={subCategory.title} 
+                                      insertIndex={taskIndex + 1} 
+                                    />
+                                  </React.Fragment>
+                                ))}
+                              </>
                             ) : (
                               <div className="flex items-center justify-center h-16 text-gray-400 text-sm">
                                 Drop tasks here
@@ -507,16 +571,29 @@ export function TaskBoard() {
                       </div>
                     ))
                   ) : column.tasks.length > 0 ? (
-                    // Render regular tasks
-                            column.tasks.map((task, taskIndex) => (
-                              <TaskCard 
-                                key={task.id || `task-${index}-${taskIndex}`}
-                                {...task} 
-                                id={task.id || `task-${index}-${taskIndex}`}
-                                columnId={column.title}
-                              />
-                            ))
-                          ) : (
+                    // Render regular tasks with drop zones
+                    <>
+                      {/* Drop zone at the top */}
+                      <DropZoneBetween 
+                        columnId={column.title} 
+                        insertIndex={0} 
+                      />
+                      {column.tasks.map((task, taskIndex) => (
+                        <React.Fragment key={task.id || `task-${index}-${taskIndex}`}>
+                          <TaskCard 
+                            {...task} 
+                            id={task.id || `task-${index}-${taskIndex}`}
+                            columnId={column.title}
+                          />
+                          {/* Drop zone after each task */}
+                          <DropZoneBetween 
+                            columnId={column.title} 
+                            insertIndex={taskIndex + 1} 
+                          />
+                        </React.Fragment>
+                      ))}
+                    </>
+                  ) : (
                             // Empty state
                             <div className="flex items-center justify-center p-8 bg-mgmt-beige/30 rounded-lg border border-mgmt-beige/50 text-center">
                               <div>
