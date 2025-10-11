@@ -98,6 +98,48 @@ export function TaskBoard() {
       hours: 2,
       tasks: [],
       showAddPerson: true,
+      subCategories: [
+        {
+          title: 'Adam',
+          taskCount: 0,
+          tasks: [],
+        },
+        {
+          title: 'Brent',
+          taskCount: 0,
+          tasks: [],
+        },
+        {
+          title: 'Christine',
+          taskCount: 0,
+          tasks: [],
+        },
+        {
+          title: 'David',
+          taskCount: 0,
+          tasks: [],
+        },
+        {
+          title: 'Emma',
+          taskCount: 0,
+          tasks: [],
+        },
+        {
+          title: 'Frank',
+          taskCount: 0,
+          tasks: [],
+        },
+        {
+          title: 'Grace',
+          taskCount: 0,
+          tasks: [],
+        },
+        {
+          title: 'Henry',
+          taskCount: 0,
+          tasks: [],
+        },
+      ],
     },
     {
       title: 'Later',
@@ -159,16 +201,6 @@ export function TaskBoard() {
     },
   ]);
 
-  const teamMembers = [
-    { name: 'Adam', taskCount: 0 },
-    { name: 'Brent', taskCount: 0 },
-    { name: 'Christine', taskCount: 0 },
-    { name: 'David', taskCount: 0 },
-    { name: 'Emma', taskCount: 0 },
-    { name: 'Frank', taskCount: 0 },
-    { name: 'Grace', taskCount: 0 },
-    { name: 'Henry', taskCount: 0 },
-  ];
 
   const addNewColumn = () => {
     const newColumn: Column = {
@@ -182,70 +214,55 @@ export function TaskBoard() {
 
   const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null) => {
     setColumns(prevColumns => {
-      const newColumns = [...prevColumns];
+      const newColumns = JSON.parse(JSON.stringify(prevColumns)); // Deep clone
       
-      // Find and remove task from source
-      const fromColumnIndex = newColumns.findIndex(col => col.title === fromColumnId);
-      if (fromColumnIndex !== -1) {
-        if (fromSubCategoryId && newColumns[fromColumnIndex].subCategories) {
-          const subCategoryIndex = newColumns[fromColumnIndex].subCategories!.findIndex(sub => sub.title === fromSubCategoryId);
-          if (subCategoryIndex !== -1) {
-            newColumns[fromColumnIndex].subCategories![subCategoryIndex].tasks = 
-              newColumns[fromColumnIndex].subCategories![subCategoryIndex].tasks.filter(task => task.id !== taskId);
-            newColumns[fromColumnIndex].subCategories![subCategoryIndex].taskCount = 
-              newColumns[fromColumnIndex].subCategories![subCategoryIndex].tasks.length;
+      // Find the actual task data from the source first
+      let taskToMove: Task | null = null;
+      const sourceColumn = newColumns.find((col: Column) => col.title === fromColumnId);
+      
+      if (sourceColumn) {
+        if (fromSubCategoryId && sourceColumn.subCategories) {
+          const sourceSubCategory = sourceColumn.subCategories.find((sub: SubCategory) => sub.title === fromSubCategoryId);
+          if (sourceSubCategory) {
+            const taskIndex = sourceSubCategory.tasks.findIndex((task: Task) => task.id === taskId);
+            if (taskIndex !== -1) {
+              taskToMove = sourceSubCategory.tasks[taskIndex];
+              sourceSubCategory.tasks.splice(taskIndex, 1);
+              sourceSubCategory.taskCount = sourceSubCategory.tasks.length;
+            }
           }
         } else {
-          newColumns[fromColumnIndex].tasks = newColumns[fromColumnIndex].tasks.filter(task => task.id !== taskId);
+          const taskIndex = sourceColumn.tasks.findIndex((task: Task) => task.id === taskId);
+          if (taskIndex !== -1) {
+            taskToMove = sourceColumn.tasks[taskIndex];
+            sourceColumn.tasks.splice(taskIndex, 1);
+          }
         }
-        newColumns[fromColumnIndex].taskCount = newColumns[fromColumnIndex].tasks.length + 
-          (newColumns[fromColumnIndex].subCategories?.reduce((sum, sub) => sum + sub.taskCount, 0) || 0);
+        
+        // Update source column task count
+        sourceColumn.taskCount = sourceColumn.tasks.length + 
+          (sourceColumn.subCategories?.reduce((sum: number, sub: SubCategory) => sum + sub.taskCount, 0) || 0);
       }
       
-      // Find and add task to destination
-      const toColumnIndex = newColumns.findIndex(col => col.title === toColumnId);
-      if (toColumnIndex !== -1) {
-        const taskToMove = { id: taskId } as Task; // We'll find the actual task data
-        
-        // Find the actual task data from the source
-        const sourceColumn = prevColumns.find(col => col.title === fromColumnId);
-        if (sourceColumn) {
-          if (fromSubCategoryId && sourceColumn.subCategories) {
-            const sourceSubCategory = sourceColumn.subCategories.find(sub => sub.title === fromSubCategoryId);
-            if (sourceSubCategory) {
-              const actualTask = sourceSubCategory.tasks.find(task => task.id === taskId);
-              if (actualTask) {
-                taskToMove.id = actualTask.id;
-                taskToMove.title = actualTask.title;
-                taskToMove.description = actualTask.description;
-                taskToMove.status = actualTask.status;
-                taskToMove.statusColor = actualTask.statusColor;
-                taskToMove.userIcon = actualTask.userIcon;
-                taskToMove.time = actualTask.time;
-                taskToMove.comments = actualTask.comments;
-                taskToMove.hasGradient = actualTask.hasGradient;
-              }
+      // Add task to destination
+      if (taskToMove) {
+        const toColumnIndex = newColumns.findIndex((col: Column) => col.title === toColumnId);
+        if (toColumnIndex !== -1) {
+          if (toSubCategoryId && newColumns[toColumnIndex].subCategories) {
+            const subCategoryIndex = newColumns[toColumnIndex].subCategories!.findIndex((sub: SubCategory) => sub.title === toSubCategoryId);
+            if (subCategoryIndex !== -1) {
+              newColumns[toColumnIndex].subCategories![subCategoryIndex].tasks.push(taskToMove);
+              newColumns[toColumnIndex].subCategories![subCategoryIndex].taskCount = 
+                newColumns[toColumnIndex].subCategories![subCategoryIndex].tasks.length;
             }
           } else {
-            const actualTask = sourceColumn.tasks.find(task => task.id === taskId);
-            if (actualTask) {
-              Object.assign(taskToMove, actualTask);
-            }
+            newColumns[toColumnIndex].tasks.push(taskToMove);
           }
+          
+          // Update destination column task count
+          newColumns[toColumnIndex].taskCount = newColumns[toColumnIndex].tasks.length + 
+            (newColumns[toColumnIndex].subCategories?.reduce((sum: number, sub: SubCategory) => sum + sub.taskCount, 0) || 0);
         }
-        
-        if (toSubCategoryId && newColumns[toColumnIndex].subCategories) {
-          const subCategoryIndex = newColumns[toColumnIndex].subCategories!.findIndex(sub => sub.title === toSubCategoryId);
-          if (subCategoryIndex !== -1) {
-            newColumns[toColumnIndex].subCategories![subCategoryIndex].tasks.push(taskToMove);
-            newColumns[toColumnIndex].subCategories![subCategoryIndex].taskCount = 
-              newColumns[toColumnIndex].subCategories![subCategoryIndex].tasks.length;
-          }
-        } else {
-          newColumns[toColumnIndex].tasks.push(taskToMove);
-        }
-        newColumns[toColumnIndex].taskCount = newColumns[toColumnIndex].tasks.length + 
-          (newColumns[toColumnIndex].subCategories?.reduce((sum, sub) => sum + sub.taskCount, 0) || 0);
       }
       
       return newColumns;
@@ -334,16 +351,6 @@ export function TaskBoard() {
                             ))}
                           </div>
                         </DropZone>
-                      </div>
-                    ))
-                  ) : column.title === 'Follow-Up' ? (
-                    // Render team members for Follow-Up column
-                    teamMembers.map((member, memberIndex) => (
-                      <div key={memberIndex} className="flex items-center justify-between p-2 bg-white/80 rounded-lg border border-white/60">
-                        <span className="text-sm text-gray-700">{member.name} {member.taskCount}</span>
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <Plus className="w-4 h-4" />
-                        </button>
                       </div>
                     ))
                   ) : column.tasks.length > 0 ? (
