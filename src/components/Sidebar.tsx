@@ -72,29 +72,29 @@ export function Sidebar({
   if (activeView === 'team') {
     return (
       <div className={`${isCollapsed ? 'w-16' : 'w-80'} relative transition-all duration-300 ease-in-out`}>
-        {/* Beautiful glass background */}
-        <div className="absolute inset-0 bg-gray-50 border-r border-gray-200">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-white/30"></div>
+        {/* Glass background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-800/85 to-slate-900/90 backdrop-blur-xl border-r border-white/10">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5"></div>
         </div>
         
         {/* Collapse/Expand Toggle Button */}
         {onToggleCollapse && (
           <button
             onClick={onToggleCollapse}
-            className="absolute -right-3 top-1/2 transform -translate-y-1/2 z-20 w-6 h-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full flex items-center justify-center shadow-lg hover:bg-white/90 transition-all duration-200 hover:scale-110"
+            className="absolute -right-3 top-1/2 transform -translate-y-1/2 z-20 w-6 h-6 bg-white/80 backdrop-blur-sm border border-white/40 rounded-full flex items-center justify-center shadow-lg hover:bg-white/90 transition-all duration-200 hover:scale-110"
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
-              <ChevronRight className="w-4 h-4 text-gray-600" />
+              <ChevronRight className="w-4 h-4 text-slate-600" />
             ) : (
-              <ChevronLeft className="w-4 h-4 text-gray-600" />
+              <ChevronLeft className="w-4 h-4 text-slate-600" />
             )}
           </button>
         )}
         
-        <div className="relative z-10 h-full flex flex-col text-gray-900">
+        <div className="relative z-10 h-full flex flex-col text-white">
           {/* Header */}
-          <div className={`${isCollapsed ? 'p-4' : 'p-8'} border-b border-gray-200`}>
+          <div className={`${isCollapsed ? 'p-4' : 'p-8'} border-b border-white/10`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
@@ -103,16 +103,16 @@ export function Sidebar({
                 {!isCollapsed && (
                   <div>
                     <h2 className="text-xl font-medium">Team Management</h2>
-                    <p className="text-gray-500 text-sm">Manage team members</p>
+                    <p className="text-slate-300 text-sm">Manage team members</p>
                   </div>
                 )}
               </div>
               {!isCollapsed && (
                 <button
                   onClick={() => setActiveView('main')}
-                  className="w-8 h-8 rounded-xl bg-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white/90 transition-all duration-200 border border-gray-200"
+                  className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all duration-200"
                 >
-                  <Home className="w-4 h-4 text-gray-600" />
+                  <Home className="w-4 h-4 text-slate-300" />
                 </button>
               )}
             </div>
@@ -121,7 +121,7 @@ export function Sidebar({
           {/* Team Management Content */}
           {!isCollapsed && (
             <div className="flex-1 p-6 overflow-y-auto">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 p-6 shadow-lg">
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
                 <TeamManagement
                   teamMembers={teamMembers}
                   onCreateMember={createTeamMember}
@@ -138,29 +138,29 @@ export function Sidebar({
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-80'} relative transition-all duration-300 ease-in-out`}>
-      {/* Beautiful glass background */}
-      <div className="absolute inset-0 bg-gray-50 border-r border-gray-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-white/30"></div>
+      {/* Glass background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-800/85 to-slate-900/90 backdrop-blur-xl border-r border-white/10">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5"></div>
       </div>
       
       {/* Collapse/Expand Toggle Button */}
       {onToggleCollapse && (
         <button
           onClick={onToggleCollapse}
-          className="absolute -right-3 top-1/2 transform -translate-y-1/2 z-20 w-6 h-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full flex items-center justify-center shadow-lg hover:bg-white/90 transition-all duration-200 hover:scale-110"
+          className="absolute -right-3 top-1/2 transform -translate-y-1/2 z-20 w-6 h-6 bg-white/80 backdrop-blur-sm border border-white/40 rounded-full flex items-center justify-center shadow-lg hover:bg-white/90 transition-all duration-200 hover:scale-110"
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <ChevronRight className="w-4 h-4 text-gray-600" />
+            <ChevronRight className="w-4 h-4 text-slate-600" />
           ) : (
-            <ChevronLeft className="w-4 h-4 text-gray-600" />
+            <ChevronLeft className="w-4 h-4 text-slate-600" />
           )}
         </button>
       )}
       
-      <div className="relative z-10 h-full flex flex-col text-gray-900">
+      <div className="relative z-10 h-full flex flex-col text-white">
         {/* Header */}
-        <div className={`${isCollapsed ? 'p-4' : 'p-8'} border-b border-gray-200`}>
+        <div className={`${isCollapsed ? 'p-4' : 'p-8'} border-b border-white/10`}>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
               <Home className="w-5 h-5 text-white" />
@@ -168,7 +168,7 @@ export function Sidebar({
             {!isCollapsed && (
               <div>
                 <h2 className="text-xl font-medium">Task Manager</h2>
-                <p className="text-gray-500 text-sm">Friday Aug 22</p>
+                <p className="text-slate-300 text-sm">Friday Aug 22</p>
               </div>
             )}
           </div>
@@ -177,15 +177,15 @@ export function Sidebar({
           {!isCollapsed && (
             <div className="grid grid-cols-2 gap-3">
               <div 
-                className="p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-white/60 hover:bg-white/90 transition-all duration-200 cursor-pointer shadow-sm"
+                className="p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-200 cursor-pointer"
                 onClick={onCelebrate}
               >
-                <div className="text-2xl font-medium hover:text-blue-600 transition-colors">{todayStats.total}</div>
-                <div className="text-xs text-gray-500">Total Tasks</div>
+                <div className="text-2xl font-medium hover:text-blue-300 transition-colors">{todayStats.total}</div>
+                <div className="text-xs text-slate-300">Total Tasks</div>
               </div>
-              <div className="p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-white/60 shadow-sm">
+              <div className="p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
                 <div className="text-2xl font-medium">{todayStats.overdue}</div>
-                <div className="text-xs text-gray-500">Overdue</div>
+                <div className="text-xs text-slate-300">Overdue</div>
               </div>
             </div>
           )}
@@ -195,35 +195,35 @@ export function Sidebar({
         {!isCollapsed && (
           <nav className="flex-1 p-6">
             <div className="space-y-2 mb-8">
-              <h3 className="text-xs uppercase tracking-wider text-gray-400 mb-4 font-medium">OVERVIEW</h3>
+              <h3 className="text-xs uppercase tracking-wider text-slate-400 mb-4 font-medium">OVERVIEW</h3>
               
               {/* Today Section */}
-              <div className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/60 shadow-sm cursor-pointer hover:shadow-md transition-all">
+              <div className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-blue-600/50 to-purple-600/50 backdrop-blur-sm border border-white/20 shadow-xl cursor-pointer">
                 <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-white/80 flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-blue-600" />
+                  <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-medium">Today</span>
                 </div>
                 <Badge 
                   variant="secondary" 
-                  className="bg-white/80 text-gray-700 border border-white/60 backdrop-blur-sm font-medium"
+                  className="bg-white/20 text-white border border-white/30 backdrop-blur-sm font-medium"
                 >
                   {todayStats.pending}
                 </Badge>
               </div>
 
               {/* This Week Section */}
-              <div className="group flex items-center justify-between p-4 rounded-2xl hover:bg-white/80 backdrop-blur-sm border border-transparent hover:border-white/60 transition-all duration-200 cursor-pointer">
+              <div className="group flex items-center justify-between p-4 rounded-2xl hover:bg-white/10 backdrop-blur-sm border border-transparent hover:border-white/20 transition-all duration-200 cursor-pointer">
                 <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-white/60 flex items-center justify-center group-hover:bg-white/80 transition-all duration-200">
-                    <BarChart3 className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
+                  <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                    <BarChart3 className="w-4 h-4 text-slate-300 group-hover:text-white transition-colors" />
                   </div>
                   <span className="font-medium">This Week</span>
                 </div>
                 <Badge 
                   variant="secondary" 
-                  className="bg-white/60 text-gray-600 border border-white/40 backdrop-blur-sm font-medium"
+                  className="bg-white/15 text-white border border-white/20 backdrop-blur-sm font-medium"
                 >
                   {weekStats.pending}
                 </Badge>
@@ -231,7 +231,7 @@ export function Sidebar({
             </div>
             
             <div>
-              <h3 className="text-xs uppercase tracking-wider text-gray-400 mb-4 font-medium">VIEWS</h3>
+              <h3 className="text-xs uppercase tracking-wider text-slate-400 mb-4 font-medium">VIEWS</h3>
               <div className="space-y-2">
                 {viewItems.map((item, index) => (
                   <div
@@ -239,12 +239,12 @@ export function Sidebar({
                     onClick={item.onClick}
                     className={`group flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 cursor-pointer ${
                       item.active 
-                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/60 shadow-sm' 
-                        : 'hover:bg-white/80 backdrop-blur-sm border border-transparent hover:border-white/60'
+                        ? 'bg-gradient-to-r from-blue-600/50 to-purple-600/50 backdrop-blur-sm border border-white/20 shadow-xl' 
+                        : 'hover:bg-white/10 backdrop-blur-sm border border-transparent hover:border-white/20'
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-xl bg-white/60 flex items-center justify-center group-hover:bg-white/80 transition-all duration-200">
-                      <item.icon className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
+                    <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                      <item.icon className="w-4 h-4 text-slate-300 group-hover:text-white transition-colors" />
                     </div>
                     <span className="font-medium">{item.label}</span>
                   </div>
@@ -266,7 +266,7 @@ export function Sidebar({
         )}
         
         {/* Bottom section */}
-        <div className={`${isCollapsed ? 'p-4' : 'p-6'} border-t border-gray-200`}>
+        <div className={`${isCollapsed ? 'p-4' : 'p-6'} border-t border-white/10`}>
           {isCollapsed ? (
             <div className="flex flex-col items-center space-y-4">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
@@ -274,7 +274,7 @@ export function Sidebar({
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/60 hover:bg-white/90 transition-all duration-200 cursor-pointer shadow-sm">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-200 cursor-pointer">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
                 <Settings className="w-4 h-4 text-white" />
               </div>
