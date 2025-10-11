@@ -327,7 +327,7 @@ export function TaskBoard() {
     return (
       <div 
         ref={drop as any}
-        className={`min-h-[100px] transition-colors ${
+        className={`h-full transition-colors ${
           isOver ? 'bg-blue-50 border-2 border-blue-300 border-dashed rounded-lg' : ''
         }`}
       >
@@ -338,11 +338,11 @@ export function TaskBoard() {
 
   return (
     <div className="h-full overflow-x-auto overflow-y-auto">
-      <div className="p-8 min-h-full">
-        <div className="flex gap-6 min-w-max">
+      <div className="p-8 h-full">
+        <div className="flex gap-6 min-w-max h-full">
           {columns.map((column, index) => (
-            <div key={index} className="w-80 flex-shrink-0">
-              <div className="flex items-center justify-between mb-4">
+            <div key={index} className="w-80 flex-shrink-0 h-full flex flex-col">
+              <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <div>
                   <h2 className="text-gray-900">{column.title}</h2>
                   <p className="text-xs text-gray-500">
@@ -366,7 +366,7 @@ export function TaskBoard() {
               </div>
               
               <DropZone columnId={column.title}>
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1">
                   {column.subCategories ? (
                     // Render sub-categories for Today column
                     column.subCategories.map((subCategory, subIndex) => (
