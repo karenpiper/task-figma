@@ -66,6 +66,10 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 /* Global Scale - Scale everything down to 75% */
@@ -73,7 +77,8 @@ html {
   transform: scale(0.75);
   transform-origin: top left;
   width: 133.33%; /* Compensate for the scale to maintain full width */
-  height: 133.33%; /* Compensate for the scale to maintain full height */
+  height: 100vh; /* Use viewport height instead of percentage */
+  min-height: 100vh; /* Ensure minimum full height */
 }
 
 /* Utility Classes */
