@@ -213,35 +213,44 @@ export function TaskBoard() {
   };
 
   const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null) => {
+    console.log('🎯 moveTask called:', { taskId, fromColumnId, fromSubCategoryId, toColumnId, toSubCategoryId });
+    
     setColumns(prevColumns => {
-      const newColumns = [...prevColumns]; // Shallow clone first
+      const newColumns = JSON.parse(JSON.stringify(prevColumns)); // Deep clone to ensure proper updates
       
       // Find the actual task data from the source first
       let taskToMove: Task | null = null;
       const sourceColumnIndex = newColumns.findIndex((col: Column) => col.title === fromColumnId);
+      
+      console.log('🔍 Source column index:', sourceColumnIndex);
       
       if (sourceColumnIndex !== -1) {
         const sourceColumn = newColumns[sourceColumnIndex];
         
         if (fromSubCategoryId && sourceColumn.subCategories) {
           const sourceSubCategoryIndex = sourceColumn.subCategories.findIndex((sub: SubCategory) => sub.title === fromSubCategoryId);
+          console.log('🔍 Source subcategory index:', sourceSubCategoryIndex);
           
           if (sourceSubCategoryIndex !== -1) {
             const sourceSubCategory = sourceColumn.subCategories[sourceSubCategoryIndex];
             const taskIndex = sourceSubCategory.tasks.findIndex((task: Task) => task.id === taskId);
+            console.log('🔍 Task index in subcategory:', taskIndex);
             
             if (taskIndex !== -1) {
-              taskToMove = { ...sourceSubCategory.tasks[taskIndex] }; // Shallow clone task
+              taskToMove = sourceSubCategory.tasks[taskIndex];
               sourceSubCategory.tasks.splice(taskIndex, 1);
               sourceSubCategory.taskCount = sourceSubCategory.tasks.length;
+              console.log('✅ Task removed from subcategory:', taskToMove.title);
             }
           }
         } else {
           const taskIndex = sourceColumn.tasks.findIndex((task: Task) => task.id === taskId);
+          console.log('🔍 Task index in column:', taskIndex);
           
           if (taskIndex !== -1) {
-            taskToMove = { ...sourceColumn.tasks[taskIndex] }; // Shallow clone task
+            taskToMove = sourceColumn.tasks[taskIndex];
             sourceColumn.tasks.splice(taskIndex, 1);
+            console.log('✅ Task removed from column:', taskToMove.title);
           }
         }
         
@@ -252,29 +261,37 @@ export function TaskBoard() {
       
       // Add task to destination
       if (taskToMove) {
+        console.log('🎯 Adding task to destination:', taskToMove.title);
         const toColumnIndex = newColumns.findIndex((col: Column) => col.title === toColumnId);
+        console.log('🔍 Destination column index:', toColumnIndex);
         
         if (toColumnIndex !== -1) {
           const toColumn = newColumns[toColumnIndex];
           
           if (toSubCategoryId && toColumn.subCategories) {
             const subCategoryIndex = toColumn.subCategories.findIndex((sub: SubCategory) => sub.title === toSubCategoryId);
+            console.log('🔍 Destination subcategory index:', subCategoryIndex);
             
             if (subCategoryIndex !== -1) {
               toColumn.subCategories[subCategoryIndex].tasks.push(taskToMove);
               toColumn.subCategories[subCategoryIndex].taskCount = 
                 toColumn.subCategories[subCategoryIndex].tasks.length;
+              console.log('✅ Task added to subcategory');
             }
           } else {
             toColumn.tasks.push(taskToMove);
+            console.log('✅ Task added to column');
           }
           
           // Update destination column task count
           toColumn.taskCount = toColumn.tasks.length + 
             (toColumn.subCategories?.reduce((sum: number, sub: SubCategory) => sum + sub.taskCount, 0) || 0);
         }
+      } else {
+        console.log('❌ No task found to move');
       }
       
+      console.log('🔄 Updated columns:', newColumns.map(col => ({ title: col.title, taskCount: col.taskCount })));
       return newColumns;
     });
   };
@@ -318,8 +335,8 @@ export function TaskBoard() {
   };
 
   return (
-    <div className="flex-1 overflow-x-auto">
-      <div className="p-8">
+    <div className="h-full overflow-x-auto overflow-y-auto">
+      <div className="p-8 min-h-full">
         <div className="flex gap-6 min-w-max">
           {columns.map((column, index) => (
             <div key={index} className="w-80 flex-shrink-0">
