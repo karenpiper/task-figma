@@ -149,12 +149,14 @@ export default function App() {
                   onTaskComplete={handleTaskComplete}
                   onTaskCompleteSimple={handleTaskCompleteSimpleCategory}
                   columns={columns}
-                  tasks={tasks}
                   teamMembers={teamMembers}
+                  loading={loading}
+                  error={error}
                   createTask={createTask}
                   moveTask={moveTask}
                   createCategory={createCategory}
                   deleteCategory={deleteCategory}
+                  createTeamMember={createTeamMember}
                 />
               ) : currentView === 'week' ? (
                 <ThisWeek 
