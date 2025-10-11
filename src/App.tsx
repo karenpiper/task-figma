@@ -184,10 +184,7 @@ export default function App() {
       </div>
 
       {/* Achievement system - absolutely positioned overlay */}
-      <AchievementSystem 
-        trigger={showParticles} 
-        onComplete={() => setShowParticles(false)} 
-      />
+      <AchievementSystem />
 
       {/* Focus zone for keyboard navigation */}
       <FocusZone />
