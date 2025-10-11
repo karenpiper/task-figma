@@ -214,10 +214,13 @@ export function TaskCategory({
           {category.tasks.map((task) => (
             <TaskCard 
               key={task.id} 
-              task={task} 
-              onComplete={onTaskComplete}
-              onMoveTask={onMoveTask}
-              availableColumns={availableColumns}
+              title={task.title}
+              description={task.detail || ''}
+              status={task.priority || 'TO DO'}
+              statusColor={task.priority === 'urgent' ? 'orange' : task.priority === 'high' ? 'purple' : 'gray'}
+              userIcon={task.team_member?.name || 'Normal'}
+              time="30 min"
+              comments={0}
             />
           ))}
         </div>
