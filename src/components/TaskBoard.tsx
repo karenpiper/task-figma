@@ -268,7 +268,7 @@ export function TaskBoard() {
 
     return (
       <div 
-        ref={drop}
+        ref={drop as any}
         className={`min-h-[100px] transition-colors ${
           isOver ? 'bg-blue-50 border-2 border-blue-300 border-dashed rounded-lg' : ''
         }`}
