@@ -1,6 +1,4 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Sidebar } from './components/Sidebar';
 import { KanbanBoard } from './components/KanbanBoard';
 import { ThisWeek } from './components/ThisWeek';
@@ -66,8 +64,7 @@ export default function App() {
   }, []);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="h-screen" style={{ backgroundColor: '#f5f5f5' }}>
+    <div className="h-screen" style={{ backgroundColor: '#f5f5f5' }}>
         {/* Header - Exact Match */}
         <div className="header-reference">
           <h1 className="header-title">Karenban</h1>
@@ -250,7 +247,6 @@ export default function App() {
           trigger={showParticles} 
           onComplete={() => setShowParticles(false)} 
         />
-      </div>
-    </DndProvider>
+    </div>
   );
 }
