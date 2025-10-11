@@ -32,8 +32,6 @@ interface Column {
 }
 
 export function TaskBoard() {
-  console.log('🎯 TaskBoard component rendered');
-  
   const [isAddTaskDialogOpen, setIsAddTaskDialogOpen] = useState(false);
   const [addTaskContext, setAddTaskContext] = useState<{
     columnTitle: string;
@@ -237,19 +235,12 @@ export function TaskBoard() {
     time: string;
     comments: number;
   }) => {
-    console.log('🎯 handleAddTask called:', { taskData, addTaskContext });
-    
-    if (!addTaskContext) {
-      console.log('❌ No addTaskContext found');
-      return;
-    }
+    if (!addTaskContext) return;
 
     const newTask: Task = {
       id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       ...taskData,
     };
-    
-    console.log('✅ New task created:', newTask);
 
     setColumns(prevColumns => {
       const newColumns = [...prevColumns];
@@ -265,13 +256,14 @@ export function TaskBoard() {
           );
           
           if (subCategoryIndex !== -1) {
-            column.subCategories[subCategoryIndex].tasks.push(newTask);
+            // Add to subcategory (at the beginning)
+            column.subCategories[subCategoryIndex].tasks.unshift(newTask);
             column.subCategories[subCategoryIndex].taskCount = 
               column.subCategories[subCategoryIndex].tasks.length;
           }
         } else {
-          // Add to column directly
-          column.tasks.push(newTask);
+          // Add to column directly (at the beginning)
+          column.tasks.unshift(newTask);
         }
         
         // Update column task count
@@ -283,11 +275,21 @@ export function TaskBoard() {
     });
   };
 
+  const getColumnColor = (columnTitle: string) => {
+    switch (columnTitle) {
+      case 'Uncategorized': return 'mgmt-beige';
+      case 'Today': return 'mgmt-green';
+      case 'Personal': return 'mgmt-purple';
+      case 'Follow-Up': return 'mgmt-yellow';
+      case 'Later': return 'mgmt-pink';
+      case 'Completed': return 'mgmt-lime';
+      default: return 'mgmt-beige';
+    }
+  };
+
   const openAddTaskDialog = (columnTitle: string, subCategoryTitle?: string) => {
-    console.log('🎯 openAddTaskDialog called:', { columnTitle, subCategoryTitle });
     setAddTaskContext({ columnTitle, subCategoryTitle });
     setIsAddTaskDialogOpen(true);
-    console.log('✅ Dialog should be opening now');
   };
 
   const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null) => {
@@ -447,21 +449,15 @@ export function TaskBoard() {
                 <div className="flex items-center gap-2">
                   {column.showAddPerson ? (
                     <button 
-                      className="text-gray-400 hover:text-mgmt-yellow transition-colors"
-                      onClick={() => {
-                        console.log('🔥 USERS BUTTON CLICKED!', column.title);
-                        openAddTaskDialog(column.title);
-                      }}
+                      className={`text-gray-400 hover:text-${getColumnColor(column.title)} transition-colors`}
+                      onClick={() => openAddTaskDialog(column.title)}
                     >
                       <Users className="w-5 h-5" />
                     </button>
                   ) : (
                     <button 
-                      className="text-gray-400 hover:text-mgmt-green transition-colors"
-                      onClick={() => {
-                        console.log('🔥 PLUS BUTTON CLICKED!', column.title);
-                        openAddTaskDialog(column.title);
-                      }}
+                      className={`text-gray-400 hover:text-${getColumnColor(column.title)} transition-colors`}
+                      onClick={() => openAddTaskDialog(column.title)}
                     >
                       <Plus className="w-5 h-5" />
                     </button>
@@ -483,11 +479,8 @@ export function TaskBoard() {
                             {subCategory.title} ({subCategory.taskCount})
                           </h3>
                           <button 
-                            className="text-gray-400 hover:text-mgmt-green transition-colors"
-                            onClick={() => {
-                              console.log('🔥 SUBCATEGORY PLUS BUTTON CLICKED!', column.title, subCategory.title);
-                              openAddTaskDialog(column.title, subCategory.title);
-                            }}
+                            className={`text-gray-400 hover:text-${getColumnColor(column.title)} transition-colors`}
+                            onClick={() => openAddTaskDialog(column.title, subCategory.title)}
                           >
                             <Plus className="w-4 h-4" />
                           </button>
