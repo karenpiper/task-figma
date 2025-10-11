@@ -51,9 +51,14 @@ export function AddTaskDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    console.log('🎯 AddTaskDialog handleSubmit called');
+    
+    if (!title.trim()) {
+      console.log('❌ Title is empty, not submitting');
+      return;
+    }
 
-    onAddTask({
+    const taskData = {
       title: title.trim(),
       description: description.trim(),
       status,
@@ -61,7 +66,10 @@ export function AddTaskDialog({
       userIcon: 'Normal',
       time,
       comments: 0,
-    });
+    };
+    
+    console.log('✅ Submitting task data:', taskData);
+    onAddTask(taskData);
 
     // Reset form
     setTitle('');
