@@ -11,7 +11,6 @@ import { FocusZone } from './components/FocusZone';
 import { AchievementSystem } from './components/AchievementSystem';
 import { ParticleSystem } from './components/ParticleSystem';
 import { AmbientLighting } from './components/AmbientLighting';
-import { DynamicBackground } from './components/DynamicBackground';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTasksNew } from './hooks/useTasksNew';
 
@@ -95,14 +94,13 @@ export default function App() {
 
   return (
     <StableDndProvider>
-      <DynamicBackground>
-        {/* Clean Deployment Indicator */}
-        <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
-          ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
-        </div>
-        
-        {/* Main container with clean design */}
-        <div className="h-screen bg-gray-50 flex">
+      {/* Clean Deployment Indicator */}
+      <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
+        ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
+      </div>
+      
+      {/* Main container with clean design */}
+      <div className="h-screen bg-gray-50 flex">
             {/* Left sidebar with celebration trigger */}
             <Sidebar 
               onCelebrate={triggerCelebration}
@@ -273,7 +271,6 @@ export default function App() {
             onComplete={() => setShowParticles(false)} 
           />
         </div>
-      </DynamicBackground>
     </StableDndProvider>
   );
 }
