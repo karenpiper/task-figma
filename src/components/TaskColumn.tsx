@@ -127,21 +127,25 @@ export function TaskColumn({
   }, [dropRef]);
 
   // Memoize callback functions to prevent recreation
-  const handleCreateTask = useCallback(async (taskData: { 
-    title: string; 
-    detail?: string; 
-    priority: string; 
-    project?: string; 
-    client?: string; 
-    dueDate?: string; 
-    notes?: string; 
+  const handleCreateTask = useCallback(async (taskData: {
+    title: string;
+    description: string;
+    status: string;
+    statusColor: string;
+    userIcon: string;
+    time: string;
+    comments: number;
   }) => {
     try {
       await onCreateTask({
-        ...taskData,
-        due_date: taskData.dueDate, // Map dueDate to due_date for API
+        title: taskData.title,
+        description: taskData.description,
+        priority: taskData.status.toLowerCase(),
+        status: taskData.status,
+        estimated_time: taskData.time,
         column_id: column.id,
-        category_id: undefined
+        category_id: undefined,
+        team_member_id: null
       }, column.id, undefined);
     } catch (error) {
       console.error('Failed to create task:', error);
@@ -318,9 +322,8 @@ export function TaskColumn({
       <AddTaskDialog
         isOpen={isCreatingTask}
         onClose={() => setIsCreatingTask(false)}
-        onSubmit={handleCreateTask}
-        columnId={column.id}
-        categoryId={undefined}
+        onAddTask={handleCreateTask}
+        columnTitle={column.title}
       />
       
       <AddPersonDialog

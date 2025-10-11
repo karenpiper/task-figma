@@ -83,21 +83,25 @@ export function TaskCategory({
   }, [dropRef]);
 
   // Memoize callback functions to prevent recreation
-  const handleCreateTask = useCallback(async (taskData: { 
-    title: string; 
-    detail?: string; 
-    priority: string; 
-    project?: string; 
-    client?: string; 
-    dueDate?: string; 
-    notes?: string; 
+  const handleCreateTask = useCallback(async (taskData: {
+    title: string;
+    description: string;
+    status: string;
+    statusColor: string;
+    userIcon: string;
+    time: string;
+    comments: number;
   }) => {
     try {
       await onCreateTask({
-        ...taskData,
-        due_date: taskData.dueDate, // Map dueDate to due_date for API
+        title: taskData.title,
+        description: taskData.description,
+        priority: taskData.status.toLowerCase(),
+        status: taskData.status,
+        estimated_time: taskData.time,
         column_id: columnId,
-        category_id: category.id
+        category_id: category.id,
+        team_member_id: null
       }, columnId, category.id);
     } catch (error) {
       console.error('Failed to create task:', error);
@@ -230,9 +234,9 @@ export function TaskCategory({
       <AddTaskDialog
         isOpen={isCreatingTask}
         onClose={() => setIsCreatingTask(false)}
-        onSubmit={handleCreateTask}
-        columnId={columnId}
-        categoryId={category.id}
+        onAddTask={handleCreateTask}
+        columnTitle={columnId}
+        subCategoryTitle={category.name}
       />
     </div>
   );
