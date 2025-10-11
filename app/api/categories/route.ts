@@ -9,7 +9,7 @@ const supabaseUrl = process.env.SUPABASE_URL ||
 
 const supabaseKey = process.env.SUPABASE_ANON_KEY || 
                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncnlycGN2Ym9qZmFsandsY3BpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDAxMTMsImV4cCI6MjA3MTY3NjExM30.Kl7YKYlWEuXDjuXhcG7t2Ii0VmWCB64vu8BGOIk8wjo';
+                   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhyY2Vza2hqenZlZXhxb3J2dXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxMjAxOTEsImV4cCI6MjA3NTY5NjE5MX0.mlojCWKMyxfkEKGAwejQN17osi0k7ZEQKByrE1l1DBI';
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
