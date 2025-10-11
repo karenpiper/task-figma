@@ -235,12 +235,19 @@ export function TaskBoard() {
     time: string;
     comments: number;
   }) => {
-    if (!addTaskContext) return;
+    console.log('🎯 handleAddTask called:', { taskData, addTaskContext });
+    
+    if (!addTaskContext) {
+      console.log('❌ No addTaskContext found');
+      return;
+    }
 
     const newTask: Task = {
       id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       ...taskData,
     };
+    
+    console.log('✅ New task created:', newTask);
 
     setColumns(prevColumns => {
       const newColumns = [...prevColumns];
@@ -275,8 +282,10 @@ export function TaskBoard() {
   };
 
   const openAddTaskDialog = (columnTitle: string, subCategoryTitle?: string) => {
+    console.log('🎯 openAddTaskDialog called:', { columnTitle, subCategoryTitle });
     setAddTaskContext({ columnTitle, subCategoryTitle });
     setIsAddTaskDialogOpen(true);
+    console.log('✅ Dialog should be opening now');
   };
 
   const moveTask = (taskId: string, fromColumnId: string, fromSubCategoryId: string | null, toColumnId: string, toSubCategoryId: string | null) => {
