@@ -218,7 +218,7 @@ export function TaskCategory({
               description={task.detail || ''}
               status={task.priority || 'TO DO'}
               statusColor={task.priority === 'urgent' ? 'orange' : task.priority === 'high' ? 'purple' : 'gray'}
-              userIcon={task.team_member?.name || 'Normal'}
+              userIcon={task.team_member_id ? `User ${task.team_member_id}` : 'Normal'}
               time="30 min"
               comments={0}
             />
