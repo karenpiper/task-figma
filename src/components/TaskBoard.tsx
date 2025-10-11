@@ -155,6 +155,7 @@ export function TaskBoard() {
       hours: 8,
       tasks: [
         {
+          id: 'task-completed-1',
           title: 'Fill out device contract',
           description: 'Complete device contract paperwork',
           status: 'MEDIUM',
@@ -164,6 +165,7 @@ export function TaskBoard() {
           comments: 0,
         },
         {
+          id: 'task-completed-2',
           title: 'yes',
           description: 'Task completed',
           status: 'MEDIUM',
@@ -173,6 +175,7 @@ export function TaskBoard() {
           comments: 0,
         },
         {
+          id: 'task-completed-3',
           title: 'complete',
           description: 'Task completed',
           status: 'MEDIUM',
@@ -182,6 +185,7 @@ export function TaskBoard() {
           comments: 0,
         },
         {
+          id: 'task-completed-4',
           title: 'christine',
           description: 'Follow up with Christine',
           status: 'MEDIUM',
@@ -191,6 +195,7 @@ export function TaskBoard() {
           comments: 0,
         },
         {
+          id: 'task-completed-5',
           title: 'test',
           description: 'Test task',
           status: 'MEDIUM',
@@ -322,13 +327,13 @@ export function TaskBoard() {
       collect: (monitor) => ({
         isOver: monitor.isOver(),
       }),
-    }), [columnId, subCategoryId, moveTask]);
+    }), [columnId, subCategoryId]);
 
     return (
       <div 
         ref={drop as any}
-        className={`h-full transition-colors ${
-          isOver ? 'bg-blue-50 border-2 border-blue-300 border-dashed rounded-lg' : ''
+        className={`min-h-[100px] transition-colors ${
+          isOver ? 'bg-mgmt-pink/20 border-2 border-mgmt-pink/40 border-dashed rounded-lg' : ''
         }`}
       >
         {children}
@@ -384,7 +389,7 @@ export function TaskBoard() {
               </div>
               
               <DropZone columnId={column.title}>
-                <div className="space-y-3 flex-1">
+                <div className="space-y-3 flex-1 min-h-[200px]">
                   {column.subCategories ? (
                     // Render sub-categories for Today column
                     column.subCategories.map((subCategory, subIndex) => (
@@ -398,16 +403,22 @@ export function TaskBoard() {
                           </button>
                         </div>
                         <DropZone columnId={column.title} subCategoryId={subCategory.title}>
-                          <div className="space-y-2">
-                                    {subCategory.tasks.map((task, taskIndex) => (
-                                      <TaskCard 
-                                        key={task.id || `task-${index}-${subIndex}-${taskIndex}`}
-                                        {...task} 
-                                        id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
-                                        columnId={column.title}
-                                        subCategoryId={subCategory.title}
-                                      />
-                                    ))}
+                          <div className="space-y-2 min-h-[80px]">
+                            {subCategory.tasks.length > 0 ? (
+                              subCategory.tasks.map((task, taskIndex) => (
+                                <TaskCard 
+                                  key={task.id || `task-${index}-${subIndex}-${taskIndex}`}
+                                  {...task} 
+                                  id={task.id || `task-${index}-${subIndex}-${taskIndex}`}
+                                  columnId={column.title}
+                                  subCategoryId={subCategory.title}
+                                />
+                              ))
+                            ) : (
+                              <div className="flex items-center justify-center h-16 text-gray-400 text-sm">
+                                Drop tasks here
+                              </div>
+                            )}
                           </div>
                         </DropZone>
                       </div>
