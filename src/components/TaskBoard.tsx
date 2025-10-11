@@ -452,12 +452,13 @@ export function TaskBoard() {
     return (
       <div 
         ref={drop as any}
-        className={`h-3 mx-2 rounded transition-all duration-200 ${
+        className={`h-4 mx-2 rounded transition-all duration-200 ${
           isOver 
             ? 'bg-mgmt-green/60 border-2 border-mgmt-green border-dashed' 
             : 'bg-transparent hover:bg-mgmt-green/20'
         }`}
-        style={{ minHeight: '12px' }}
+        style={{ minHeight: '16px' }}
+        title={`Drop here to insert at position ${insertIndex}`}
       />
     );
   };
@@ -557,6 +558,10 @@ export function TaskBoard() {
                                   />
                                 </React.Fragment>
                               ))}
+                              {/* Fallback drop zone at the bottom */}
+                              <DropZone columnId={column.title} subCategoryId={subCategory.title}>
+                                <div className="h-4"></div>
+                              </DropZone>
                             </>
                           ) : (
                             <DropZone columnId={column.title} subCategoryId={subCategory.title}>
@@ -590,6 +595,10 @@ export function TaskBoard() {
                           />
                         </React.Fragment>
                       ))}
+                      {/* Fallback drop zone at the bottom */}
+                      <DropZone columnId={column.title}>
+                        <div className="h-8"></div>
+                      </DropZone>
                     </>
                   ) : (
                     // Empty state
