@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Modern Design System - Refreshed */
+/* Clean Modern Design System - Inspired by Reference */
 :root {
   /* Typography */
   --font-size: 14px;
@@ -247,6 +247,127 @@
     border-color: var(--glass-border-hover);
     box-shadow: var(--glass-shadow-hover);
     transform: translateY(-2px);
+  }
+}
+
+/* Clean Design Utilities - Inspired by Reference */
+@layer utilities {
+  /* Clean Card Styles */
+  .card-clean {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200;
+  }
+  
+  .card-clean-hover {
+    @apply card-clean hover:shadow-md hover:border-gray-300 transition-all duration-200;
+  }
+  
+  /* Status Tags - Clean and Distinct */
+  .status-progress {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800;
+  }
+  
+  .status-review {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800;
+  }
+  
+  .status-done {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+  }
+  
+  .status-todo {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
+  }
+  
+  /* Priority Indicators */
+  .priority-urgent {
+    @apply text-red-600 font-medium;
+  }
+  
+  .priority-high {
+    @apply text-orange-600 font-medium;
+  }
+  
+  .priority-normal {
+    @apply text-blue-600 font-medium;
+  }
+  
+  .priority-low {
+    @apply text-gray-600 font-medium;
+  }
+  
+  /* Clean Sidebar */
+  .sidebar-clean {
+    @apply bg-gray-50 border-r border-gray-200;
+  }
+  
+  /* Clean Navigation */
+  .nav-section {
+    @apply mb-6;
+  }
+  
+  .nav-section-title {
+    @apply text-sm font-semibold text-gray-900 mb-3 px-3;
+  }
+  
+  .nav-item {
+    @apply flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-150;
+  }
+  
+  .nav-item-active {
+    @apply nav-item bg-blue-50 text-blue-700 border-r-2 border-blue-500;
+  }
+  
+  /* Clean Task Cards */
+  .task-card-clean {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200;
+  }
+  
+  .task-title {
+    @apply font-semibold text-gray-900 mb-2;
+  }
+  
+  .task-description {
+    @apply text-sm text-gray-600 mb-3;
+  }
+  
+  .task-meta {
+    @apply flex items-center justify-between text-xs text-gray-500;
+  }
+  
+  /* Clean Top Bar */
+  .top-bar-clean {
+    @apply bg-white border-b border-gray-200 px-6 py-4;
+  }
+  
+  /* Clean Search */
+  .search-clean {
+    @apply w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+  
+  /* Clean Buttons */
+  .btn-clean-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-150;
+  }
+  
+  .btn-clean-secondary {
+    @apply bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors duration-150;
+  }
+  
+  /* Clean Columns */
+  .column-clean {
+    @apply bg-gray-50 rounded-lg p-4 min-h-[600px];
+  }
+  
+  .column-header {
+    @apply flex items-center justify-between mb-4;
+  }
+  
+  .column-title {
+    @apply font-semibold text-gray-900;
+  }
+  
+  .column-count {
+    @apply text-sm text-gray-500;
   }
 }
 

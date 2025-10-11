@@ -96,18 +96,13 @@ export default function App() {
   return (
     <StableDndProvider>
       <DynamicBackground>
-        {/* Modern Deployment Indicator */}
-        <div className="gradient-primary text-white text-center py-3 font-bold text-lg shadow-lg">
-          ✨ KARENBAN - REFRESHED DESIGN DEPLOYED! ✨
+        {/* Clean Deployment Indicator */}
+        <div className="bg-blue-600 text-white text-center py-2 font-medium text-sm">
+          ✨ KARENBAN - CLEAN DESIGN DEPLOYED! ✨
         </div>
         
-        {/* Main container with full viewport height and overflow control */}
-        <div className="h-screen relative overflow-hidden">
-          {/* Dynamic ambient lighting layer */}
-          <AmbientLighting />
-          
-          {/* Glass morphism container with proper backdrop blur and transparency */}
-          <div className="relative z-10 h-full backdrop-blur-sm bg-white/10 flex">
+        {/* Main container with clean design */}
+        <div className="h-screen bg-gray-50 flex">
             {/* Left sidebar with celebration trigger */}
             <Sidebar 
               onCelebrate={triggerCelebration}
@@ -131,45 +126,45 @@ export default function App() {
                 isStatsCollapsed={isStatsCollapsed}
               />
               
-              {/* Modern Navigation Tabs */}
+              {/* Clean Navigation Tabs */}
               <div className="px-6 pt-4">
-                <div className="flex space-x-2 glass-panel rounded-2xl p-2">
+                <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
                   <button
                     onClick={() => setCurrentView('board')}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
+                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                       currentView === 'board'
-                        ? 'gradient-primary text-white shadow-lg'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/20'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    📋 Main Board
+                    📋 Board
                   </button>
                   <button
                     onClick={() => setCurrentView('week')}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
+                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                       currentView === 'week'
-                        ? 'gradient-primary text-white shadow-lg'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/20'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
                     📅 This Week
                   </button>
                   <button
                     onClick={() => setCurrentView('all-tasks')}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
+                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                       currentView === 'all-tasks'
-                        ? 'gradient-primary text-white shadow-lg'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/20'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
                     📝 All Tasks
                   </button>
                   <button
                     onClick={() => setCurrentView('coach')}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
+                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                       currentView === 'coach'
-                        ? 'gradient-primary text-white shadow-lg'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/20'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
                     🎯 Coach
@@ -177,8 +172,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Main content grid with proper spacing */}
-              <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0">
+              {/* Main content area with clean design */}
+              <div className="flex-1 flex gap-6 p-6 overflow-hidden min-h-0 bg-white">
                 {/* Dynamic content based on current view */}
                 <div className="flex-1 min-w-0">
                   {currentView === 'board' ? (
